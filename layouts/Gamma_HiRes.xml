@@ -1,0 +1,345 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:ChipLayout xmlns:ns0="http://amtc.example.com/ChipLayout" layout_id="L_BFBBC0B1" version="1.0">
+  <ns0:Metadata>
+    <ns0:ProjectName>Gamma_HiRes</ns0:ProjectName>
+    <ns0:CreatedBy>Anson Antony</ns0:CreatedBy>
+    <ns0:CreatedAt>2026-03-28T20:28:05</ns0:CreatedAt>
+    <ns0:Description>High resolution gamma mask layout</ns0:Description>
+  </ns0:Metadata>
+  <ns0:Layers>
+    <ns0:Layer layer_id="LYR_01" type="metal">
+      <ns0:Name>Metal Layer 1</ns0:Name>
+      <ns0:Material>Copper</ns0:Material>
+      <ns0:Thickness>1.942</ns0:Thickness>
+    </ns0:Layer>
+    <ns0:Layer layer_id="LYR_02" type="dielectric">
+      <ns0:Name>Dielectric Layer 2</ns0:Name>
+      <ns0:Material>SiO2</ns0:Material>
+      <ns0:Thickness>1.523</ns0:Thickness>
+    </ns0:Layer>
+    <ns0:Layer layer_id="LYR_03" type="diffusion">
+      <ns0:Name>Diffusion Layer 3</ns0:Name>
+      <ns0:Material>Silicon</ns0:Material>
+      <ns0:Thickness>1.052</ns0:Thickness>
+    </ns0:Layer>
+    <ns0:Layer layer_id="LYR_04" type="poly">
+      <ns0:Name>Poly Layer 4</ns0:Name>
+      <ns0:Material>Polysilicon</ns0:Material>
+      <ns0:Thickness>0.741</ns0:Thickness>
+    </ns0:Layer>
+  </ns0:Layers>
+  <ns0:Components count="20">
+    <ns0:Component comp_id="C_L_BFBBC0B1_001" type="transistor" net="NET_6">
+      <ns0:Position unit="um">
+        <ns0:X>152.965</ns0:X>
+        <ns0:Y>399.087</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>2.098</ns0:Width>
+        <ns0:Height>6.025</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_04</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_002" type="resistor" net="NET_20">
+      <ns0:Position unit="um">
+        <ns0:X>170.144</ns0:X>
+        <ns0:Y>54.873</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>8.658</ns0:Width>
+        <ns0:Height>3.941</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_01</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_003" type="transistor" net="NET_1">
+      <ns0:Position unit="um">
+        <ns0:X>36.251</ns0:X>
+        <ns0:Y>110.512</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>15.356</ns0:Width>
+        <ns0:Height>17.534</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_04</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_004" type="resistor" net="NET_15">
+      <ns0:Position unit="um">
+        <ns0:X>24.671</ns0:X>
+        <ns0:Y>238.627</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>6.5</ns0:Width>
+        <ns0:Height>8.033</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_02</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_005" type="wire" net="NET_6">
+      <ns0:Position unit="um">
+        <ns0:X>280.621</ns0:X>
+        <ns0:Y>102.737</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>12.936</ns0:Width>
+        <ns0:Height>8.991</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_03</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_006" type="wire" net="NET_2">
+      <ns0:Position unit="um">
+        <ns0:X>323.015</ns0:X>
+        <ns0:Y>117.366</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>15.743</ns0:Width>
+        <ns0:Height>13.662</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_01</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_007" type="pad" net="NET_6">
+      <ns0:Position unit="um">
+        <ns0:X>201.042</ns0:X>
+        <ns0:Y>362.663</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>13.227</ns0:Width>
+        <ns0:Height>14.899</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_01</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_008" type="transistor" net="NET_7">
+      <ns0:Position unit="um">
+        <ns0:X>468.853</ns0:X>
+        <ns0:Y>89.705</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>9.351</ns0:Width>
+        <ns0:Height>18.662</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_04</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_009" type="pad" net="NET_10">
+      <ns0:Position unit="um">
+        <ns0:X>411.386</ns0:X>
+        <ns0:Y>90.557</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>8.078</ns0:Width>
+        <ns0:Height>17.673</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_01</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_010" type="resistor" net="NET_6">
+      <ns0:Position unit="um">
+        <ns0:X>472.891</ns0:X>
+        <ns0:Y>225.978</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>1.44</ns0:Width>
+        <ns0:Height>19.567</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_03</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_011" type="wire" net="NET_13">
+      <ns0:Position unit="um">
+        <ns0:X>286.52</ns0:X>
+        <ns0:Y>26.529</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>11.297</ns0:Width>
+        <ns0:Height>6.319</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_02</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_012" type="via" net="NET_18">
+      <ns0:Position unit="um">
+        <ns0:X>146.618</ns0:X>
+        <ns0:Y>210.384</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>13.153</ns0:Width>
+        <ns0:Height>9.691</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_04</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_013" type="pad" net="NET_14">
+      <ns0:Position unit="um">
+        <ns0:X>168.175</ns0:X>
+        <ns0:Y>401.371</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>9.419</ns0:Width>
+        <ns0:Height>8.882</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_03</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_014" type="resistor" net="NET_14">
+      <ns0:Position unit="um">
+        <ns0:X>460.057</ns0:X>
+        <ns0:Y>375.809</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>13.182</ns0:Width>
+        <ns0:Height>18.536</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_04</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_015" type="resistor" net="NET_18">
+      <ns0:Position unit="um">
+        <ns0:X>491.007</ns0:X>
+        <ns0:Y>297.07</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>8.772</ns0:Width>
+        <ns0:Height>17.525</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_03</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_016" type="wire" net="NET_19">
+      <ns0:Position unit="um">
+        <ns0:X>96.275</ns0:X>
+        <ns0:Y>186.436</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>3.756</ns0:Width>
+        <ns0:Height>19.025</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_04</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_017" type="transistor" net="NET_8">
+      <ns0:Position unit="um">
+        <ns0:X>127.337</ns0:X>
+        <ns0:Y>90.483</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>2.09</ns0:Width>
+        <ns0:Height>15.367</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_02</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_018" type="wire" net="NET_7">
+      <ns0:Position unit="um">
+        <ns0:X>23.891</ns0:X>
+        <ns0:Y>148.309</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>4.663</ns0:Width>
+        <ns0:Height>1.539</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_01</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_019" type="wire" net="NET_11">
+      <ns0:Position unit="um">
+        <ns0:X>492.847</ns0:X>
+        <ns0:Y>220.158</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>3.775</ns0:Width>
+        <ns0:Height>9.058</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_03</ns0:LayerRef>
+    </ns0:Component>
+    <ns0:Component comp_id="C_L_BFBBC0B1_020" type="via" net="NET_5">
+      <ns0:Position unit="um">
+        <ns0:X>402.796</ns0:X>
+        <ns0:Y>155.058</ns0:Y>
+      </ns0:Position>
+      <ns0:Dimensions unit="um">
+        <ns0:Width>18.266</ns0:Width>
+        <ns0:Height>14.236</ns0:Height>
+      </ns0:Dimensions>
+      <ns0:LayerRef>LYR_02</ns0:LayerRef>
+    </ns0:Component>
+  </ns0:Components>
+  <ns0:TestPoints>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_001" signal="resistance" comp_ref="C_L_BFBBC0B1_010">
+      <ns0:Position unit="um">
+        <ns0:X>490.982</ns0:X>
+        <ns0:Y>263.962</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>6767.7659</ns0:ExpectedValue>
+      <ns0:Tolerance>271.6202</ns0:Tolerance>
+      <ns0:Unit>Ohm</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_002" signal="current" comp_ref="C_L_BFBBC0B1_003">
+      <ns0:Position unit="um">
+        <ns0:X>252.88</ns0:X>
+        <ns0:Y>270.267</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>4.8198</ns0:ExpectedValue>
+      <ns0:Tolerance>0.0999</ns0:Tolerance>
+      <ns0:Unit>mA</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_003" signal="voltage" comp_ref="C_L_BFBBC0B1_015">
+      <ns0:Position unit="um">
+        <ns0:X>401.958</ns0:X>
+        <ns0:Y>112.613</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>1.3993</ns0:ExpectedValue>
+      <ns0:Tolerance>0.0434</ns0:Tolerance>
+      <ns0:Unit>V</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_004" signal="resistance" comp_ref="C_L_BFBBC0B1_017">
+      <ns0:Position unit="um">
+        <ns0:X>497.457</ns0:X>
+        <ns0:Y>405.844</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>9743.6736</ns0:ExpectedValue>
+      <ns0:Tolerance>373.1051</ns0:Tolerance>
+      <ns0:Unit>Ohm</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_005" signal="resistance" comp_ref="C_L_BFBBC0B1_009">
+      <ns0:Position unit="um">
+        <ns0:X>391.395</ns0:X>
+        <ns0:Y>147.782</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>6172.2472</ns0:ExpectedValue>
+      <ns0:Tolerance>198.1114</ns0:Tolerance>
+      <ns0:Unit>Ohm</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_006" signal="current" comp_ref="C_L_BFBBC0B1_007">
+      <ns0:Position unit="um">
+        <ns0:X>284.646</ns0:X>
+        <ns0:Y>473.492</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>8.0279</ns0:ExpectedValue>
+      <ns0:Tolerance>0.1312</ns0:Tolerance>
+      <ns0:Unit>mA</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_007" signal="current" comp_ref="C_L_BFBBC0B1_008">
+      <ns0:Position unit="um">
+        <ns0:X>408.129</ns0:X>
+        <ns0:Y>41.139</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>8.4796</ns0:ExpectedValue>
+      <ns0:Tolerance>0.2919</ns0:Tolerance>
+      <ns0:Unit>mA</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_008" signal="capacitance" comp_ref="C_L_BFBBC0B1_013">
+      <ns0:Position unit="um">
+        <ns0:X>12.716</ns0:X>
+        <ns0:Y>433.835</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>58.5367</ns0:ExpectedValue>
+      <ns0:Tolerance>2.4102</ns0:Tolerance>
+      <ns0:Unit>fF</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_009" signal="current" comp_ref="C_L_BFBBC0B1_016">
+      <ns0:Position unit="um">
+        <ns0:X>329.363</ns0:X>
+        <ns0:Y>134.904</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>2.3338</ns0:ExpectedValue>
+      <ns0:Tolerance>0.0456</ns0:Tolerance>
+      <ns0:Unit>mA</ns0:Unit>
+    </ns0:TestPoint>
+    <ns0:TestPoint tp_id="TP_L_BFBBC0B1_010" signal="voltage" comp_ref="C_L_BFBBC0B1_014">
+      <ns0:Position unit="um">
+        <ns0:X>434.318</ns0:X>
+        <ns0:Y>59.005</ns0:Y>
+      </ns0:Position>
+      <ns0:ExpectedValue>2.9183</ns0:ExpectedValue>
+      <ns0:Tolerance>0.0438</ns0:Tolerance>
+      <ns0:Unit>V</ns0:Unit>
+    </ns0:TestPoint>
+  </ns0:TestPoints>
+</ns0:ChipLayout>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://amtc.example.com/ChipLayout"
+           xmlns:tns="http://amtc.example.com/ChipLayout"
+           elementFormDefault="qualified">
+
+  <!-- Root element -->
+  <xs:element name="ChipLayout" type="tns:ChipLayoutType"/>
+
+  <!-- Top-level layout -->
+  <xs:complexType name="ChipLayoutType">
+    <xs:sequence>
+      <xs:element name="Metadata"   type="tns:MetadataType"/>
+      <xs:element name="Layers"     type="tns:LayersType"/>
+      <xs:element name="Components" type="tns:ComponentsType"/>
+      <xs:element name="TestPoints" type="tns:TestPointsType"/>
+    </xs:sequence>
+    <xs:attribute name="layout_id"  type="xs:ID"     use="required"/>
+    <xs:attribute name="version"    type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- Metadata -->
+  <xs:complexType name="MetadataType">
+    <xs:sequence>
+      <xs:element name="ProjectName"  type="xs:string"/>
+      <xs:element name="CreatedBy"    type="xs:string"/>
+      <xs:element name="CreatedAt"    type="xs:dateTime"/>
+      <xs:element name="Description"  type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Layer stack -->
+  <xs:complexType name="LayersType">
+    <xs:sequence>
+      <xs:element name="Layer" type="tns:LayerType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="LayerType">
+    <xs:sequence>
+      <xs:element name="Name"     type="xs:string"/>
+      <xs:element name="Material" type="xs:string"/>
+      <xs:element name="Thickness" type="xs:decimal"/>
+    </xs:sequence>
+    <xs:attribute name="layer_id" type="xs:ID"           use="required"/>
+    <xs:attribute name="type"     type="tns:LayerTypeEnum" use="required"/>
+  </xs:complexType>
+
+  <xs:simpleType name="LayerTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="metal"/>
+      <xs:enumeration value="dielectric"/>
+      <xs:enumeration value="poly"/>
+      <xs:enumeration value="diffusion"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Components -->
+  <xs:complexType name="ComponentsType">
+    <xs:sequence>
+      <xs:element name="Component" type="tns:ComponentType" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="count" type="xs:positiveInteger" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="ComponentType">
+    <xs:sequence>
+      <xs:element name="Position"   type="tns:PositionType"/>
+      <xs:element name="Dimensions" type="tns:DimensionsType"/>
+      <xs:element name="LayerRef"   type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="comp_id"  type="xs:ID"              use="required"/>
+    <xs:attribute name="type"     type="tns:ComponentTypeEnum" use="required"/>
+    <xs:attribute name="net"      type="xs:string"          use="optional"/>
+  </xs:complexType>
+
+  <xs:simpleType name="ComponentTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="transistor"/>
+      <xs:enumeration value="via"/>
+      <xs:enumeration value="wire"/>
+      <xs:enumeration value="pad"/>
+      <xs:enumeration value="resistor"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test points -->
+  <xs:complexType name="TestPointsType">
+    <xs:sequence>
+      <xs:element name="TestPoint" type="tns:TestPointType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TestPointType">
+    <xs:sequence>
+      <xs:element name="Position"      type="tns:PositionType"/>
+      <xs:element name="ExpectedValue" type="xs:decimal"/>
+      <xs:element name="Tolerance"     type="xs:decimal"/>
+      <xs:element name="Unit"          type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="tp_id"     type="xs:ID"                  use="required"/>
+    <xs:attribute name="signal"    type="tns:SignalTypeEnum"       use="required"/>
+    <xs:attribute name="comp_ref"  type="xs:string"               use="required"/>
+  </xs:complexType>
+
+  <xs:simpleType name="SignalTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="voltage"/>
+      <xs:enumeration value="current"/>
+      <xs:enumeration value="resistance"/>
+      <xs:enumeration value="capacitance"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Shared position and dimension types -->
+  <xs:complexType name="PositionType">
+    <xs:sequence>
+      <xs:element name="X" type="xs:decimal"/>
+      <xs:element name="Y" type="xs:decimal"/>
+    </xs:sequence>
+    <xs:attribute name="unit" type="xs:string" default="um"/>
+  </xs:complexType>
+
+  <xs:complexType name="DimensionsType">
+    <xs:sequence>
+      <xs:element name="Width"  type="xs:decimal"/>
+      <xs:element name="Height" type="xs:decimal"/>
+    </xs:sequence>
+    <xs:attribute name="unit" type="xs:string" default="um"/>
+  </xs:complexType>
+
+</xs:schema>
