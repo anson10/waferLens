@@ -1,6 +1,0 @@
-project_name,created_by,description,num_components,num_test_points,layer_count
-Alpha_Mask_Test,Anson Antony,Test layout for alpha photomask batch,12,6,3
-Beta_Integration,Anson Antony,Beta run for integration verification,8,4,2
-Gamma_HiRes,Anson Antony,High resolution gamma mask layout,20,10,4
-Delta_Baseline,Anson Antony,Baseline delta mask for comparison,5,3,2
-Epsilon_Stress,Anson Antony,Stress test layout with edge cases,15,8,3

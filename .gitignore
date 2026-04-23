@@ -1,1 +1,10 @@
 __pycache__/
+*.db
+.env
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+data/*
+!data/.gitkeep
+.DS_Store
