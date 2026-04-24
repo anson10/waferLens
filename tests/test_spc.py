@@ -1,9 +1,12 @@
 """Tests for analysis/spc.py — each Western Electric rule, pass and no-flag cases."""
 
+from datetime import datetime
+
 import numpy as np
 import pytest
 
-from analysis.spc import rule1, rule2, rule3, rule4, check_series
+from analysis.spc import rule1, rule2, rule3, rule4, check_series, run_spc
+from db.models import Lot, Measurement, ProcessStep, SpcFlag, Wafer
 
 
 MEAN = 100.0
@@ -107,3 +110,48 @@ def test_check_series_zero_std_returns_empty():
     ids = list(range(5))
     values = [MEAN] * 5
     assert check_series(ids, values) == []
+
+
+# --- run_spc integration ---
+
+def test_spc_main_runs(db_session):
+    """main() clears spc_flags then re-runs SPC — smoke test via mock session."""
+    from unittest.mock import patch
+    from contextlib import contextmanager
+    from analysis.spc import main
+
+    @contextmanager
+    def mock_session():
+        yield db_session
+
+    with patch("db.session.get_session", mock_session):
+        main()  # should not raise; DB is empty so 0 flags written
+
+    assert db_session.query(SpcFlag).count() == 0
+
+
+def test_run_spc_writes_flags(db_session):
+    """run_spc groups measurements by (step, parameter) and persists SpcFlag rows."""
+    db_session.add(Lot(lot_id=1, product="X1", technology_node="28nm",
+                       start_date=datetime(2025, 1, 1).date(), status="complete"))
+    db_session.add(Wafer(wafer_id=1, lot_id=1, wafer_number=1, status="complete"))
+    db_session.add(ProcessStep(step_id=1, step_name="etch", tool_id="ETCH-01",
+                               layer="M1", sequence_order=1))
+    # 9 values above mean + 1 below → triggers rule2 (8 consecutive same side)
+    base = datetime(2025, 1, 1, 8, 0)
+    for i in range(9):
+        db_session.add(Measurement(
+            measurement_id=i + 1, wafer_id=1, step_id=1,
+            parameter="cd_nm", value=105.0,
+            unit="nm", timestamp=base.replace(hour=8 + i),
+        ))
+    db_session.add(Measurement(
+        measurement_id=10, wafer_id=1, step_id=1,
+        parameter="cd_nm", value=95.0,
+        unit="nm", timestamp=base.replace(hour=18),
+    ))
+    db_session.commit()
+
+    n = run_spc(db_session)
+    assert n > 0
+    assert db_session.query(SpcFlag).count() == n

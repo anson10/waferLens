@@ -8,12 +8,14 @@ from db.models import Lot, Measurement, ProcessStep, SpcFlag, Wafer, YieldRecord
 from analysis.queries import (
     low_yield_wafers,
     measurements_for_step,
+    process_step_stats,
     spc_flag_counts,
+    spc_flags_detail,
     yield_by_lot,
     yield_by_node,
     yield_by_product,
 )
-from analysis.yield_analysis import defect_density_trend, low_yield_summary
+from analysis.yield_analysis import defect_density_trend, low_yield_summary, yield_summary
 
 
 @pytest.fixture
@@ -168,3 +170,44 @@ def test_low_yield_summary_returns_dataframe(populated):
     df = low_yield_summary(populated, threshold=85.0)
     assert len(df) == 2
     assert "yield_pct" in df.columns
+
+
+def test_defect_density_trend_empty(db_session):
+    df = defect_density_trend(db_session)
+    assert df.empty
+
+
+def test_yield_summary_keys(populated):
+    summary = yield_summary(populated)
+    assert set(summary.keys()) == {"by_lot", "by_product", "by_node"}
+    assert len(summary["by_lot"]) == 2
+
+
+# --- spc_flags_detail ---
+
+def test_spc_flags_detail_count(populated):
+    rows = spc_flags_detail(populated)
+    assert len(rows) == 3
+
+
+def test_spc_flags_detail_columns(populated):
+    rows = spc_flags_detail(populated)
+    assert "rule_violated" in rows[0]
+    assert "step_name" in rows[0]
+    assert "product" in rows[0]
+    assert rows[0]["step_name"] == "lithography"
+
+
+# --- process_step_stats ---
+
+def test_process_step_stats_returns_rows(populated):
+    rows = process_step_stats(populated)
+    assert len(rows) > 0
+
+
+def test_process_step_stats_columns(populated):
+    rows = process_step_stats(populated)
+    row = rows[0]
+    assert "mean_value" in row
+    assert "measurement_count" in row
+    assert row["step_name"] == "lithography"
