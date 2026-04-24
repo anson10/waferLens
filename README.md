@@ -114,5 +114,4 @@ preserved on the `schemaforge-archive` branch.
 
 *Engineered with caffeine and an unreasonable fondness.*
 *Co-piloted by **Claude Pro**.*
-
 </div>
