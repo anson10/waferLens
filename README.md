@@ -16,10 +16,12 @@ and semiconductor domain knowledge (yield, defect density, Western Electric rule
 
 ## CV Framing
 
-> Simulated and analysed semiconductor fab process data across 500+ wafers and 20 lots.
-> Built a normalised SQL schema modelling wafer lots, process steps, measurements, and SPC flags.
-> Implemented Western Electric SPC rules 1–4, yield aggregations, and defect density trends
-> exposed via a 5-page Streamlit dashboard. 52 pytest tests, 90% coverage.
+- Simulated semiconductor fab process data across **500+ wafers and 20 lots** (7,030 rows across 5 normalised tables)
+- Designed SQL schema modelling lot → wafer → measurement → SPC flag relationships using SQLAlchemy + Alembic
+- Implemented **Western Electric SPC rules 1–4** in vectorised NumPy, detecting 497 control violations
+- Built yield aggregations and defect density queries in **raw SQL** with full business logic commentary
+- Delivered a **5-page Streamlit dashboard** covering yield analysis, control charts, process distributions, and defect trends
+- Achieved **90% test coverage** across 52 pytest tests using in-memory SQLite fixtures
 
 ## Dashboard
 
