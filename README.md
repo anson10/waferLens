@@ -112,7 +112,7 @@ preserved on the `schemaforge-archive` branch.
 
 <div align="center">
 
-*Engineered with caffeine, curiosity, and an unreasonable fondness for control charts.*
-*Co-piloted by **Claude Pro** — the AI that knows what a 3σ violation looks like and still won't tell you it's fine.*
+*Engineered with caffeine and an unreasonable fondness.*
+*Co-piloted by **Claude Pro**.*
 
 </div>
