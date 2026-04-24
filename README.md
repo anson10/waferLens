@@ -7,18 +7,17 @@ semiconductor domain knowledge (SPC, yield, defect density).
 
 ## Status
 
-Scaffold only (Step 1 of 9). Directory skeleton and dependencies are in place;
-domain logic lands in later feature pushes.
+Steps 1–5 complete. Analysis query layer and dashboard in progress.
 
 - [x] Step 1 — Project scaffold, `db/session.py`, dependencies
-- [ ] Step 2 — SQLAlchemy models + Alembic migrations
-- [ ] Step 3 — Simulation layer (wafers, process steps, yield)
-- [ ] Step 4 — CSV → DB ingest
-- [ ] Step 5 — SPC engine (Western Electric / Nelson rules)
+- [x] Step 2 — SQLAlchemy models + Alembic migrations
+- [x] Step 3 — Simulation layer (wafers, process steps, yield)
+- [x] Step 4 — CSV → DB ingest (7,030 rows across 5 tables)
+- [x] Step 5 — SPC engine — Western Electric rules 1–4 (497 flags)
 - [ ] Step 6 — Raw-SQL queries + yield aggregations
 - [ ] Step 7 — Streamlit dashboard (Overview, Yield, SPC Monitor)
-- [ ] Step 8 — Additional dashboard pages
-- [ ] Step 9 — README, screenshots, CV framing
+- [ ] Step 8 — Additional dashboard pages (Process Explorer, Defect Trends)
+- [ ] Step 9 — Tests, coverage report, README polish, CV framing
 
 ## Setup
 
@@ -29,7 +28,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-## How to run (target, not yet wired)
+## How to run
 
 ```bash
 # Init DB + run migrations                    (Step 2)
