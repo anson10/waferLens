@@ -40,18 +40,6 @@ and semiconductor domain knowledge (yield, defect density, Western Electric rule
 ### Defect Trends
 ![Defect Trends](images/defect_trends.png)
 
-## Steps completed
-
-- [x] Step 1 — Project scaffold, `db/session.py`, dependencies
-- [x] Step 2 — SQLAlchemy models + Alembic migrations
-- [x] Step 3 — Simulation layer (wafers, process steps, yield)
-- [x] Step 4 — CSV → DB ingest (7,030 rows across 5 tables)
-- [x] Step 5 — SPC engine — Western Electric rules 1–4 (497 flags)
-- [x] Step 6 — Raw-SQL query layer + yield aggregations (8 query functions, 15 tests)
-- [x] Step 7 — Streamlit dashboard (Overview, Yield Analysis)
-- [x] Step 8 — Dashboard pages: SPC Monitor, Process Explorer, Defect Trends
-- [x] Step 9 — 52 tests, 90% coverage, README polish
-
 ## Setup
 
 ```bash
