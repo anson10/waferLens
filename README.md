@@ -1,5 +1,7 @@
 # WaferLens
 
+![coverage](https://img.shields.io/badge/coverage-90%25-brightgreen) ![tests](https://img.shields.io/badge/tests-52%20passed-brightgreen) ![python](https://img.shields.io/badge/python-3.11%2B-blue)
+
 Semiconductor process data analysis pipeline. Simulates realistic fab wafer
 data, ingests it into a SQL database, and exposes analytical dashboards via
 Streamlit. Demonstrates SQL schema design, data engineering, SPC algorithms,
@@ -18,6 +20,23 @@ and semiconductor domain knowledge (yield, defect density, Western Electric rule
 > Built a normalised SQL schema modelling wafer lots, process steps, measurements, and SPC flags.
 > Implemented Western Electric SPC rules 1–4, yield aggregations, and defect density trends
 > exposed via a 5-page Streamlit dashboard. 52 pytest tests, 90% coverage.
+
+## Dashboard
+
+### Overview
+![Overview](images/overview.png)
+
+### Yield Analysis
+![Yield Analysis](images/yield_analysis.png)
+
+### SPC Monitor
+![SPC Monitor](images/SPC_monitor.png)
+
+### Process Explorer
+![Process Explorer](images/process_explorer.png)
+
+### Defect Trends
+![Defect Trends](images/defect_trends.png)
 
 ## Steps completed
 
@@ -86,3 +105,12 @@ tests/          pytest suite — in-memory SQLite, 52 tests
 
 The previous `schemaforge` project (XML layout generator/validator) is
 preserved on the `schemaforge-archive` branch.
+
+---
+
+<div align="center">
+
+*Engineered with caffeine, curiosity, and an unreasonable fondness for control charts.*
+*Co-piloted by **Claude Pro** — the AI that knows what a 3σ violation looks like and still won't tell you it's fine.*
+
+</div>
