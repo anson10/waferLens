@@ -7,7 +7,7 @@ semiconductor domain knowledge (SPC, yield, defect density).
 
 ## Status
 
-Steps 1–6 complete. Dashboard in progress.
+Steps 1–7 complete. Dashboard pages 3–5 and tests in progress.
 
 - [x] Step 1 — Project scaffold, `db/session.py`, dependencies
 - [x] Step 2 — SQLAlchemy models + Alembic migrations
@@ -15,7 +15,7 @@ Steps 1–6 complete. Dashboard in progress.
 - [x] Step 4 — CSV → DB ingest (7,030 rows across 5 tables)
 - [x] Step 5 — SPC engine — Western Electric rules 1–4 (497 flags)
 - [x] Step 6 — Raw-SQL queries + yield aggregations (6 query functions, 15 tests)
-- [ ] Step 7 — Streamlit dashboard (Overview, Yield, SPC Monitor)
+- [x] Step 7 — Streamlit dashboard (Overview, Yield Analysis)
 - [ ] Step 8 — Additional dashboard pages (Process Explorer, Defect Trends)
 - [ ] Step 9 — Tests, coverage report, README polish, CV framing
 
