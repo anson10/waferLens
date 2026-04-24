@@ -113,6 +113,60 @@ def measurements_for_step(
     return [dict(r) for r in rows]
 
 
+def spc_flags_detail(session: Session) -> list[dict]:
+    """SPC flags joined with measurement and step context — used for flag history table."""
+    rows = session.execute(
+        text(
+            """
+            SELECT
+                sf.flag_id,
+                sf.rule_violated,
+                sf.flagged_at,
+                m.measurement_id,
+                m.parameter,
+                m.value,
+                m.timestamp  AS measured_at,
+                ps.step_name,
+                ps.tool_id,
+                w.wafer_id,
+                l.lot_id,
+                l.product
+            FROM spc_flags sf
+            JOIN measurements  m  ON m.measurement_id = sf.measurement_id
+            JOIN process_steps ps ON ps.step_id        = m.step_id
+            JOIN wafers        w  ON w.wafer_id         = m.wafer_id
+            JOIN lots          l  ON l.lot_id            = w.lot_id
+            ORDER BY sf.flagged_at DESC
+            """
+        )
+    ).mappings().all()
+    return [dict(r) for r in rows]
+
+
+def process_step_stats(session: Session) -> list[dict]:
+    """Mean, std, and count per (step, parameter) — used for Process Explorer."""
+    rows = session.execute(
+        text(
+            """
+            SELECT
+                ps.step_id,
+                ps.step_name,
+                ps.tool_id,
+                ps.layer,
+                m.parameter,
+                COUNT(*)                         AS measurement_count,
+                ROUND(AVG(m.value), 4)           AS mean_value,
+                ROUND(AVG(m.value * m.value) - AVG(m.value) * AVG(m.value), 6) AS variance
+            FROM measurements m
+            JOIN process_steps ps ON ps.step_id = m.step_id
+            GROUP BY ps.step_id, ps.step_name, ps.tool_id, ps.layer, m.parameter
+            ORDER BY ps.sequence_order, m.parameter
+            """
+        )
+    ).mappings().all()
+    return [dict(r) for r in rows]
+
+
 def low_yield_wafers(session: Session, threshold: float = 80.0) -> list[dict]:
     """Wafers below a yield threshold, joined with lot context."""
     rows = session.execute(
