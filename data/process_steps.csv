@@ -1,0 +1,11 @@
+step_id,step_name,tool_id,layer,sequence_order
+1,pre_clean,CLEAN-01,M1,1
+2,coat,COAT-01,M1,2
+3,lithography,LITHO-01,M1,3
+4,develop,DEV-01,M1,4
+5,etch,ETCH-02,M1,5
+6,strip,STRIP-01,M1,6
+7,cvd,CVD-03,M2,7
+8,cmp,CMP-02,M2,8
+9,metrology,METR-01,M2,9
+10,anneal,ANNEAL-01,M2,10

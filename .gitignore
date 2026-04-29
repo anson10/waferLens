@@ -5,6 +5,5 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
-data/*
-!data/.gitkeep
+data/*.db
 .DS_Store
