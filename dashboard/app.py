@@ -1,5 +1,10 @@
 """Streamlit entry point — sidebar navigation across all dashboard pages."""
 
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import streamlit as st
 
 st.set_page_config(page_title="WaferLens", layout="wide")
