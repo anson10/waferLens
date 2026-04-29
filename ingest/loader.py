@@ -17,7 +17,7 @@ from sqlalchemy import text
 from db.models import Lot, Measurement, ProcessStep, Wafer, YieldRecord
 from db.session import get_session
 
-DATA_DIR = Path("data")
+DATA_DIR = Path(__file__).parent.parent / "data"
 
 
 def _clear_tables(session) -> None:
