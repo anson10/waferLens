@@ -92,8 +92,24 @@ def render():
     st.plotly_chart(fig, use_container_width=True)
 
     # --- Flag history table ---
-    st.subheader("Flag History (this step)")
+    RULE_LABELS = {
+        "rule1_3sigma":       "Rule 1 — 1 point beyond 3σ",
+        "rule2_8consec":      "Rule 2 — 8 consecutive same side of mean",
+        "rule3_6trend":       "Rule 3 — 6-point increasing / decreasing trend",
+        "rule4_2of3_2sigma":  "Rule 4 — 2 of 3 consecutive points beyond 2σ",
+    }
+
+    st.subheader(f"Flag History — {parameter}")
     step_flag_table = step_flags[
-        ["flag_id", "rule_violated", "parameter", "value", "wafer_id", "lot_id", "product", "measured_at"]
-    ].reset_index(drop=True)
+        step_flags["parameter"] == parameter
+    ][
+        ["flag_id", "rule_violated", "value", "wafer_id", "lot_id", "product", "measured_at"]
+    ].copy().reset_index(drop=True)
+
+    step_flag_table.insert(
+        step_flag_table.columns.get_loc("rule_violated") + 1,
+        "rule_description",
+        step_flag_table["rule_violated"].map(RULE_LABELS).fillna(step_flag_table["rule_violated"]),
+    )
+
     st.dataframe(step_flag_table, use_container_width=True, hide_index=True)
