@@ -57,6 +57,20 @@ keys, COPYs, and re-adds them in the same transaction; `ADD CONSTRAINT` validate
 in one set-based join (40 s for 24M rows on stress). On dev this took the load from 38 s to
 9.7 s, and formatting timestamps with numpy instead of pandas brought it to 5.8 s.
 
+## Transformations (dbt)
+
+`make dbt` builds 40 models and runs 85 tests on demo in about 3 minutes; almost all of it is
+`fct_measurements` (3.07M rows):
+
+| Build of `fct_measurements` | Seconds |
+|---|---|
+| First build (`CREATE TABLE AS`) | 48 |
+| Incremental rerun, no new data (3-day look-back, 53k rows reprocessed) | 13 |
+| Incremental run right after a full reload (pre-hook deletes old load, delete+insert of 3.07M rows) | 131 |
+
+After a full reload, `dbt build --full-refresh -s fct_measurements` is the faster path; the
+Dagster job (phase 2b) uses it when the load asset changed.
+
 ## Key queries
 
 `make explain` runs the workload queries in `sql/queries/` under

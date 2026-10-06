@@ -18,6 +18,10 @@ dependencies = [
 ]
 
 [dependency-groups]
+dbt = [
+    "dbt-core>=1.9",
+    "dbt-postgres>=1.9",
+]
 dev = [
     "ruff>=0.8",
     "pyright>=1.1.390",
@@ -66,3 +70,6 @@ markers = [
 [tool.coverage.run]
 source = ["waferlens"]
 branch = true
+
+[tool.uv]
+default-groups = ["dev", "dbt"]

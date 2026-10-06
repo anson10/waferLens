@@ -1,0 +1,299 @@
+version: 2
+
+models:
+  # ------------------------------------------------------------------ facts
+  - name: fct_measurements
+    description: >
+      Sensor readings and metrology wafer means at one grain (wafer x route step x pass x
+      parameter), each tied to the chamber, recipe and lot of that step. Incremental.
+    columns:
+      - name: measurement_key
+        data_tests: [unique, not_null]
+      - name: source
+        data_tests:
+          - accepted_values:
+              arguments: {values: [sensor, metrology]}
+      - name: date_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_date'), field: date_key}
+      - name: wafer_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_wafer'), field: wafer_id}
+      - name: lot_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_lot'), field: lot_id}
+      - name: route_step_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_route_step'), field: route_step_id}
+      - name: parameter_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_parameter'), field: parameter_id}
+      - name: chamber_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_chamber'), field: chamber_id}
+      - name: recipe_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_recipe'), field: recipe_id}
+      - name: n_sites
+        description: 1 for sensors, sites averaged for metrology.
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1, max_value: 9}
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(source = 'sensor') = (target is null)"
+          config:
+            description: Only metrology rows carry spec limits.
+
+  - name: fct_wafer_yield
+    description: One row per sorted wafer with dies tested, good dies, yield and cycle time.
+    columns:
+      - name: wafer_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_wafer'), field: wafer_id}
+      - name: lot_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_lot'), field: lot_id}
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_product'), field: product_id}
+      - name: tested_date_key
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_date'), field: date_key}
+      - name: yield_pct
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 100}
+      - name: cycle_time_days
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, inclusive: false}
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "good_dies <= tested_dies"}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "finished_at <= tested_at"}
+
+  - name: fct_wafer_steps
+    description: One row per wafer x route step x pass with chamber, recipe, queue and process time.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments: {combination_of_columns: [wafer_id, route_step_id, pass_no]}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "is_rework = (pass_no > 1)"}
+    columns:
+      - name: wafer_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_wafer'), field: wafer_id}
+      - name: chamber_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_chamber'), field: chamber_id}
+      - name: recipe_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_recipe'), field: recipe_id}
+      - name: route_step_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_route_step'), field: route_step_id}
+      - name: date_key
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_date'), field: date_key}
+      - name: process_minutes
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, inclusive: false}
+
+  - name: fct_die_bins
+    description: One row per sorted wafer x bin, with the bin's share of the wafer.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments: {combination_of_columns: [wafer_id, bin_code]}
+    columns:
+      - name: wafer_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('fct_wafer_yield'), field: wafer_id}
+      - name: bin_code
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_sort_bin'), field: bin_code}
+      - name: share_of_wafer
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1}
+
+  # ------------------------------------------------------------------ dimensions
+  - name: dim_date
+    description: Calendar days (UTC) covering the data; Power BI's date table.
+    columns:
+      - name: date_key
+        data_tests: [unique, not_null]
+      - name: calendar_date
+        data_tests: [unique, not_null]
+
+  - name: dim_node
+    description: Technology nodes (28nm, 65nm, 130nm).
+    columns:
+      - name: node_id
+        data_tests: [unique, not_null]
+
+  - name: dim_product
+    description: Products with their node flattened in (die area, map size, gross dies).
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: node_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_node'), field: node_id}
+
+  - name: dim_route_step
+    description: Steps of each product's route, with the tool type and whether metrology follows.
+    columns:
+      - name: route_step_id
+        data_tests: [unique, not_null]
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_product'), field: product_id}
+
+  - name: dim_tool
+    description: Tools with their type and chamber count.
+    columns:
+      - name: tool_id
+        data_tests: [unique, not_null]
+      - name: chamber_count
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1}
+
+  - name: dim_chamber
+    description: Chambers with tool and tool type flattened in; labelled like ETCH-02/B.
+    columns:
+      - name: chamber_id
+        data_tests: [unique, not_null]
+      - name: chamber_label
+        data_tests: [unique, not_null]
+      - name: tool_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_tool'), field: tool_id}
+
+  - name: dim_recipe
+    description: Recipe versions with the window each was in force (lead over versions).
+    columns:
+      - name: recipe_id
+        data_tests: [unique, not_null]
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "effective_to_at is null or effective_to_at > effective_from_at"}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "is_current = (effective_to_at is null)"}
+
+  - name: dim_parameter
+    description: Sensors and metrology parameters with units.
+    columns:
+      - name: parameter_id
+        data_tests: [unique, not_null]
+      - name: parameter_kind
+        data_tests:
+          - accepted_values:
+              arguments: {values: [sensor, metrology]}
+
+  - name: dim_sort_bin
+    description: Wafer sort bins; bin 1 is the only pass bin.
+    columns:
+      - name: bin_code
+        data_tests: [unique, not_null]
+
+  - name: dim_lot
+    description: Lots with split lineage (recursive CTE up parent_lot_id).
+    columns:
+      - name: lot_id
+        data_tests: [unique, not_null]
+      - name: root_lot_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_lot'), field: lot_id}
+      - name: lot_status
+        data_tests:
+          - accepted_values:
+              arguments: {values: [active, hold, complete, scrapped]}
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "(split_depth = 0) = (parent_lot_id is null)"}
+
+  - name: dim_wafer
+    description: Wafers with their current lot, product, slot and status.
+    columns:
+      - name: wafer_id
+        data_tests: [unique, not_null]
+      - name: lot_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_lot'), field: lot_id}
+      - name: wafer_status
+        data_tests:
+          - accepted_values:
+              arguments: {values: [active, complete, scrapped]}
+
+unit_tests:
+  - name: dim_recipe_versions_close_when_the_next_starts
+    description: effective_to is the next version's start on the same step; the last is open.
+    model: dim_recipe
+    given:
+      - input: ref('stg_recipes')
+        rows:
+          - {recipe_id: 1, route_step_id: 7, recipe_name: ETCH_A, recipe_version: 1, effective_from_at: "2026-01-01 00:00:00+00"}
+          - {recipe_id: 9, route_step_id: 7, recipe_name: ETCH_A, recipe_version: 2, effective_from_at: "2026-02-01 00:00:00+00"}
+          - {recipe_id: 12, route_step_id: 7, recipe_name: ETCH_A, recipe_version: 3, effective_from_at: "2026-03-01 00:00:00+00"}
+          - {recipe_id: 2, route_step_id: 8, recipe_name: CMP_A, recipe_version: 1, effective_from_at: "2026-01-01 00:00:00+00"}
+    expect:
+      rows:
+        - {recipe_id: 1, effective_to_at: "2026-02-01 00:00:00+00", is_current: false}
+        - {recipe_id: 9, effective_to_at: "2026-03-01 00:00:00+00", is_current: false}
+        - {recipe_id: 12, effective_to_at: null, is_current: true}
+        - {recipe_id: 2, effective_to_at: null, is_current: true}
+
+  - name: dim_lot_walks_split_lineage_to_the_root
+    description: A child of a child reports under the original lot, two splits deep.
+    model: dim_lot
+    given:
+      - input: ref('stg_lots')
+        rows:
+          - {lot_id: 1, lot_code: L1.1, parent_lot_id: null, product_id: 1, priority: 3, started_at: "2026-01-01 00:00:00+00", lot_status: active}
+          - {lot_id: 2, lot_code: L1.2, parent_lot_id: 1, product_id: 1, priority: 3, started_at: "2026-01-02 00:00:00+00", lot_status: active}
+          - {lot_id: 3, lot_code: L1.3, parent_lot_id: 2, product_id: 1, priority: 3, started_at: "2026-01-03 00:00:00+00", lot_status: hold}
+          - {lot_id: 4, lot_code: L4.1, parent_lot_id: null, product_id: 2, priority: 1, started_at: "2026-01-01 00:00:00+00", lot_status: complete}
+      - input: ref('stg_wafers')
+        rows:
+          - {wafer_id: 10, current_lot_id: 3}
+          - {wafer_id: 11, current_lot_id: 3}
+    expect:
+      rows:
+        - {lot_id: 1, root_lot_id: 1, split_depth: 0, wafer_count: 0}
+        - {lot_id: 2, root_lot_id: 1, split_depth: 1, wafer_count: 0}
+        - {lot_id: 3, root_lot_id: 1, split_depth: 2, wafer_count: 2}
+        - {lot_id: 4, root_lot_id: 4, split_depth: 0, wafer_count: 0}

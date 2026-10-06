@@ -1,0 +1,13 @@
+# Same settings as the Python side: values come from .env (exported by make) or defaults.
+waferlens:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'localhost') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
+      user: "{{ env_var('POSTGRES_USER', 'waferlens') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'waferlens') }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'waferlens') }}"
+      schema: analytics
+      threads: 4

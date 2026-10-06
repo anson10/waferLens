@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: int_wafer_route_history
+    description: Genealogy with step, chamber, tool and recipe context, queue time and final-pass flag.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments: {combination_of_columns: [wafer_id, route_step_id, pass_no]}
+    columns:
+      - name: queue_hours
+        description: Hours since the wafer left its previous step; null on its first step.
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0}
+
+  - name: int_measurement_with_context
+    description: Sensor readings and metrology wafer means, unified, with spec limits.
+
+unit_tests:
+  - name: route_history_queue_time_and_final_pass
+    description: >
+      Queue time is measured from the previous step's track-out, across a reworked step;
+      only the last pass of a step is the final pass.
+    model: int_wafer_route_history
+    given:
+      - input: ref('stg_wafer_step_history')
+        rows:
+          - {wafer_id: 1, route_step_id: 1, pass_no: 1, lot_id: 1, chamber_id: 1, recipe_id: 1, track_in_at: "2026-01-01 00:00:00+00", track_out_at: "2026-01-01 01:00:00+00"}
+          - {wafer_id: 1, route_step_id: 2, pass_no: 1, lot_id: 1, chamber_id: 2, recipe_id: 2, track_in_at: "2026-01-01 03:00:00+00", track_out_at: "2026-01-01 04:00:00+00"}
+          - {wafer_id: 1, route_step_id: 2, pass_no: 2, lot_id: 1, chamber_id: 2, recipe_id: 2, track_in_at: "2026-01-01 06:00:00+00", track_out_at: "2026-01-01 07:00:00+00"}
+      - input: ref('stg_route_steps')
+        rows:
+          - {route_step_id: 1, sequence_no: 1, step_name: clean, layer: STI, tool_type: clean}
+          - {route_step_id: 2, sequence_no: 2, step_name: litho, layer: STI, tool_type: litho}
+      - input: ref('stg_chambers')
+        rows:
+          - {chamber_id: 1, tool_id: CLEAN-01, chamber_label: CLEAN-01/A}
+          - {chamber_id: 2, tool_id: LITHO-01, chamber_label: LITHO-01/A}
+      - input: ref('stg_tools')
+        rows:
+          - {tool_id: CLEAN-01, tool_type: clean}
+          - {tool_id: LITHO-01, tool_type: litho}
+      - input: ref('stg_recipes')
+        rows:
+          - {recipe_id: 1, recipe_version: 1}
+          - {recipe_id: 2, recipe_version: 1}
+    expect:
+      rows:
+        - {route_step_id: 1, pass_no: 1, queue_hours: null, is_final_pass: true}
+        - {route_step_id: 2, pass_no: 1, queue_hours: 2.0, is_final_pass: false}
+        - {route_step_id: 2, pass_no: 2, queue_hours: 2.0, is_final_pass: true}
