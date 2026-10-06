@@ -1,0 +1,442 @@
+"""ORM models for the fab data model.
+
+Three groups of tables:
+
+* Master data: technology nodes, products, routes, tools/chambers, recipes, parameters, bins.
+* Production: lots, wafers, lot events and the genealogy table ``wafer_step_history``, which
+  records the exact chamber and recipe every wafer saw at every step. Root-cause analysis
+  (phase 3) depends on this table.
+* Results: tool sensor readings and metrology (TimescaleDB hypertables), wafer maps and bin
+  counts from wafer sort, and the simulator's ground-truth excursion log.
+
+The migration in ``migrations/versions`` is the source of truth for the database; these models
+must stay in sync with it (``tests/integration/test_schema.py`` enforces that with
+``alembic check``). Things the ORM can't express, such as hypertables and the ``wafer_yield``
+view, live only in the migration.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy import (
+    CheckConstraint,
+    Double,
+    ForeignKey,
+    Index,
+    Integer,
+    MetaData,
+    Numeric,
+    SmallInteger,
+    Text,
+    UniqueConstraint,
+    text,
+)
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TIMESTAMP
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+NAMING_CONVENTION = {
+    "ix": "ix_%(table_name)s_%(column_0_N_name)s",
+    "uq": "uq_%(table_name)s_%(column_0_N_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+
+TimestampTZ = TIMESTAMP(timezone=True)
+
+LOT_STATUSES = ("active", "hold", "complete", "scrapped")
+WAFER_STATUSES = ("active", "complete", "scrapped")
+LOT_EVENT_TYPES = ("start", "split", "merge", "hold", "release", "complete", "scrap")
+PARAMETER_KINDS = ("sensor", "metrology")
+EXCURSION_TYPES = ("step_shift", "drift", "chamber_offset", "recipe_change", "spatial_pattern")
+SPATIAL_PATTERNS = (
+    "center",
+    "donut",
+    "edge_loc",
+    "edge_ring",
+    "loc",
+    "near_full",
+    "random",
+    "scratch",
+)
+
+
+def _in(column: str, values: tuple[str, ...]) -> str:
+    quoted = ", ".join(f"'{v}'" for v in values)
+    return f"{column} IN ({quoted})"
+
+
+class Base(DeclarativeBase):
+    metadata = MetaData(naming_convention=NAMING_CONVENTION)
+
+
+# --------------------------------------------------------------------------- master data
+
+
+class TechnologyNode(Base):
+    __tablename__ = "technology_nodes"
+
+    node_id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    name: Mapped[str] = mapped_column(Text, unique=True)
+    feature_size_nm: Mapped[int] = mapped_column(SmallInteger)
+
+    __table_args__ = (CheckConstraint("feature_size_nm > 0", name="feature_size_positive"),)
+
+
+class Product(Base):
+    __tablename__ = "products"
+
+    product_id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    code: Mapped[str] = mapped_column(Text, unique=True)
+    node_id: Mapped[int] = mapped_column(ForeignKey("technology_nodes.node_id"), index=True)
+    die_area_cm2: Mapped[Decimal] = mapped_column(Numeric(6, 4))
+    # Wafer-map grid. gross_dies counts the cells that are on the wafer.
+    map_rows: Mapped[int] = mapped_column(SmallInteger)
+    map_cols: Mapped[int] = mapped_column(SmallInteger)
+    gross_dies: Mapped[int] = mapped_column(Integer)
+
+    node: Mapped[TechnologyNode] = relationship()
+
+    __table_args__ = (
+        CheckConstraint("die_area_cm2 > 0", name="die_area_positive"),
+        CheckConstraint("map_rows > 0 AND map_cols > 0", name="map_size_positive"),
+        CheckConstraint(
+            "gross_dies > 0 AND gross_dies <= map_rows * map_cols", name="gross_dies_fit_map"
+        ),
+    )
+
+
+class Route(Base):
+    __tablename__ = "routes"
+
+    route_id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.product_id"))
+    version: Mapped[int] = mapped_column(SmallInteger)
+
+    product: Mapped[Product] = relationship()
+    steps: Mapped[list[RouteStep]] = relationship(
+        back_populates="route", order_by="RouteStep.sequence_no"
+    )
+
+    __table_args__ = (UniqueConstraint("product_id", "version"),)
+
+
+class ToolType(Base):
+    __tablename__ = "tool_types"
+
+    tool_type: Mapped[str] = mapped_column(Text, primary_key=True)
+    description: Mapped[str] = mapped_column(Text)
+
+
+class RouteStep(Base):
+    __tablename__ = "route_steps"
+
+    route_step_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    route_id: Mapped[int] = mapped_column(ForeignKey("routes.route_id"))
+    sequence_no: Mapped[int] = mapped_column(SmallInteger)
+    step_name: Mapped[str] = mapped_column(Text)
+    layer: Mapped[str] = mapped_column(Text)
+    tool_type: Mapped[str] = mapped_column(ForeignKey("tool_types.tool_type"), index=True)
+
+    route: Mapped[Route] = relationship(back_populates="steps")
+
+    __table_args__ = (
+        UniqueConstraint("route_id", "sequence_no"),
+        CheckConstraint("sequence_no > 0", name="sequence_positive"),
+    )
+
+
+class Tool(Base):
+    __tablename__ = "tools"
+
+    tool_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    tool_type: Mapped[str] = mapped_column(ForeignKey("tool_types.tool_type"), index=True)
+
+    chambers: Mapped[list[Chamber]] = relationship(back_populates="tool")
+
+
+class Chamber(Base):
+    __tablename__ = "chambers"
+
+    chamber_id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    tool_id: Mapped[str] = mapped_column(ForeignKey("tools.tool_id"))
+    chamber_code: Mapped[str] = mapped_column(Text)
+
+    tool: Mapped[Tool] = relationship(back_populates="chambers")
+
+    __table_args__ = (UniqueConstraint("tool_id", "chamber_code"),)
+
+
+class Recipe(Base):
+    __tablename__ = "recipes"
+
+    recipe_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    route_step_id: Mapped[int] = mapped_column(ForeignKey("route_steps.route_step_id"))
+    name: Mapped[str] = mapped_column(Text)
+    version: Mapped[int] = mapped_column(SmallInteger)
+    effective_from: Mapped[datetime] = mapped_column(TimestampTZ)
+
+    __table_args__ = (UniqueConstraint("route_step_id", "version"),)
+
+
+class Parameter(Base):
+    """A tool sensor (e.g. rf_power_w) or a metrology parameter (e.g. cd_nm)."""
+
+    __tablename__ = "parameters"
+
+    parameter_id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    name: Mapped[str] = mapped_column(Text, unique=True)
+    unit: Mapped[str] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(Text)
+
+    __table_args__ = (CheckConstraint(_in("kind", PARAMETER_KINDS), name="kind_valid"),)
+
+
+class MetrologyPlan(Base):
+    """What gets measured after a step, on how many wafers and sites, against which spec."""
+
+    __tablename__ = "metrology_plans"
+
+    route_step_id: Mapped[int] = mapped_column(
+        ForeignKey("route_steps.route_step_id"), primary_key=True
+    )
+    parameter_id: Mapped[int] = mapped_column(
+        ForeignKey("parameters.parameter_id"), primary_key=True
+    )
+    wafers_per_lot: Mapped[int] = mapped_column(SmallInteger)
+    sites_per_wafer: Mapped[int] = mapped_column(SmallInteger)
+    target: Mapped[float] = mapped_column(Double)
+    lsl: Mapped[float] = mapped_column(Double)
+    usl: Mapped[float] = mapped_column(Double)
+
+    __table_args__ = (
+        CheckConstraint("wafers_per_lot BETWEEN 1 AND 25", name="wafers_per_lot_range"),
+        CheckConstraint("sites_per_wafer > 0", name="sites_positive"),
+        CheckConstraint("lsl < target AND target < usl", name="spec_ordered"),
+    )
+
+
+class SortBin(Base):
+    __tablename__ = "sort_bins"
+
+    bin_code: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    name: Mapped[str] = mapped_column(Text, unique=True)
+    is_pass: Mapped[bool]
+
+    __table_args__ = (CheckConstraint("bin_code >= 1", name="bin_code_positive"),)
+
+
+# --------------------------------------------------------------------------- production
+
+
+class SimulationRun(Base):
+    """Provenance: which profile and seed produced the data currently loaded."""
+
+    __tablename__ = "simulation_runs"
+
+    run_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    profile: Mapped[str] = mapped_column(Text)
+    seed: Mapped[int] = mapped_column(Integer)
+    config: Mapped[dict[str, object]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(TimestampTZ, server_default=text("now()"))
+
+
+class Lot(Base):
+    __tablename__ = "lots"
+
+    lot_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    lot_code: Mapped[str] = mapped_column(Text, unique=True)
+    # Set when this lot was split off another lot.
+    parent_lot_id: Mapped[int | None] = mapped_column(ForeignKey("lots.lot_id"), index=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.product_id"), index=True)
+    route_id: Mapped[int] = mapped_column(ForeignKey("routes.route_id"))
+    priority: Mapped[int] = mapped_column(SmallInteger, server_default=text("3"))
+    start_time: Mapped[datetime] = mapped_column(TimestampTZ, index=True)
+    status: Mapped[str] = mapped_column(Text)
+
+    product: Mapped[Product] = relationship()
+    parent: Mapped[Lot | None] = relationship(remote_side=[lot_id])
+    wafers: Mapped[list[Wafer]] = relationship(back_populates="lot")
+
+    __table_args__ = (
+        CheckConstraint(_in("status", LOT_STATUSES), name="status_valid"),
+        CheckConstraint("priority BETWEEN 1 AND 5", name="priority_range"),
+    )
+
+
+class Wafer(Base):
+    __tablename__ = "wafers"
+
+    wafer_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    wafer_code: Mapped[str] = mapped_column(Text, unique=True)
+    # Current lot. Lot membership at the time of each step is in wafer_step_history.
+    lot_id: Mapped[int] = mapped_column(ForeignKey("lots.lot_id"), index=True)
+    slot: Mapped[int] = mapped_column(SmallInteger)
+    status: Mapped[str] = mapped_column(Text)
+
+    lot: Mapped[Lot] = relationship(back_populates="wafers")
+    history: Mapped[list[WaferStepHistory]] = relationship(back_populates="wafer")
+
+    __table_args__ = (
+        CheckConstraint("slot BETWEEN 1 AND 25", name="slot_range"),
+        CheckConstraint(_in("status", WAFER_STATUSES), name="status_valid"),
+    )
+
+
+class LotEvent(Base):
+    __tablename__ = "lot_events"
+
+    event_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    lot_id: Mapped[int] = mapped_column(ForeignKey("lots.lot_id"))
+    event_type: Mapped[str] = mapped_column(Text)
+    event_time: Mapped[datetime] = mapped_column(TimestampTZ)
+    # Split: the child lot. Merge: the lot merged in.
+    related_lot_id: Mapped[int | None] = mapped_column(ForeignKey("lots.lot_id"))
+    note: Mapped[str | None] = mapped_column(Text)
+
+    __table_args__ = (
+        CheckConstraint(_in("event_type", LOT_EVENT_TYPES), name="event_type_valid"),
+        CheckConstraint(
+            "event_type NOT IN ('split', 'merge') OR related_lot_id IS NOT NULL",
+            name="split_merge_has_related_lot",
+        ),
+        Index(None, "lot_id", "event_time"),
+    )
+
+
+class WaferStepHistory(Base):
+    """Genealogy: which chamber, recipe and lot a wafer was in at each step."""
+
+    __tablename__ = "wafer_step_history"
+
+    wafer_id: Mapped[int] = mapped_column(ForeignKey("wafers.wafer_id"), primary_key=True)
+    route_step_id: Mapped[int] = mapped_column(
+        ForeignKey("route_steps.route_step_id"), primary_key=True
+    )
+    # Rework runs a step again; each run is a separate pass.
+    pass_no: Mapped[int] = mapped_column(SmallInteger, primary_key=True, server_default=text("1"))
+    lot_id: Mapped[int] = mapped_column(ForeignKey("lots.lot_id"))
+    chamber_id: Mapped[int] = mapped_column(ForeignKey("chambers.chamber_id"))
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.recipe_id"))
+    track_in: Mapped[datetime] = mapped_column(TimestampTZ)
+    track_out: Mapped[datetime] = mapped_column(TimestampTZ)
+
+    wafer: Mapped[Wafer] = relationship(back_populates="history")
+    chamber: Mapped[Chamber] = relationship()
+    recipe: Mapped[Recipe] = relationship()
+
+    __table_args__ = (
+        CheckConstraint("track_out >= track_in", name="track_out_after_in"),
+        CheckConstraint("pass_no >= 1", name="pass_positive"),
+        # Commonality analysis: "which wafers went through chamber X in this window?"
+        Index(None, "chamber_id", "track_in"),
+        Index(None, "recipe_id"),
+        Index(None, "lot_id"),
+    )
+
+
+# --------------------------------------------------------------------------- results
+
+
+class ToolSensorReading(Base):
+    """Per wafer-step summary of a chamber sensor. TimescaleDB hypertable on ``time``."""
+
+    __tablename__ = "tool_sensor_readings"
+
+    time: Mapped[datetime] = mapped_column(TimestampTZ, primary_key=True)
+    wafer_id: Mapped[int] = mapped_column(ForeignKey("wafers.wafer_id"), primary_key=True)
+    route_step_id: Mapped[int] = mapped_column(
+        ForeignKey("route_steps.route_step_id"), primary_key=True
+    )
+    parameter_id: Mapped[int] = mapped_column(
+        ForeignKey("parameters.parameter_id"), primary_key=True
+    )
+    chamber_id: Mapped[int] = mapped_column(ForeignKey("chambers.chamber_id"))
+    value: Mapped[float] = mapped_column(Double)
+
+    __table_args__ = (Index(None, "chamber_id", "parameter_id", "time"),)
+
+
+class MetrologyMeasurement(Base):
+    """One site of an inline metrology measurement. TimescaleDB hypertable on ``time``."""
+
+    __tablename__ = "metrology_measurements"
+
+    time: Mapped[datetime] = mapped_column(TimestampTZ, primary_key=True)
+    wafer_id: Mapped[int] = mapped_column(ForeignKey("wafers.wafer_id"), primary_key=True)
+    route_step_id: Mapped[int] = mapped_column(
+        ForeignKey("route_steps.route_step_id"), primary_key=True
+    )
+    parameter_id: Mapped[int] = mapped_column(
+        ForeignKey("parameters.parameter_id"), primary_key=True
+    )
+    site_no: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    # Site position in mm from wafer centre.
+    site_x_mm: Mapped[float] = mapped_column(Double)
+    site_y_mm: Mapped[float] = mapped_column(Double)
+    value: Mapped[float] = mapped_column(Double)
+
+    __table_args__ = (
+        CheckConstraint("site_no >= 1", name="site_positive"),
+        CheckConstraint("site_x_mm ^ 2 + site_y_mm ^ 2 <= 150 ^ 2", name="site_on_300mm_wafer"),
+        Index(None, "route_step_id", "parameter_id", "time"),
+    )
+
+
+class WaferMap(Base):
+    """Wafer sort result as a 2D grid of bin codes: 0 = off wafer, 1 = pass, >= 2 = fail bin.
+
+    FabEye's format (0 off, 1 good, 2 fail) is this grid with every fail bin mapped to 2.
+    """
+
+    __tablename__ = "wafer_maps"
+
+    wafer_id: Mapped[int] = mapped_column(ForeignKey("wafers.wafer_id"), primary_key=True)
+    tested_at: Mapped[datetime] = mapped_column(TimestampTZ, index=True)
+    bin_map: Mapped[list[list[int]]] = mapped_column(ARRAY(SmallInteger, dimensions=2))
+
+    __table_args__ = (CheckConstraint("array_ndims(bin_map) = 2", name="bin_map_is_2d"),)
+
+
+class WaferBinSummary(Base):
+    __tablename__ = "wafer_bin_summary"
+
+    wafer_id: Mapped[int] = mapped_column(ForeignKey("wafers.wafer_id"), primary_key=True)
+    bin_code: Mapped[int] = mapped_column(ForeignKey("sort_bins.bin_code"), primary_key=True)
+    die_count: Mapped[int] = mapped_column(Integer)
+
+    __table_args__ = (CheckConstraint("die_count >= 0", name="die_count_non_negative"),)
+
+
+class ExcursionGroundTruth(Base):
+    """Every excursion the simulator injected. Detection is scored against this table."""
+
+    __tablename__ = "excursions_ground_truth"
+
+    excursion_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("simulation_runs.run_id"))
+    excursion_type: Mapped[str] = mapped_column(Text)
+    chamber_id: Mapped[int | None] = mapped_column(ForeignKey("chambers.chamber_id"), index=True)
+    recipe_id: Mapped[int | None] = mapped_column(ForeignKey("recipes.recipe_id"))
+    parameter_id: Mapped[int | None] = mapped_column(ForeignKey("parameters.parameter_id"))
+    spatial_pattern: Mapped[str | None] = mapped_column(Text)
+    start_time: Mapped[datetime] = mapped_column(TimestampTZ)
+    end_time: Mapped[datetime | None] = mapped_column(TimestampTZ)
+    magnitude_sigma: Mapped[float | None] = mapped_column(Double)
+    description: Mapped[str] = mapped_column(Text)
+
+    __table_args__ = (
+        CheckConstraint(_in("excursion_type", EXCURSION_TYPES), name="type_valid"),
+        CheckConstraint(
+            f"spatial_pattern IS NULL OR {_in('spatial_pattern', SPATIAL_PATTERNS)}",
+            name="pattern_valid",
+        ),
+        CheckConstraint("end_time IS NULL OR end_time > start_time", name="end_after_start"),
+        CheckConstraint("chamber_id IS NOT NULL OR recipe_id IS NOT NULL", name="has_root_cause"),
+        CheckConstraint(
+            "excursion_type <> 'spatial_pattern' OR spatial_pattern IS NOT NULL",
+            name="spatial_has_pattern",
+        ),
+    )

@@ -63,20 +63,20 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 
 `demo` row budget: tool sensor data ~3M (every wafer, ~30 steps, ~4 sensors) · inline metrology ~1.6M (5 of 25 wafers per lot, 12 steps, 3 parameters, 9 sites) · genealogy ~750k · 25k wafer maps (one array per wafer) · ~40 injected excursions.
 
-### Schema (Alembic)
-- [ ] `products`, `technology_nodes`, `routes`, `route_steps` (step sequence per product)
-- [ ] `tools`, `chambers` (tool → chambers), `recipes` (versioned)
-- [ ] `lots`, `wafers`, `lot_events` (split / merge / hold / release)
-- [ ] `wafer_step_history` (wafer × step → tool, chamber, recipe, track-in/out time) — the genealogy table
-- [ ] `tool_sensor_readings` (every wafer × step: chamber sensor summaries) as a **TimescaleDB hypertable**
-- [ ] `metrology_measurements` (sampled wafers, multi-site: site_x, site_y) as a **TimescaleDB hypertable**
-- [ ] `metrology_sampling_plans` (which wafers/steps/sites get measured)
-- [ ] `wafer_maps` (one row per wafer: die bin grid as a Postgres array, FabEye-compatible 0/1/2 encoding) — not one row per die
-- [ ] `wafer_bin_summary` (wafer × bin → die count) + `wafer_yield` derived
-- [ ] `excursions_ground_truth` (simulator log: type, tool/chamber, start, end, magnitude)
-- [ ] Constraints: FKs, uniques, check constraints (yield 0–100, pass ≤ total), sensible indexes
-- [ ] ADR-002 "Genealogy model and why chamber-level history matters"
-- [ ] ADR-003 "Wafer maps as arrays, not die rows"
+### Schema (Alembic) — see `docs/schema.md`
+- [x] `products`, `technology_nodes`, `routes`, `route_steps` (step sequence per product)
+- [x] `tools`, `chambers` (tool → chambers), `recipes` (versioned), plus `tool_types`, `parameters`, `sort_bins`
+- [x] `lots`, `wafers`, `lot_events` (split / merge / hold / release)
+- [x] `wafer_step_history` (wafer × step × pass → lot, chamber, recipe, track-in/out time) — the genealogy table
+- [x] `tool_sensor_readings` (every wafer × step: chamber sensor summaries) as a **TimescaleDB hypertable**
+- [x] `metrology_measurements` (sampled wafers, multi-site: site_x, site_y) as a **TimescaleDB hypertable**
+- [x] `metrology_plans` (which steps/parameters get measured, wafers per lot, sites, LSL/target/USL)
+- [x] `wafer_maps` (one row per wafer: die bin grid as a Postgres array, FabEye-compatible 0/1/2 encoding) — not one row per die
+- [x] `wafer_bin_summary` (wafer × bin → die count) + `wafer_yield` view
+- [x] `excursions_ground_truth` (simulator log: type, chamber/recipe, parameter, pattern, start, end, magnitude) + `simulation_runs` provenance
+- [x] Constraints: FKs, uniques, check constraints (statuses, slots, spec order, site on wafer, 2-D maps, excursion root cause), indexes for genealogy and time-series queries — each one tested
+- [ ] ADR-002 "Genealogy model and why chamber-level history matters" — skeleton in `docs/adr/`, **write it yourself**
+- [ ] ADR-003 "Wafer maps as arrays, not die rows" — skeleton in `docs/adr/`, **write it yourself**
 
 ### Simulator
 - [ ] Config-driven (YAML): products, routes, tools/chambers, parameter specs

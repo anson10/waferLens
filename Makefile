@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -25,6 +25,9 @@ logs: ## Follow container logs
 
 psql: ## Open a psql shell in the db container
 	docker compose exec db psql -U $${POSTGRES_USER:-waferlens} -d $${POSTGRES_DB:-waferlens}
+
+migrate: ## Apply Alembic migrations to the dev database
+	uv run alembic upgrade head
 
 lint: ## Ruff lint + format check
 	uv run ruff check .

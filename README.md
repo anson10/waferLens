@@ -10,7 +10,7 @@ against that ground truth, commonality analysis, Grafana for live monitoring and
 yield reporting. Wafer-map pattern classification comes from its sister project,
 [FabEye](https://github.com/anson10/FabEye).
 
-**Status:** rebuilding as v2. Phase 0 (foundation) of [ROADMAP.md](ROADMAP.md).
+**Status:** rebuilding as v2. Phase 1 (data model and simulator) of [ROADMAP.md](ROADMAP.md).
 The original v1 is preserved on the
 [`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
@@ -37,6 +37,7 @@ Needs Docker and [uv](https://docs.astral.sh/uv/).
 cp .env.example .env
 make install   # .venv + deps + git hooks
 make up        # TimescaleDB on :5432, Grafana on :3000
+make migrate   # create the schema (docs/schema.md)
 make check     # lint + typecheck + all tests
 ```
 
