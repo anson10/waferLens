@@ -75,8 +75,8 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 - [x] `wafer_bin_summary` (wafer × bin → die count) + `wafer_yield` view
 - [x] `excursions_ground_truth` (simulator log: type, chamber/recipe, parameter, pattern, start, end, magnitude) + `simulation_runs` provenance
 - [x] Constraints: FKs, uniques, check constraints (statuses, slots, spec order, site on wafer, 2-D maps, excursion root cause), indexes for genealogy and time-series queries — each one tested
-- [ ] ADR-002 "Genealogy model and why chamber-level history matters" — skeleton in `docs/adr/`, **write it yourself**
-- [ ] ADR-003 "Wafer maps as arrays, not die rows" — skeleton in `docs/adr/`, **write it yourself**
+- [x] ADR-002 "Genealogy model and why chamber-level history matters"
+- [x] ADR-003 "Wafer maps as arrays, not die rows"
 
 ### Simulator
 - [ ] Config-driven (YAML): products, routes, tools/chambers, parameter specs
@@ -95,6 +95,7 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 - [ ] pandera (or Pydantic) contracts per table
 - [ ] Bulk load via `COPY` (benchmark vs ORM inserts, note result in README)
 - [ ] Idempotent re-runs (truncate-and-load or upsert)
+- [ ] `wafer_bin_summary` derived from `wafer_maps` by the loader, with a test that they always agree (ADR-003)
 
 ### Real datasets
 - [ ] UCI SECOM downloader + loader → `raw_secom` (591 sensors + pass/fail)

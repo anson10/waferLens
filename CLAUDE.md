@@ -35,7 +35,7 @@ lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/pre
 - Simulator output must log every injected excursion as ground truth, because detection is evaluated against it.
 - Complex aggregations are SQL (dbt models, or commented raw SQL) with comments on the business logic.
 - dbt marts are a star schema (`fct_*`, `dim_*`), since Power BI consumes them in phase 7.
-- Every tool added needs an ADR in `docs/adr/` (the user writes the reasoning; drafts only).
+- Every tool or significant design choice needs an ADR in `docs/adr/`; Claude may write it in full, the user reviews it.
 - Every claim in the README must be reproducible by a `make` target.
 - Don't leave scratch scripts or generated notes in the repo.
 
