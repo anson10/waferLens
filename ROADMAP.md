@@ -41,7 +41,7 @@ Goal: clean repo where every later phase plugs into CI, Docker, and `make`.
 - [x] `Makefile`: `install`, `up`, `down`, `reset`, `psql`, `lint`, `typecheck`, `test`, `check` (`seed` / `dbt` / `demo` land in phases 1 / 2 / 8)
 - [x] GitHub Actions: lint + typecheck + tests (against a TimescaleDB service container) — green on PR #1 and `main`
 - [x] ADR template
-- [ ] ADR-001 "Postgres/TimescaleDB over SQLite/DuckDB" — skeleton in `docs/adr/`, **write the reasoning yourself**
+- [x] ADR-001 "Postgres/TimescaleDB over SQLite/DuckDB"
 - [x] Rewrite `CLAUDE.md` for v2
 - [x] README stub with the one-question pitch + architecture diagram
 
