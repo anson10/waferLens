@@ -10,6 +10,10 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "pydantic-settings>=2.6",
     "alembic>=1.14",
+    "numpy>=2.1",
+    "pandas>=2.2",
+    "pyarrow>=18",
+    "pyyaml>=6.0",
 ]
 
 [dependency-groups]
@@ -20,6 +24,8 @@ dev = [
     "pytest-cov>=6.0",
     "hypothesis>=6.120",
     "pre-commit>=4.0",
+    "pandas-stubs>=2.2",
+    "types-pyyaml>=6.0",
 ]
 
 [build-system]

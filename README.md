@@ -38,6 +38,7 @@ cp .env.example .env
 make install   # .venv + deps + git hooks
 make up        # TimescaleDB on :5432, Grafana on :3000
 make migrate   # create the schema (docs/schema.md)
+make simulate  # 6 months of fab data as Parquet in data/demo (docs/simulator.md)
 make check     # lint + typecheck + all tests
 ```
 

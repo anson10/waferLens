@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -28,6 +28,11 @@ psql: ## Open a psql shell in the db container
 
 migrate: ## Apply Alembic migrations to the dev database
 	uv run alembic upgrade head
+
+PROFILE ?= demo
+SEED ?= 42
+simulate: ## Generate fab data as Parquet in data/$(PROFILE) (PROFILE=dev|demo|stress)
+	uv run python -m waferlens.simulate --profile $(PROFILE) --seed $(SEED)
 
 lint: ## Ruff lint + format check
 	uv run ruff check .

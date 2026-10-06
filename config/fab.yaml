@@ -1,0 +1,300 @@
+# WaferLens fab definition. The simulator reads this file; nothing about the fab is hard-coded.
+#
+# Units: times in minutes/hours/days as named, sensor and metrology values in the listed unit.
+# Metrology targets are written for 28nm; parameters with `scales_with_node: true` are scaled
+# by feature_size / 28 for the other nodes (a 130nm gate is not 28nm wide).
+
+start_date: 2026-01-05
+
+profiles:
+  dev:    { lots: 40,   days: 30,  excursions: 6,  benign_recipe_changes: 2 }
+  demo:   { lots: 1000, days: 182, excursions: 40, benign_recipe_changes: 6 }
+  stress: { lots: 5000, days: 365, excursions: 80, benign_recipe_changes: 12 }
+
+nodes:
+  - { name: 28nm,  feature_size_nm: 28,  base_d0: 0.10 }   # defects / cm²
+  - { name: 65nm,  feature_size_nm: 65,  base_d0: 0.07 }
+  - { name: 130nm, feature_size_nm: 130, base_d0: 0.05 }
+
+# map_grid: dies across the wafer diameter. Die area follows from a 300 mm wafer.
+products:
+  - { code: MCU28,   node: 28nm,  map_grid: 40, mix: 0.40 }
+  - { code: PMIC65,  node: 65nm,  map_grid: 30, mix: 0.35 }
+  - { code: SENS130, node: 130nm, map_grid: 24, mix: 0.25 }
+
+sort_bins:
+  - { code: 1, name: pass,          is_pass: true }
+  - { code: 2, name: functional,    is_pass: false }
+  - { code: 3, name: leakage,       is_pass: false }
+  - { code: 4, name: open_short,    is_pass: false }
+  - { code: 5, name: parametric,    is_pass: false }
+
+# sensors: per-wafer summary values the tool reports. The first sensor is the tool's primary
+# sensor: chamber excursions act on it, and it couples into the step's first metrology parameter.
+# fail_bin: the sort bin a spatial defect pattern from this tool type shows up in.
+tool_types:
+  clean:
+    description: Wet clean
+    tools: 2
+    chambers_per_tool: 2
+    process_minutes: 4
+    fail_bin: 2
+    spatial_patterns: [random, loc]
+    sensors:
+      megasonic_power_w:      { nominal: 300,  sigma: 6,    unit: W }
+      chem_temp_c:            { nominal: 65,   sigma: 0.5,  unit: degC }
+      chem_flow_lpm:          { nominal: 20,   sigma: 0.4,  unit: L/min }
+      rinse_resistivity_mohm: { nominal: 17.5, sigma: 0.2,  unit: MOhm-cm }
+  rtp:
+    description: Rapid thermal processing (oxidation, anneal)
+    tools: 2
+    chambers_per_tool: 1
+    process_minutes: 3
+    fail_bin: 3
+    spatial_patterns: [center, donut]
+    sensors:
+      peak_temp_c:            { nominal: 1050, sigma: 2,    unit: degC }
+      ramp_rate_c_s:          { nominal: 75,   sigma: 1.5,  unit: degC/s }
+      o2_flow_sccm:           { nominal: 500,  sigma: 8,    unit: sccm }
+      lamp_power_pct:         { nominal: 62,   sigma: 0.8,  unit: pct }
+  litho:
+    description: Lithography scanner
+    tools: 3
+    chambers_per_tool: 1
+    process_minutes: 2
+    fail_bin: 5
+    spatial_patterns: [loc, edge_loc]
+    sensors:
+      dose_mj_cm2:            { nominal: 32,   sigma: 0.3,  unit: mJ/cm2 }
+      focus_offset_nm:        { nominal: 0,    sigma: 8,    unit: nm }
+      stage_temp_c:           { nominal: 22,   sigma: 0.02, unit: degC }
+      reticle_temp_c:         { nominal: 22.5, sigma: 0.05, unit: degC }
+  etch:
+    description: Plasma etch
+    tools: 3
+    chambers_per_tool: 3
+    process_minutes: 3
+    fail_bin: 4
+    spatial_patterns: [edge_ring, center, donut]
+    sensors:
+      rf_power_w:             { nominal: 1200, sigma: 12,   unit: W }
+      chamber_pressure_mtorr: { nominal: 30,   sigma: 0.4,  unit: mTorr }
+      esc_temp_c:             { nominal: 40,   sigma: 0.5,  unit: degC }
+      endpoint_time_s:        { nominal: 85,   sigma: 2,    unit: s }
+  strip:
+    description: Resist strip
+    tools: 2
+    chambers_per_tool: 2
+    process_minutes: 2
+    fail_bin: 2
+    spatial_patterns: [random]
+    sensors:
+      plasma_power_w:         { nominal: 2500, sigma: 30,   unit: W }
+      strip_o2_flow_sccm:     { nominal: 3000, sigma: 40,   unit: sccm }
+      wafer_temp_c:           { nominal: 250,  sigma: 2,    unit: degC }
+      strip_time_s:           { nominal: 60,   sigma: 1.5,  unit: s }
+  cvd:
+    description: Chemical vapour deposition
+    tools: 2
+    chambers_per_tool: 3
+    process_minutes: 4
+    fail_bin: 3
+    spatial_patterns: [center, donut, edge_loc]
+    sensors:
+      heater_temp_c:          { nominal: 400,  sigma: 1.5,  unit: degC }
+      chamber_pressure_torr:  { nominal: 2.5,  sigma: 0.03, unit: Torr }
+      cvd_rf_power_w:         { nominal: 800,  sigma: 10,   unit: W }
+      dep_time_s:             { nominal: 45,   sigma: 1,    unit: s }
+  cmp:
+    description: Chemical mechanical polishing
+    tools: 2
+    chambers_per_tool: 3
+    process_minutes: 3
+    fail_bin: 4
+    spatial_patterns: [scratch, edge_ring]
+    sensors:
+      down_force_psi:         { nominal: 3.0,  sigma: 0.05, unit: psi }
+      platen_speed_rpm:       { nominal: 93,   sigma: 0.8,  unit: rpm }
+      pad_temp_c:             { nominal: 45,   sigma: 0.6,  unit: degC }
+      polish_time_s:          { nominal: 60,   sigma: 1.5,  unit: s }
+  implant:
+    description: Ion implantation
+    tools: 2
+    chambers_per_tool: 1
+    process_minutes: 2
+    fail_bin: 3
+    spatial_patterns: [center]
+    sensors:
+      beam_current_ma:        { nominal: 5,    sigma: 0.08, unit: mA }
+      implant_dose_e15:       { nominal: 2.0,  sigma: 0.02, unit: 1e15/cm2 }
+      tilt_deg:               { nominal: 7,    sigma: 0.05, unit: deg }
+      implant_energy_kev:     { nominal: 40,   sigma: 0.2,  unit: keV }
+  pvd:
+    description: Physical vapour deposition (metal)
+    tools: 2
+    chambers_per_tool: 2
+    process_minutes: 3
+    fail_bin: 4
+    spatial_patterns: [edge_ring, loc]
+    sensors:
+      dc_power_kw:            { nominal: 20,   sigma: 0.2,  unit: kW }
+      ar_pressure_mtorr:      { nominal: 3,    sigma: 0.04, unit: mTorr }
+      chuck_temp_c:           { nominal: 250,  sigma: 2,    unit: degC }
+      pvd_dep_time_s:         { nominal: 50,   sigma: 1,    unit: s }
+
+# The process flow every product runs (each product gets its own route of these steps).
+# metrology: parameters measured after the step. radial: edge-minus-centre offset in sigma
+# (CMP removes less at the edge, deposition is thinner at the edge, ...).
+route:
+  - { name: pre_clean,      layer: STI,     tool_type: clean }
+  - { name: pad_oxidation,  layer: STI,     tool_type: rtp }
+  - name: sti_litho
+    layer: STI
+    tool_type: litho
+    metrology:
+      - { parameter: cd_nm,        unit: nm, target: 90,  sigma: 1.2, scales_with_node: true }
+      - { parameter: overlay_x_nm, unit: nm, target: 0,   sigma: 2.0 }
+      - { parameter: overlay_y_nm, unit: nm, target: 0,   sigma: 2.0 }
+    correlations: [[overlay_x_nm, overlay_y_nm, 0.6]]
+  - name: sti_etch
+    layer: STI
+    tool_type: etch
+    metrology:
+      - { parameter: trench_depth_nm, unit: nm, target: 300, sigma: 4.0, radial: -0.6 }
+      - { parameter: cd_post_etch_nm, unit: nm, target: 85,  sigma: 1.3, scales_with_node: true }
+    correlations: [[trench_depth_nm, cd_post_etch_nm, -0.3]]
+  - { name: sti_strip,      layer: STI,     tool_type: strip }
+  - { name: sti_fill,       layer: STI,     tool_type: cvd }
+  - name: sti_cmp
+    layer: STI
+    tool_type: cmp
+    metrology:
+      - { parameter: oxide_thickness_nm, unit: nm, target: 120, sigma: 3.0, radial: 0.8 }
+      - { parameter: dishing_nm,         unit: nm, target: 15,  sigma: 1.5 }
+    correlations: [[oxide_thickness_nm, dishing_nm, -0.4]]
+  - { name: well_litho,     layer: WELL,    tool_type: litho }
+  - { name: well_implant,   layer: WELL,    tool_type: implant }
+  - { name: well_strip,     layer: WELL,    tool_type: strip }
+  - { name: well_anneal,    layer: WELL,    tool_type: rtp }
+  - name: gate_oxidation
+    layer: GATE
+    tool_type: rtp
+    metrology:
+      - { parameter: gate_oxide_a, unit: angstrom, target: 18, sigma: 0.25, radial: 0.3 }
+  - name: poly_dep
+    layer: GATE
+    tool_type: cvd
+    metrology:
+      - { parameter: poly_thickness_nm, unit: nm, target: 80, sigma: 1.2, radial: -0.5 }
+  - name: gate_litho
+    layer: GATE
+    tool_type: litho
+    metrology:
+      - { parameter: cd_nm,        unit: nm, target: 30, sigma: 0.5, scales_with_node: true }
+      - { parameter: overlay_x_nm, unit: nm, target: 0,  sigma: 1.5 }
+      - { parameter: overlay_y_nm, unit: nm, target: 0,  sigma: 1.5 }
+    correlations: [[overlay_x_nm, overlay_y_nm, 0.6]]
+  - name: gate_etch
+    layer: GATE
+    tool_type: etch
+    metrology:
+      - { parameter: gate_cd_nm,          unit: nm,  target: 28, sigma: 0.6, scales_with_node: true }
+      - { parameter: sidewall_angle_deg,  unit: deg, target: 88, sigma: 0.3 }
+    correlations: [[gate_cd_nm, sidewall_angle_deg, 0.4]]
+  - { name: gate_strip,     layer: GATE,    tool_type: strip }
+  - { name: sd_implant,     layer: SD,      tool_type: implant }
+  - name: sd_anneal
+    layer: SD
+    tool_type: rtp
+    metrology:
+      - { parameter: sheet_res_ohm_sq, unit: ohm/sq, target: 120, sigma: 2.5, radial: 0.4 }
+  - { name: ild_dep,        layer: CONTACT, tool_type: cvd }
+  - name: ild_cmp
+    layer: CONTACT
+    tool_type: cmp
+    metrology:
+      - { parameter: ild_thickness_nm, unit: nm, target: 400, sigma: 5.0, radial: 1.0 }
+  - { name: contact_litho,  layer: CONTACT, tool_type: litho }
+  - name: contact_etch
+    layer: CONTACT
+    tool_type: etch
+    metrology:
+      - { parameter: contact_cd_nm, unit: nm, target: 40, sigma: 0.8, scales_with_node: true }
+  - { name: w_fill,         layer: CONTACT, tool_type: pvd }
+  - { name: w_cmp,          layer: CONTACT, tool_type: cmp }
+  - { name: m1_dep,         layer: M1,      tool_type: pvd }
+  - name: m1_litho
+    layer: M1
+    tool_type: litho
+    metrology:
+      - { parameter: cd_nm,        unit: nm, target: 48, sigma: 0.7, scales_with_node: true }
+      - { parameter: overlay_x_nm, unit: nm, target: 0,  sigma: 1.8 }
+      - { parameter: overlay_y_nm, unit: nm, target: 0,  sigma: 1.8 }
+    correlations: [[overlay_x_nm, overlay_y_nm, 0.6]]
+  - name: m1_etch
+    layer: M1
+    tool_type: etch
+    metrology:
+      - { parameter: m1_cd_nm,              unit: nm,        target: 45, sigma: 0.9, scales_with_node: true }
+      - { parameter: m1_sheet_res_mohm_sq,  unit: mohm/sq,   target: 75, sigma: 1.5 }
+    correlations: [[m1_cd_nm, m1_sheet_res_mohm_sq, -0.5]]
+  - { name: m1_strip,       layer: M1,      tool_type: strip }
+  - { name: imd_dep,        layer: M1,      tool_type: cvd }
+  - { name: final_clean,    layer: M1,      tool_type: clean }
+
+logistics:
+  wafers_per_lot: 25
+  queue_hours_mean: 3.0           # exponential wait between steps
+  hold_prob_per_lot: 0.04         # chance a lot goes on hold once somewhere on the route
+  hold_hours: [4, 48]
+  split_prob_per_lot: 0.03        # chance a lot is split (slots 13-25 become a child lot)
+  rework_prob_per_litho_step: 0.02
+  rework_delay_minutes: 120
+  scrap_prob_per_wafer_step: 0.0002
+  metrology_delay_minutes: [15, 90]
+  sort_delay_hours: [12, 36]
+
+measurement:
+  metrology_wafers_per_lot: 5
+  spec_sigma: 4.0                 # LSL / USL = target -/+ 4 sigma (Cpk 1.33 when centred)
+  site_noise_ratio: 0.5           # within-wafer site noise as a fraction of wafer sigma
+  chamber_bias_sigma: 0.3         # static chamber-to-chamber offset, in sensor sigma
+  sensor_to_metrology_coupling: 0.7  # share of metrology variance explained by the sensor
+
+yield_model:
+  edge_loss: 1.5                  # extra D0 multiplier at the wafer edge
+  metrology_penalty: 1.0          # D0 added per sigma beyond 2 sigma, times base D0
+  excursion_d0_per_sigma: 0.3     # D0 multiplier per sigma of excursion exposure above the threshold
+  excursion_d0_threshold_sigma: 0.5  # smaller shifts don't cost yield on their own
+  pattern_hit_prob: 0.6           # share of wafers through a pattern chamber that show it
+  base_fail_bins: { 2: 0.7, 4: 0.3 }
+
+excursions:
+  type_weights:
+    step_shift: 0.25
+    drift: 0.25
+    chamber_offset: 0.15
+    recipe_change: 0.10
+    spatial_pattern: 0.25
+  magnitude_sigma:                # drift: value reached at the end of the window
+    step_shift: [1.0, 3.0]
+    drift: [1.5, 3.0]
+    chamber_offset: [0.5, 1.0]
+    recipe_change: [1.0, 2.5]
+    spatial_pattern: [1.0, 3.0]
+  duration_days:
+    step_shift: [1, 5]
+    drift: [5, 14]
+    chamber_offset: [7, 21]
+    recipe_change: [2, 7]
+    spatial_pattern: [1, 5]
+  tool_type_weights:              # which tool types excursions hit, for chamber excursions
+    etch: 3
+    cmp: 3
+    cvd: 2
+    litho: 2
+    rtp: 1
+    pvd: 1
+    clean: 1
+    strip: 1
+    implant: 1
