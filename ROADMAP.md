@@ -100,8 +100,8 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 - [x] `make seed` = migrate + simulate + load (demo: ~2 min, 4.83M rows)
 
 ### Real datasets
-- [ ] UCI SECOM downloader + loader → `raw_secom` (591 sensors + pass/fail)
-- [ ] Data cards in `docs/data/` (source, license, quirks, missingness)
+- [x] UCI SECOM downloader (SHA-256 pinned) + loader → `secom_runs` / `secom_readings` (590 signals in long format + pass/fail; `make secom`)
+- [x] Data card `docs/data/secom.md` (source, license, quirks, missingness, fail-rate drift 22% → 3%)
 
 ### Tests
 - [x] Schema/constraint tests, simulator property tests (hypothesis), loader round-trip tests

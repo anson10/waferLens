@@ -440,3 +440,46 @@ class ExcursionGroundTruth(Base):
             name="spatial_has_pattern",
         ),
     )
+
+
+# --------------------------------------------------------------------------- external datasets
+
+
+class ExternalBase(DeclarativeBase):
+    """Real external datasets. A separate metadata from the simulated fab, so reloading the
+    fab (which truncates every ``Base`` table) never touches them."""
+
+    metadata = MetaData(naming_convention=NAMING_CONVENTION)
+
+
+SECOM_SENSORS = 590  # the UCI page says 591; the file has 590 columns (docs/data/secom.md)
+
+
+class SecomRun(ExternalBase):
+    """One production entity from UCI SECOM, in file order, with its in-house test result."""
+
+    __tablename__ = "secom_runs"
+
+    run_id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    # The source has no timezone; stored as UTC by assumption.
+    run_time: Mapped[datetime] = mapped_column(TimestampTZ, index=True)
+    failed: Mapped[bool]
+
+    readings: Mapped[list[SecomReading]] = relationship(back_populates="run")
+
+
+class SecomReading(ExternalBase):
+    """One sensor value of one run, in long format. Missing values (4.5%) have no row."""
+
+    __tablename__ = "secom_readings"
+
+    run_id: Mapped[int] = mapped_column(ForeignKey("secom_runs.run_id"), primary_key=True)
+    sensor_no: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    value: Mapped[float] = mapped_column(Double)
+
+    run: Mapped[SecomRun] = relationship(back_populates="readings")
+
+    __table_args__ = (
+        CheckConstraint(f"sensor_no BETWEEN 1 AND {SECOM_SENSORS}", name="sensor_no_range"),
+        Index(None, "sensor_no"),
+    )

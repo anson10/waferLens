@@ -33,6 +33,8 @@ lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/pre
 - Postgres is the only database: no SQLite fallback, and integration tests run against the real container.
 - Simulator and ingest stay decoupled: the simulator writes files, ingest reads them.
 - The loader is one transaction (truncate, drop FKs, COPY, re-add FKs); keep it atomic.
+- Real external data (SECOM) lives on `ExternalBase`, never `Base`, so fab reloads can't wipe it.
+- SECOM models must use a time-ordered split: the fail rate drifts 22% → 3% (docs/data/secom.md).
 - Simulator output must log every injected excursion as ground truth, because detection is evaluated against it.
 - Complex aggregations are SQL (dbt models, or commented raw SQL) with comments on the business logic.
 - dbt marts are a star schema (`fct_*`, `dim_*`), since Power BI consumes them in phase 7.

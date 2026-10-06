@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load seed bench-load lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load secom seed bench-load lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -37,7 +37,10 @@ simulate: ## Generate fab data as Parquet in data/$(PROFILE) (PROFILE=dev|demo|s
 load: ## Validate and COPY data/$(PROFILE) into Postgres (replaces existing data)
 	uv run python -m waferlens.ingest --data data/$(PROFILE)
 
-seed: migrate simulate load ## Migrate, simulate and load in one go (PROFILE=dev|demo|stress)
+secom: ## Download (checksum-pinned) and load the real UCI SECOM dataset
+	uv run python -m waferlens.ingest.secom
+
+seed: migrate simulate load secom ## Migrate, simulate, load the fab and SECOM (PROFILE=dev|demo|stress)
 
 bench-load: ## Compare ORM, Core and COPY inserts on loaded data (rolled back)
 	uv run python -m waferlens.ingest.benchmark --data data/$(PROFILE)

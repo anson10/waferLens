@@ -23,7 +23,7 @@ pytestmark = pytest.mark.integration
 
 def test_migration_creates_every_model_table(engine: Engine) -> None:
     tables = set(inspect(engine).get_table_names())
-    assert set(m.Base.metadata.tables) <= tables
+    assert set(m.Base.metadata.tables) | set(m.ExternalBase.metadata.tables) <= tables
 
 
 def test_models_and_migrations_are_in_sync(alembic_cfg: Config, engine: Engine) -> None:
