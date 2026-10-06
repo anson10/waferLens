@@ -37,12 +37,15 @@ Needs Docker and [uv](https://docs.astral.sh/uv/).
 cp .env.example .env
 make install   # .venv + deps + git hooks
 make up        # TimescaleDB on :5432, Grafana on :3000
-make migrate   # create the schema (docs/schema.md)
-make simulate  # 6 months of fab data as Parquet in data/demo (docs/simulator.md)
+make seed      # migrate + simulate 6 months of fab data + load it (~2.5 min, 4.8M rows)
 make check     # lint + typecheck + all tests
 ```
 
-Run `make` with no arguments to list all targets.
+`make seed` is `make migrate simulate load`; add `PROFILE=dev` for a 1,000-wafer fab that
+loads in seconds. Run `make` with no arguments to list all targets.
+
+Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [performance](docs/perf.md) ·
+[decisions](docs/adr/)
 
 ## Layout
 

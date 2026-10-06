@@ -93,17 +93,18 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 - [x] Tests: output matches every table, PK/FK and CHECK rules hold (also property-tested over random seeds and sizes), injected shifts are measurable, recipe windows and spatial yield loss verified
 
 ### Ingest & data quality
-- [ ] pandera (or Pydantic) contracts per table
-- [ ] Bulk load via `COPY` (benchmark vs ORM inserts, note result in README)
-- [ ] Idempotent re-runs (truncate-and-load or upsert)
-- [ ] `wafer_bin_summary` derived from `wafer_maps` by the loader, with a test that they always agree (ADR-003)
+- [x] pandera contracts per table, generated from the ORM metadata, plus cross-table rules (metrology after its step, sensor chamber = genealogy chamber, wafer map grid and bins)
+- [x] Bulk load via `COPY` with foreign keys dropped and re-added in the same transaction; benchmark vs ORM / Core in `docs/perf.md` (ORM 1.8k rows/s → COPY 20.7k rows/s, 11x)
+- [x] Idempotent, atomic re-runs (truncate-and-load in one transaction; a failed load leaves the old data)
+- [x] `wafer_bin_summary` derived from `wafer_maps` in SQL (`unnest`), with a test that they always agree (ADR-003)
+- [x] `make seed` = migrate + simulate + load (demo: ~2 min, 4.83M rows)
 
 ### Real datasets
 - [ ] UCI SECOM downloader + loader → `raw_secom` (591 sensors + pass/fail)
 - [ ] Data cards in `docs/data/` (source, license, quirks, missingness)
 
 ### Tests
-- [ ] Schema/constraint tests, simulator property tests (hypothesis), loader round-trip tests
+- [x] Schema/constraint tests, simulator property tests (hypothesis), loader round-trip tests
 
 **Done when:** `make seed` (demo profile) loads ~6M rows with genealogy, wafer maps and ground truth; SECOM loads; `make seed PROFILE=stress` works and `EXPLAIN ANALYZE` of key queries plus load times are noted in `docs/perf.md`.
 

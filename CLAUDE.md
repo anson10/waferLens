@@ -32,6 +32,7 @@ lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/pre
 - All DB access goes through `waferlens.db.session` (`get_engine`, `get_session`).
 - Postgres is the only database: no SQLite fallback, and integration tests run against the real container.
 - Simulator and ingest stay decoupled: the simulator writes files, ingest reads them.
+- The loader is one transaction (truncate, drop FKs, COPY, re-add FKs); keep it atomic.
 - Simulator output must log every injected excursion as ground truth, because detection is evaluated against it.
 - Complex aggregations are SQL (dbt models, or commented raw SQL) with comments on the business logic.
 - dbt marts are a star schema (`fct_*`, `dim_*`), since Power BI consumes them in phase 7.
@@ -43,6 +44,7 @@ lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/pre
 ```bash
 make install    # uv sync + pre-commit hooks
 make up / down  # containers (reset = also wipe volumes)
+make seed       # migrate + simulate + load (PROFILE=dev|demo|stress, default demo)
 make check      # lint + typecheck + all tests (what CI runs)
 make test-unit  # no containers needed
 ```
