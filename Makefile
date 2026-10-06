@@ -2,10 +2,10 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load seed bench-load lint format typecheck test test-unit check
 
 help: ## List targets
-	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
+	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
 
 install: ## Create .venv, install deps, install git hooks
 	uv sync
@@ -33,6 +33,14 @@ PROFILE ?= demo
 SEED ?= 42
 simulate: ## Generate fab data as Parquet in data/$(PROFILE) (PROFILE=dev|demo|stress)
 	uv run python -m waferlens.simulate --profile $(PROFILE) --seed $(SEED)
+
+load: ## Validate and COPY data/$(PROFILE) into Postgres (replaces existing data)
+	uv run python -m waferlens.ingest --data data/$(PROFILE)
+
+seed: migrate simulate load ## Migrate, simulate and load in one go (PROFILE=dev|demo|stress)
+
+bench-load: ## Compare ORM, Core and COPY inserts on loaded data (rolled back)
+	uv run python -m waferlens.ingest.benchmark --data data/$(PROFILE)
 
 lint: ## Ruff lint + format check
 	uv run ruff check .

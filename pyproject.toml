@@ -14,6 +14,7 @@ dependencies = [
     "pandas>=2.2",
     "pyarrow>=18",
     "pyyaml>=6.0",
+    "pandera>=0.21",
 ]
 
 [dependency-groups]
@@ -26,6 +27,7 @@ dev = [
     "pre-commit>=4.0",
     "pandas-stubs>=2.2",
     "types-pyyaml>=6.0",
+    "pyarrow-stubs>=20.0.0.20260819",
 ]
 
 [build-system]

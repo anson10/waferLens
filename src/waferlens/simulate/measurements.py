@@ -24,6 +24,31 @@ from waferlens.simulate.excursions import CHAMBER_TYPES, Plan
 from waferlens.simulate.master import SITES_MM, Master
 
 SITE_RADIUS_SQ = (np.hypot(SITES_MM[:, 0], SITES_MM[:, 1]) / 150.0) ** 2
+SENSOR_COLUMNS = {
+    "time": "float64",
+    "wafer_id": "int32",
+    "route_step_id": "int32",
+    "parameter_id": "int16",
+    "chamber_id": "int16",
+    "value": "float64",
+}
+METROLOGY_COLUMNS = {
+    "time": "float64",
+    "wafer_id": "int32",
+    "route_step_id": "int32",
+    "parameter_id": "int16",
+    "site_no": "int16",
+    "site_x_mm": "float64",
+    "site_y_mm": "float64",
+    "value": "float64",
+}
+
+
+def _concat(frames: list[pd.DataFrame], columns: dict[str, str]) -> pd.DataFrame:
+    """A tiny fab can produce no rows (e.g. no lot reached a measured step yet)."""
+    if not frames:
+        return pd.DataFrame({c: pd.Series(dtype=t) for c, t in columns.items()})
+    return pd.concat(frames, ignore_index=True)
 
 
 @dataclass
@@ -79,7 +104,7 @@ def generate_measurements(
                     }
                 )
             )
-    sensor_readings = pd.concat(frames, ignore_index=True)
+    sensor_readings = _concat(frames, SENSOR_COLUMNS)
 
     # Metrology measures the result of the last pass of a step.
     final = ~history.duplicated(["wafer_id", "route_step_id"], keep="last").to_numpy()
@@ -141,5 +166,5 @@ def generate_measurements(
                 )
             )  # fmt: skip
 
-    metrology = pd.concat(metro_frames, ignore_index=True)
+    metrology = _concat(metro_frames, METROLOGY_COLUMNS)
     return Measurements(sensor_readings, metrology, penalty)

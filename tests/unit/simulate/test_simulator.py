@@ -7,13 +7,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
-from tests.unit.simulate.conftest import frame
+from tests.conftest import frame
 from waferlens.db import models as m
 from waferlens.simulate.config import FabConfig, ProfileSpec
 from waferlens.simulate.excursions import MINUTES_PER_DAY
@@ -261,7 +262,9 @@ def test_parquet_round_trip(dev: SimulationResult, tmp_path: Path) -> None:
         back = pq.read_table(tmp_path / f"{name}.parquet").to_pandas()
         assert len(back) == len(frame(dev, name)), name
     maps = pq.read_table(tmp_path / "wafer_maps.parquet")
-    assert maps.equals(dev.tables["wafer_maps"])
+    original = dev.tables["wafer_maps"]
+    assert isinstance(original, pa.Table)
+    assert maps.equals(original)
 
 
 def test_everything_happens_inside_the_period(dev: SimulationResult, cfg: FabConfig) -> None:
@@ -309,3 +312,15 @@ def test_cli_writes_profile_to_output_dir(
     main()
     assert (tmp_path / "wafer_maps.parquet").exists()
     assert '"profile": "dev"' in capsys.readouterr().out
+
+
+def test_tiny_fab_with_no_measured_steps_yet(cfg: FabConfig) -> None:
+    # Found by hypothesis. With seed 3 the only lot starts late on day one and no wafer
+    # reaches a measured step, so the metrology table is empty.
+    result = simulate(cfg, ProfileSpec(lots=1, days=1, excursions=2, benign_recipe_changes=0), 3)
+    metrology = frame(result, "metrology_measurements")
+    assert metrology.empty
+    assert list(metrology.columns) == [
+        c.name for c in m.Base.metadata.tables["metrology_measurements"].columns
+    ]
+    assert_keys_hold(result)

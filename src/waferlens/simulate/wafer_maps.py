@@ -198,10 +198,10 @@ def _to_arrow(
     grids = np.zeros((len(w), g, g), dtype=np.int16)
     grids[:, geo.on_wafer] = bins
     flat = pa.array(grids.ravel(), type=pa.int16())
-    rows = pa.ListArray.from_arrays(pa.array(np.arange(0, len(w) * g * g + 1, g, dtype=np.int32)),
-                                    flat)  # fmt: skip
-    maps = pa.ListArray.from_arrays(pa.array(np.arange(0, len(w) * g + 1, g, dtype=np.int32)),
-                                    rows)  # fmt: skip
+    row_offsets = pa.array(np.arange(0, len(w) * g * g + 1, g, dtype=np.int32), type=pa.int32())
+    map_offsets = pa.array(np.arange(0, len(w) * g + 1, g, dtype=np.int32), type=pa.int32())
+    rows = pa.ListArray.from_arrays(row_offsets, flat)
+    maps = pa.ListArray.from_arrays(map_offsets, rows)
     return pa.table(
         {
             "wafer_id": pa.array((w + 1).astype(np.int32)),
