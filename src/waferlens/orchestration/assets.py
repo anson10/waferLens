@@ -1,0 +1,163 @@
+"""Pipeline assets: Parquet drop → contracts (blocking check) → warehouse tables → dbt models.
+
+Asset keys of the loaded tables are ``["waferlens", <table>]``, exactly what dagster-dbt
+derives from the dbt sources (``source('waferlens', <table>)``), so the lineage runs unbroken
+from the simulator to every mart.
+"""
+
+# No `from __future__ import annotations`: Dagster reads these type hints at runtime to
+# wire config and resources.
+import json
+from collections.abc import Iterator, Mapping
+from pathlib import Path
+from typing import Any, cast
+
+from dagster import (
+    AssetCheckResult,
+    AssetCheckSeverity,
+    AssetExecutionContext,
+    AssetKey,
+    AssetSpec,
+    Config,
+    MaterializeResult,
+    asset,
+    asset_check,
+    multi_asset,
+)
+from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
+
+from waferlens.db.models import Base
+from waferlens.ingest.contracts import ContractError, check_tables
+from waferlens.ingest.loader import load, read_tables
+from waferlens.ingest.secom import download, load_secom, parse
+from waferlens.orchestration.resources import ROOT, FabData, SecomSource, Warehouse
+from waferlens.simulate.config import load_config
+from waferlens.simulate.run import simulate, write_parquet
+
+# --------------------------------------------------------------------------- simulate
+
+
+@asset(
+    group_name="ingest",
+    kinds={"python", "parquet"},
+    description="Simulated fab written as one Parquet file per table + manifest.json.",
+)
+def simulated_fab(fab_data: FabData) -> MaterializeResult:
+    result = simulate(load_config(), fab_data.profile, fab_data.seed)
+    write_parquet(result, fab_data.directory)
+    summary = result.summary
+    yields = cast(dict[str, float], summary["yield_pct"])
+    return MaterializeResult(
+        metadata={
+            "path": str(fab_data.directory),
+            "profile": fab_data.profile,
+            "seed": fab_data.seed,
+            "total_rows": cast(int, summary["total_rows"]),
+            "mean_yield_pct": yields["mean"],
+            "excursions": json.dumps(summary["excursions"]),
+            "seconds": cast(float, summary["seconds"]),
+            # Lets the drop sensor tell the pipeline's own drops from external ones.
+            "manifest_mtime_ns": fab_data.manifest.stat().st_mtime_ns,
+        }
+    )
+
+
+@asset_check(
+    asset=simulated_fab,
+    blocking=True,
+    description=(
+        "Data contracts (ingest/contracts.py): pandera schemas generated from the ORM "
+        "metadata plus cross-table rules. Blocking: a failed check stops the load."
+    ),
+)
+def fab_contracts(fab_data: FabData) -> AssetCheckResult:
+    tables = read_tables(fab_data.directory)
+    try:
+        check_tables(tables)
+    except ContractError as exc:
+        return AssetCheckResult(
+            passed=False,
+            severity=AssetCheckSeverity.ERROR,
+            metadata={"violations": str(exc)[:4000]},
+        )
+    return AssetCheckResult(passed=True, metadata={"tables_checked": len(tables)})
+
+
+# --------------------------------------------------------------------------- warehouse
+
+FAB_TABLES = [t.name for t in Base.metadata.sorted_tables] + ["wafer_yield"]
+SECOM_TABLES = ["secom_runs", "secom_readings"]
+
+
+def table_key(name: str) -> AssetKey:
+    return AssetKey(["waferlens", name])
+
+
+@multi_asset(
+    specs=[
+        AssetSpec(table_key(name), deps=[simulated_fab], group_name="warehouse",
+                  kinds={"postgres"})
+        for name in FAB_TABLES
+    ],
+    can_subset=False,
+    description="One-transaction COPY load of the Parquet drop (contracts already checked).",
+)  # fmt: skip
+def fab_tables(fab_data: FabData, warehouse: Warehouse) -> Iterator[MaterializeResult]:
+    # The blocking contracts check has already passed in this run, so skip re-validating.
+    report = load(fab_data.directory, warehouse.engine(), validate=False)
+    for name in FAB_TABLES:
+        metadata: dict[str, Any] = {"load_seconds": report.seconds.get(name, 0.0)}
+        if name in report.rows:
+            metadata["rows"] = report.rows[name]
+        yield MaterializeResult(asset_key=table_key(name), metadata=metadata)
+
+
+@multi_asset(
+    specs=[AssetSpec(table_key(name), group_name="warehouse", kinds={"postgres"})
+           for name in SECOM_TABLES],
+    can_subset=False,
+    description="Real UCI SECOM data: checksum-pinned download, parsed to long format.",
+)  # fmt: skip
+def secom_tables(secom_source: SecomSource, warehouse: Warehouse) -> Iterator[MaterializeResult]:
+    directory = download(Path(secom_source.directory), secom_source.url, secom_source.sha256)
+    counts = load_secom(parse(directory), warehouse.engine())
+    for name in SECOM_TABLES:
+        yield MaterializeResult(asset_key=table_key(name), metadata={"rows": counts[name]})
+
+
+# --------------------------------------------------------------------------- dbt
+
+DBT_DIR = ROOT / "dbt"
+dbt_project = DbtProject(project_dir=DBT_DIR, profiles_dir=DBT_DIR)
+dbt_project.prepare_if_dev()
+if not dbt_project.manifest_path.exists():
+    # Outside `dagster dev` (CLI runs, tests, CI) build the manifest once: dbt deps + parse.
+    dbt_project.preparer.prepare(dbt_project)
+
+
+class WaferlensDbtTranslator(DagsterDbtTranslator):
+    """dbt models grouped by layer (dbt_staging, dbt_intermediate, dbt_marts)."""
+
+    def get_group_name(self, dbt_resource_props: Mapping[str, Any]) -> str | None:
+        fqn = dbt_resource_props.get("fqn", [])
+        layer = next((p for p in fqn if p in ("staging", "intermediate", "marts")), None)
+        return f"dbt_{layer}" if layer else super().get_group_name(dbt_resource_props)
+
+
+class DbtBuildConfig(Config):
+    # The loader replaces all data on every run, and after a reload a full rebuild of
+    # fct_measurements is faster than its incremental path (48 s vs 131 s, docs/perf.md).
+    # Incremental pays off once data is appended rather than reloaded (phase 6).
+    full_refresh: bool = True
+
+
+@dbt_assets(
+    manifest=dbt_project.manifest_path,
+    project=dbt_project,
+    dagster_dbt_translator=WaferlensDbtTranslator(),
+)
+def dbt_models(
+    context: AssetExecutionContext, dbt: DbtCliResource, config: DbtBuildConfig
+) -> Iterator[Any]:
+    args = ["build", "--full-refresh"] if config.full_refresh else ["build"]
+    yield from dbt.cli(args, context=context).stream()

@@ -71,6 +71,21 @@ in one set-based join (40 s for 24M rows on stress). On dev this took the load f
 After a full reload, `dbt build --full-refresh -s fct_measurements` is the faster path; the
 Dagster job (phase 2b) uses it when the load asset changed.
 
+## Whole pipeline (Dagster `full_rebuild`)
+
+`make pipeline` on demo: **4 min 42 s** end to end, one run.
+
+| Step | Seconds |
+|---|---|
+| `simulated_fab` (simulate + Parquet) | 10 |
+| `fab_contracts` (blocking check) | 7 |
+| `fab_tables` (atomic COPY load) | 99 |
+| `secom_tables` (cached download + load) | 7 |
+| `dbt_models` (`dbt build --full-refresh`, 40 models + 78 tests) | 93 |
+
+The dbt step is ~2x faster than `make dbt` straight after a reload (179 s), because the job
+builds `fct_measurements` with `--full-refresh` instead of the incremental delete+insert path.
+
 ## Key queries
 
 `make explain` runs the workload queries in `sql/queries/` under

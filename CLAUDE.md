@@ -38,6 +38,7 @@ lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/pre
 - Simulator output must log every injected excursion as ground truth, because detection is evaluated against it.
 - Complex aggregations are SQL (dbt models, or commented raw SQL) with comments on the business logic.
 - dbt marts are a star schema (`fct_*`, `dim_*`), since Power BI consumes them in phase 7.
+- Dagster assets live in `orchestration/`; loader asset keys must equal dbt source names (`["waferlens", <table>]`) — a unit test enforces it. No `from __future__ import annotations` in Dagster modules (it reads type hints at runtime). Regenerate `docs/pipeline.md` with `make pipeline-docs`.
 - dbt layers: `staging` = renames/types only, `intermediate` = reusable joins, `marts` = facts at a stated grain + dims. Every model gets tests; regenerate `docs/dbt.md` with `make dbt-docs`.
 - Every tool or significant design choice needs an ADR in `docs/adr/`; Claude may write it in full, the user reviews it.
 - Every claim in the README must be reproducible by a `make` target.
@@ -48,6 +49,7 @@ lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/pre
 make install    # uv sync + pre-commit hooks
 make up / down  # containers (reset = also wipe volumes)
 make seed       # migrate + simulate + load (PROFILE=dev|demo|stress, default demo)
+make pipeline   # the same + dbt, as one Dagster run (make dagster = UI on :3001)
 make check      # lint + typecheck + all tests (what CI runs)
 make test-unit  # no containers needed
 ```
