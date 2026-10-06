@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 
 from waferlens.db.models import Base, ToolSensorReading
 from waferlens.db.session import get_engine
-from waferlens.ingest.loader import _copy_frame
+from waferlens.ingest.loader import copy_frame
 
 TABLE = Base.metadata.tables["tool_sensor_readings"]
 FK_NAMES = sorted(str(fk.name) for fk in TABLE.foreign_key_constraints)
@@ -47,7 +47,7 @@ def _core(conn: Connection, df: pd.DataFrame) -> None:
 def _copy(conn: Connection, df: pd.DataFrame) -> None:
     pg = conn.connection.driver_connection
     assert isinstance(pg, PgConnection)
-    _copy_frame(pg, TABLE, df)
+    copy_frame(pg, TABLE, df)
 
 
 def _copy_without_fk_checks(conn: Connection, df: pd.DataFrame) -> None:

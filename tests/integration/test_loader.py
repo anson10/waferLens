@@ -16,7 +16,7 @@ from alembic.config import Config
 from sqlalchemy import Engine, text
 
 from tests.conftest import frame
-from waferlens.db.models import Base
+from waferlens.db.models import Base, ExternalBase
 from waferlens.ingest.contracts import ContractError
 from waferlens.ingest.loader import LoadReport, load
 from waferlens.simulate.run import SimulationResult, write_parquet
@@ -116,7 +116,11 @@ def test_sequences_continue_after_loaded_ids(engine: Engine, loaded: LoadReport)
 def test_foreign_keys_are_back_and_schema_unchanged(
     engine: Engine, loaded: LoadReport, alembic_cfg: Config
 ) -> None:
-    expected = sum(len(t.foreign_key_constraints) for t in Base.metadata.tables.values())
+    expected = sum(
+        len(t.foreign_key_constraints)
+        for metadata in (Base.metadata, ExternalBase.metadata)
+        for t in metadata.tables.values()
+    )
     with engine.connect() as conn:
         actual = conn.execute(
             text("SELECT count(*) FROM pg_constraint c JOIN pg_namespace n ON n.oid = "

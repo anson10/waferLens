@@ -97,7 +97,7 @@ def load(data_dir: Path, engine: Engine | None = None, *, validate: bool = True)
                 _copy_wafer_maps(pg, table, data)
                 report.rows[table.name] = data.num_rows
             else:
-                _copy_frame(pg, table, data)
+                copy_frame(pg, table, data)
                 report.rows[table.name] = len(data)
             report.seconds[table.name] = round(time.perf_counter() - t, 2)
 
@@ -128,7 +128,7 @@ def _foreign_keys() -> list[ForeignKeyConstraint]:
     ]
 
 
-def _copy_frame(pg: PgConnection, table: Table, df: pd.DataFrame) -> None:
+def copy_frame(pg: PgConnection, table: Table, df: pd.DataFrame) -> None:
     columns = [c.name for c in table.columns]
     stmt = sql.SQL("COPY {} ({}) FROM STDIN (FORMAT csv, NULL '\\N')").format(
         sql.Identifier(table.name), sql.SQL(", ").join(map(sql.Identifier, columns))

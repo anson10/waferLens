@@ -37,7 +37,7 @@ Needs Docker and [uv](https://docs.astral.sh/uv/).
 cp .env.example .env
 make install   # .venv + deps + git hooks
 make up        # TimescaleDB on :5432, Grafana on :3000
-make seed      # migrate + simulate 6 months of fab data + load it (~2.5 min, 4.8M rows)
+make seed      # migrate, simulate 6 months of fab data, load it + real SECOM (~2.5 min)
 make check     # lint + typecheck + all tests
 ```
 
@@ -45,7 +45,7 @@ make check     # lint + typecheck + all tests
 loads in seconds. Run `make` with no arguments to list all targets.
 
 Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [performance](docs/perf.md) ·
-[decisions](docs/adr/)
+[SECOM data card](docs/data/secom.md) · [decisions](docs/adr/)
 
 ## Layout
 
