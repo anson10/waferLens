@@ -1,0 +1,45 @@
+version: 2
+
+sources:
+  - name: waferlens
+    description: >
+      Tables written by the WaferLens loader (`make load`) and the SECOM loader (`make secom`).
+      The schema is owned by Alembic; dbt only reads it.
+    schema: public
+    tables:
+      - name: simulation_runs
+        description: Provenance of the loaded fab data. One row per load.
+        # Simulated event times are deliberately in the past, so freshness is measured on
+        # when the data was produced: has the pipeline run recently?
+        loaded_at_field: created_at
+        freshness:
+          warn_after: {count: 7, period: day}
+          error_after: {count: 30, period: day}
+      - name: technology_nodes
+      - name: products
+      - name: routes
+      - name: route_steps
+      - name: tool_types
+      - name: tools
+      - name: chambers
+      - name: recipes
+      - name: parameters
+      - name: metrology_plans
+      - name: sort_bins
+      - name: lots
+      - name: lot_events
+      - name: wafers
+      - name: wafer_step_history
+        description: Genealogy, one row per wafer × route step × pass.
+      - name: tool_sensor_readings
+        description: TimescaleDB hypertable, one row per wafer × step × pass × sensor.
+      - name: metrology_measurements
+        description: TimescaleDB hypertable, one row per measured site.
+      - name: wafer_maps
+      - name: wafer_bin_summary
+      - name: wafer_yield
+        description: Materialized view refreshed by the loader; used only to cross-check the mart.
+      - name: excursions_ground_truth
+      - name: secom_runs
+        description: Real UCI SECOM runs (docs/data/secom.md).
+      - name: secom_readings

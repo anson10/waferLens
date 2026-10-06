@@ -1,0 +1,26 @@
+name: waferlens
+version: "1.0.0"
+config-version: 2
+profile: waferlens
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: target
+clean-targets: [target, dbt_packages]
+
+models:
+  waferlens:
+    staging:
+      +schema: staging
+      +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: view
+    marts:
+      +schema: marts
+      +materialized: table
+
+data_tests:
+  waferlens:
+    +severity: error

@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load secom seed bench-load explain lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs bench-load explain lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -41,6 +41,13 @@ secom: ## Download (checksum-pinned) and load the real UCI SECOM dataset
 	uv run python -m waferlens.ingest.secom
 
 seed: migrate simulate load secom ## Migrate, simulate, load the fab and SECOM (PROFILE=dev|demo|stress)
+
+dbt: ## Build and test the dbt models (staging, intermediate, marts) on loaded data
+	cd dbt && uv run dbt deps --profiles-dir . && uv run dbt build --profiles-dir .
+
+dbt-docs: ## Generate dbt docs and docs/dbt.md (lineage + model table)
+	cd dbt && uv run dbt docs generate --profiles-dir .
+	uv run python -m waferlens.db.dbt_docs
 
 bench-load: ## Compare ORM, Core and COPY inserts on loaded data (rolled back)
 	uv run python -m waferlens.ingest.benchmark --data data/$(PROFILE)

@@ -124,16 +124,17 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 
 Goal: tested transformation layer and orchestrated, observable pipeline. **Design marts as a star schema now — Power BI consumes them in Phase 7.**
 
-### dbt
-- [ ] Sources + freshness checks
-- [ ] Staging models (1:1 cleanup, typing, renames)
-- [ ] Intermediate: `int_wafer_route_history`, `int_measurement_with_context`
-- [ ] Marts — facts: `fct_measurements`, `fct_wafer_yield`, `fct_spc_alarms`, `fct_die_bins`
-- [ ] Marts — dims: `dim_date`, `dim_tool`, `dim_chamber`, `dim_product`, `dim_node`, `dim_recipe`, `dim_lot`
-- [ ] Incremental model for `fct_measurements`
-- [ ] Tests: unique/not_null/relationships/accepted_values + custom (yield bounds, pass ≤ total)
-- [ ] `dbt docs` generated; lineage screenshot in README
-- [ ] Window functions / recursive CTE used where natural (lot split lineage)
+### dbt — see `docs/dbt.md` (generated) and ADR-004
+- [x] Sources + freshness check (on `simulation_runs.created_at`: has the pipeline loaded recently?)
+- [x] Staging models (23 views: renames, typing, derived durations)
+- [x] Intermediate: `int_wafer_route_history`, `int_measurement_with_context`
+- [x] Marts — facts: `fct_measurements` (3.07M rows), `fct_wafer_yield`, `fct_die_bins`, `fct_wafer_steps` (added: genealogy fact for commonality + cycle time); `fct_spc_alarms` moved to phase 3, when alarms exist
+- [x] Marts — dims: `dim_date`, `dim_tool`, `dim_chamber`, `dim_product`, `dim_node`, `dim_recipe`, `dim_lot` + `dim_wafer`, `dim_route_step`, `dim_parameter`, `dim_sort_bin`
+- [x] Incremental model for `fct_measurements` (delete+insert, 3-day look-back, pre-hook clears rows from an earlier load) — verified on rerun and on reload
+- [x] Tests: 82 data tests (unique/not_null/relationships/accepted_values/ranges + 4 singular business-rule tests) and 3 dbt unit tests; `dbt build` in CI on a fresh dev fab
+- [x] `dbt docs` generated; lineage as a generated Mermaid graph in `docs/dbt.md` (`make dbt-docs`) instead of a screenshot
+- [x] Window functions (`lag` queue time, `row_number` final pass, `lead` recipe validity, bin share) and a recursive CTE (lot split lineage)
+- [x] ADR-004 "dbt for transformations, marts as a star schema"
 
 ### Dagster
 - [ ] Assets: simulate → load → dbt models → SPC → root cause
@@ -167,9 +168,10 @@ Goal: detection that's **measured against ground truth**, not just "flags exist"
 - [ ] ARL harness: ARL₀ (false alarms) and ARL₁ (detection delay) for shift sizes 0.25σ–3σ
 - [ ] Results table + plot: Shewhart vs WE rules vs EWMA vs CUSUM vs T²
 - [ ] Detection delay vs `excursions_ground_truth` on simulated data
-- [ ] ADR-004 "Why EWMA/CUSUM in addition to Western Electric"
+- [ ] ADR-005 "Why EWMA/CUSUM in addition to Western Electric"
 
 ### Root cause
+- [ ] `fct_spc_alarms` mart (moved from phase 2) feeding Grafana and Power BI
 - [ ] Commonality analysis in SQL: for low-yield wafers, rank tool/chamber/recipe by over-representation (e.g. chi-square / Fisher / lift)
 - [ ] Time-window aware (only chambers used in the excursion window)
 - [ ] Evaluate: root-cause chamber in top-1 / top-3 for N injected excursions
@@ -223,8 +225,8 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 ### MLOps (new vs FabEye)
 - [ ] MLflow tracking + model registry in docker-compose (SECOM runs)
 - [ ] Dagster assets for SECOM training / batch scoring
-- [ ] ADR-005 "Consume FabEye as a service instead of retraining"
-- [ ] ADR-006 "SECOM evaluation: time split and PR-AUC"
+- [ ] ADR-006 "Consume FabEye as a service instead of retraining"
+- [ ] ADR-007 "SECOM evaluation: time split and PR-AUC"
 
 **Done when:** README reports FabEye's accuracy on simulated maps with ground truth, root-cause accuracy with vs without pattern, and SECOM PR-AUC on a time split.
 
