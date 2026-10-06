@@ -132,7 +132,7 @@ def test_wafer_map_round_trips_as_2d_array(db: Session, fab: MiniFab) -> None:
     assert db.get_one(m.WaferMap, 1).bin_map == grid
 
 
-def test_wafer_yield_view_uses_pass_bins(db: Session, fab: MiniFab) -> None:
+def test_wafer_yield_uses_pass_bins(db: Session, fab: MiniFab) -> None:
     db.add_all(
         [
             m.WaferBinSummary(wafer_id=1, bin_code=1, die_count=72),
@@ -142,6 +142,7 @@ def test_wafer_yield_view_uses_pass_bins(db: Session, fab: MiniFab) -> None:
         ]
     )
     db.flush()
+    db.execute(text("REFRESH MATERIALIZED VIEW wafer_yield"))
     rows = db.execute(
         text("SELECT wafer_id, tested_dies, good_dies, yield_pct FROM wafer_yield ORDER BY 1")
     ).all()

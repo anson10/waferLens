@@ -59,7 +59,7 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 |---|---|---|---|---|---|
 | `dev` | 40 | 1,000 | 30 days | ~170k | Unit tests, CI (< 1 s) |
 | **`demo`** (default) | **1,000** | **25,000** | **6 months** | **4.74M** | All README results, Grafana, Power BI, FabEye scoring |
-| `stress` | 5,000 | 125,000 | 12 months | ~24M | Performance write-up only (`docs/perf.md`) |
+| `stress` | 5,000 | 125,000 | 12 months | 24.3M | Performance write-up only (`docs/perf.md`) |
 
 `demo` (seed 42, measured): tool sensor readings 2.96M · inline metrology 985k (5 of 25 wafers per lot, 12 steps, 22 parameters, 9 sites) · genealogy 740k · 24,090 wafer maps (one array per wafer) · 40 injected excursions · mean yield 87.1%. Generates in ~5–20 s, ~1 GB peak memory. Details in `docs/simulator.md`.
 
@@ -106,9 +106,17 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 ### Tests
 - [x] Schema/constraint tests, simulator property tests (hypothesis), loader round-trip tests
 
+### Stress & query performance — see `docs/perf.md`
+- [x] `make seed PROFILE=stress` works end to end (10 min, 24.3M rows, 4.2 GB; peak 4.2 GB RAM documented as the limit)
+- [x] Key workload queries in `sql/queries/` + `make explain` (EXPLAIN ANALYZE, median of 3, blocks, chunks read)
+- [x] Plan-driven fix: `wafer_yield` materialized (migration 0003), reporting queries 2–2.6x faster on stress
+- [x] Measured and rejected: `(parameter_id, time)` sensor index (2x faster, +450 MB, +15 s per load) → continuous aggregate in phase 4
+
 **Done when:** `make seed` (demo profile) loads ~6M rows with genealogy, wafer maps and ground truth; SECOM loads; `make seed PROFILE=stress` works and `EXPLAIN ANALYZE` of key queries plus load times are noted in `docs/perf.md`.
 
-**CV line:** *Simulated 6 months of fab operation (25,000 wafers, 1,000 lots, ~6M rows, 40 injected excursions) on a chamber-level genealogy schema in TimescaleDB, loaded via COPY and stress-tested to 30M rows.*
+**CV line:** *Simulated 6 months of fab operation (25,000 wafers, 1,000 lots, 4.8M rows, 40 injected excursions) on a chamber-level genealogy schema in TimescaleDB, bulk-loaded via COPY with contract checks, stress-tested to 24M rows and tuned from EXPLAIN ANALYZE.*
+
+**Status: phase 1 complete (2026-10-06).**
 
 ---
 

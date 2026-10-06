@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load secom seed bench-load lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load secom seed bench-load explain lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -44,6 +44,9 @@ seed: migrate simulate load secom ## Migrate, simulate, load the fab and SECOM (
 
 bench-load: ## Compare ORM, Core and COPY inserts on loaded data (rolled back)
 	uv run python -m waferlens.ingest.benchmark --data data/$(PROFILE)
+
+explain: ## EXPLAIN ANALYZE the key workload queries in sql/queries (on loaded data)
+	uv run python -m waferlens.db.explain
 
 lint: ## Ruff lint + format check
 	uv run ruff check .
