@@ -1,9 +1,10 @@
 """Loads a simulator output directory into PostgreSQL.
 
 The whole load is one transaction: truncate every table, drop the foreign keys, COPY each
-table, derive ``wafer_bin_summary`` from the wafer maps in SQL, re-add the foreign keys,
-reset id sequences, analyze. If anything fails, the transaction rolls back and the previous
-data is untouched, and running it twice gives the same result.
+table, derive ``wafer_bin_summary`` from the wafer maps in SQL, refresh the ``wafer_yield``
+materialized view, re-add the foreign keys, reset id sequences, analyze. If anything fails,
+the transaction rolls back and the previous data is untouched, and running it twice gives
+the same result.
 
 Foreign keys are dropped during COPY because Postgres checks them one row at a time
 (~5k rows/s here). Re-adding a constraint validates all rows in one set-based join, so
@@ -105,6 +106,10 @@ def load(data_dir: Path, engine: Engine | None = None, *, validate: bool = True)
         result = conn.execute(text(DERIVE_BIN_SUMMARY))
         report.rows["wafer_bin_summary"] = result.rowcount
         report.seconds["wafer_bin_summary"] = round(time.perf_counter() - t, 2)
+
+        t = time.perf_counter()
+        conn.execute(text("REFRESH MATERIALIZED VIEW wafer_yield"))
+        report.seconds["wafer_yield"] = round(time.perf_counter() - t, 2)
 
         t = time.perf_counter()
         for fk in foreign_keys:

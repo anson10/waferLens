@@ -44,7 +44,7 @@ erDiagram
 | Production | `lots`, `lot_events`, `wafers`, `wafer_step_history` | `wafer_step_history` records chamber, recipe and lot for every wafer × step × pass |
 | Results | `tool_sensor_readings`*, `metrology_measurements`*, `wafer_maps`, `wafer_bin_summary` | * TimescaleDB hypertables, 7-day chunks |
 | Ground truth | `simulation_runs`, `excursions_ground_truth` | What the simulator injected; detection is scored against it |
-| View | `wafer_yield` | Good / tested dies per wafer, pass bins from `sort_bins.is_pass` |
+| Materialized view | `wafer_yield` | Good / tested dies per wafer, pass bins from `sort_bins.is_pass`; refreshed by the loader (migration 0003, docs/perf.md) |
 | External (real data) | `secom_runs`, `secom_readings` | UCI SECOM in long format, separate metadata so fab reloads never touch it ([data card](data/secom.md)) |
 
 ## Design choices worth knowing
