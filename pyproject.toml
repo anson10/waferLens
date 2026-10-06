@@ -1,0 +1,55 @@
+[project]
+name = "waferlens"
+version = "0.1.0"
+description = "Fab yield excursion detection and root-cause analysis platform"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "sqlalchemy>=2.0.36",
+    "psycopg[binary]>=3.2",
+    "pydantic-settings>=2.6",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "pyright>=1.1.390",
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "hypothesis>=6.120",
+    "pre-commit>=4.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/waferlens"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B", "SIM", "PT", "RUF"]
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: needs the Postgres/TimescaleDB container (make up)",
+]
+
+[tool.coverage.run]
+source = ["waferlens"]
+branch = true

@@ -1,9 +1,37 @@
+# Python
 __pycache__/
-*.db
-.env
+*.py[cod]
 .venv/
 .pytest_cache/
+.ruff_cache/
 .coverage
+coverage.xml
 htmlcov/
-data/*.db
+
+# Secrets / local config
+.env
+
+# Generated data (simulator output, downloaded datasets)
+data/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/.user.yml
+
+# Dagster
+.dagster_home/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Power BI (PBIP) local cache
+powerbi/**/.pbi/cache.abf
+powerbi/**/.pbi/localSettings.json
+
+# OS / editors
 .DS_Store
+.idea/
+.vscode/

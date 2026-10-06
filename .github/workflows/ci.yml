@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Ruff
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+      - name: Pyright
+        run: uv run pyright
+      - name: Compose file is valid
+        run: docker compose config --quiet
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: timescale/timescaledb:2.17.2-pg16
+        env:
+          POSTGRES_USER: waferlens
+          POSTGRES_PASSWORD: waferlens
+          POSTGRES_DB: waferlens
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U waferlens -d waferlens"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql+psycopg://waferlens:waferlens@localhost:5432/waferlens
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Tests (unit + integration)
+        run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml

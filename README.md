@@ -1,105 +1,58 @@
 # WaferLens
 
-![coverage](https://img.shields.io/badge/coverage-90%25-brightgreen) ![tests](https://img.shields.io/badge/tests-52%20passed-brightgreen) ![python](https://img.shields.io/badge/python-3.11%2B-blue)
+[![CI](https://github.com/anson10/waferLens/actions/workflows/ci.yml/badge.svg)](https://github.com/anson10/waferLens/actions/workflows/ci.yml)
 
-Semiconductor process data analysis pipeline. Simulates realistic fab wafer
-data, ingests it into a SQL database, and exposes analytical dashboards via
-Streamlit. Demonstrates SQL schema design, data engineering, SPC algorithms,
-and semiconductor domain knowledge (yield, defect density, Western Electric rules).
+> **Yield dropped. Which tool or chamber caused it, how early could we have known, and what does it look like on the wafer?**
 
-## Highlights
+WaferLens is a fab yield excursion detection and root-cause platform: a simulated fab with
+chamber-level wafer genealogy and logged ground truth, statistical process control measured
+against that ground truth, commonality analysis, Grafana for live monitoring and Power BI for
+yield reporting. Wafer-map pattern classification comes from its sister project,
+[FabEye](https://github.com/anson10/FabEye).
 
-- **500 wafers** across 20 lots, 10 process steps, 11 measured parameters — 7,030 rows
-- **SPC engine** implementing Western Electric rules 1–4 — 497 flags detected
-- **5 Streamlit dashboard pages**: Overview, Yield Analysis, SPC Monitor, Process Explorer, Defect Trends
-- **52 pytest tests**, 90% coverage overall; 99% on `analysis/spc.py`, 100% on `analysis/queries.py`
+**Status:** rebuilding as v2. Phase 0 (foundation) of [ROADMAP.md](ROADMAP.md).
+The original v1 is preserved on the
+[`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
-## CV Framing
+## Planned architecture
 
-- Simulated semiconductor fab process data across **500+ wafers and 20 lots** (7,030 rows across 5 normalised tables)
-- Designed SQL schema modelling lot → wafer → measurement → SPC flag relationships using SQLAlchemy + Alembic
-- Implemented **Western Electric SPC rules 1–4** in vectorised NumPy, detecting 497 control violations
-- Built yield aggregations and defect density queries in **raw SQL** with full business logic commentary
-- Delivered a **5-page Streamlit dashboard** covering yield analysis, control charts, process distributions, and defect trends
-- Achieved **90% test coverage** across 52 pytest tests using in-memory SQLite fixtures
+```mermaid
+flowchart LR
+    SIM[Fab simulator<br/>+ ground truth] --> DB[(PostgreSQL 16<br/>+ TimescaleDB)]
+    SECOM[UCI SECOM] --> DB
+    DB --> DBT[dbt<br/>star-schema marts]
+    DB --> SPC[SPC + root cause]
+    SPC --> DB
+    FAB[FabEye API<br/>wafer-map patterns] --> DB
+    DBT --> PBI[Power BI]
+    DB --> GRAF[Grafana]
+    DAG[Dagster] -.orchestrates.-> SIM & DBT & SPC & FAB
+```
 
-## Dashboard
+## Quickstart
 
-### Overview
-![Overview](images/overview.png)
-
-### Yield Analysis
-![Yield Analysis](images/yield_analysis.png)
-
-### SPC Monitor
-![SPC Monitor](images/SPC_monitor.png)
-
-### Process Explorer
-![Process Explorer](images/process_explorer.png)
-
-### Defect Trends
-![Defect Trends](images/defect_trends.png)
-
-## Setup
+Needs Docker and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
 cp .env.example .env
+make install   # .venv + deps + git hooks
+make up        # TimescaleDB on :5432, Grafana on :3000
+make check     # lint + typecheck + all tests
 ```
 
-## How to run
+Run `make` with no arguments to list all targets.
 
-```bash
-# Init DB + run migrations
-alembic upgrade head
-
-# Simulate and ingest data (~7,000 rows)
-python -m simulate.wafer
-python -m simulate.process
-python -m ingest.loader
-
-# Run SPC analysis (writes 497 flags)
-python -m analysis.spc
-
-# Launch dashboard
-streamlit run dashboard/app.py
-
-# Tests with coverage
-pytest --cov=analysis --cov=ingest --cov=db --cov=simulate --cov-report=term-missing
-```
-
-## Dashboard pages
-
-| Page | Description |
-|---|---|
-| Overview | Lot status, wafer counts, SPC flag summary |
-| Yield Analysis | Yield % by lot / product / technology node, defect density trend |
-| SPC Monitor | Control charts with UCL/LCL, flagged point highlighting, flag history |
-| Process Explorer | Parameter distributions and stats per process step |
-| Defect Trends | Defect density over time, correlation with yield, breakdown by node |
-
-## Project layout
+## Layout
 
 ```
-db/             SQLAlchemy models + session factory + Alembic migrations
-simulate/       Wafer, process step, and yield data generators
-ingest/         CSV → DB loader
-analysis/       SPC rules, yield aggregations, raw SQL query helpers
-dashboard/      Streamlit UI (views/ subpackage holds each page)
-tests/          pytest suite — in-memory SQLite, 52 tests
+src/waferlens/   db, simulate, ingest, spc, rootcause, ml, stream, orchestration
+tests/           unit/ (no containers) and integration/ (needs make up)
+dbt/             transformation layer (phase 2)
+grafana/         provisioned datasources and dashboards
+powerbi/         PBIP project (phase 7)
+docs/adr/        architecture decision records
 ```
 
-## Archive
+## License
 
-The previous `schemaforge` project (XML layout generator/validator) is
-preserved on the `schemaforge-archive` branch.
-
----
-
-<div align="center">
-
-*Engineered with caffeine and an unreasonable fondness.*
-*Co-piloted by **Claude Pro**.*
-</div>
+MIT

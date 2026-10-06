@@ -1,0 +1,269 @@
+# WaferLens 2.0 — Roadmap
+
+**One question the whole system answers:**
+> Yield dropped — which tool/chamber caused it, how early could we have known, and what does it look like on the wafer?
+
+Every phase ends with something shippable and a measurable result for the README/CV.
+
+## Target stack
+
+| Layer | Choice |
+|---|---|
+| Storage | Postgres 16 + TimescaleDB |
+| Transforms | dbt (staging → intermediate → marts, star schema) |
+| Orchestration | Dagster |
+| Live monitoring | Grafana (provisioned as code, alerting) |
+| BI reporting | Power BI (PBIP/TMDL in git) — *last phase, Windows side* |
+| ML | PyTorch, scikit-learn, MLflow |
+| Streaming (stretch) | Redpanda (Kafka API) |
+| Tooling | uv, ruff, pyright, pytest + hypothesis, pre-commit, Docker Compose, GitHub Actions, Makefile |
+
+## Milestones
+
+| Milestone | After phase | Meaning |
+|---|---|---|
+| **M1 — CV-ready** | 4 | Data platform + SPC/root-cause + Grafana. Safe to put on CV. |
+| **M2 — Standout** | 5 | Integrates FabEye + SECOM process ML. |
+| **M3 — Complete** | 8 | Streaming, Power BI, write-up, video. |
+
+---
+
+## Phase 0 — Reset & foundation (~3 days)
+
+Goal: clean repo where every later phase plugs into CI, Docker, and `make`.
+
+- [x] Archive v1 on a `waferlens-v1-archive` branch (same pattern as `schemaforge-archive`)
+- [x] Clear `main`; keep LICENSE, move v1 notes/crib files out of the repo (`~/waferlens-v1-notes/`)
+- [x] `pyproject.toml` with uv; `dev` dependency group (dbt / ml groups added in phases 2 / 5)
+- [x] ruff + pyright + pre-commit configured
+- [x] Package layout: `src/waferlens/{db,simulate,ingest,spc,rootcause,ml,stream,orchestration}`, `dbt/`, `grafana/`, `powerbi/`, `docs/adr/`
+- [x] `docker-compose.yml`: TimescaleDB + Grafana (datasource provisioned, no dashboards yet) with healthchecks
+- [x] `Makefile`: `install`, `up`, `down`, `reset`, `psql`, `lint`, `typecheck`, `test`, `check` (`seed` / `dbt` / `demo` land in phases 1 / 2 / 8)
+- [ ] GitHub Actions: lint + typecheck + tests (against a TimescaleDB service container) — workflow written, tick once green on GitHub
+- [x] ADR template
+- [ ] ADR-001 "Postgres/TimescaleDB over SQLite/DuckDB" — skeleton in `docs/adr/`, **write the reasoning yourself**
+- [x] Rewrite `CLAUDE.md` for v2
+- [x] README stub with the one-question pitch + architecture diagram
+
+**Done when:** `make up && make test` passes locally and in CI on an empty project.
+
+---
+
+## Phase 1 — Data model, simulator, real data (~1.5 weeks)
+
+Goal: a realistic fab data model with genealogy, a simulator with **ground truth**, and SECOM loaded (WM-811K stays in FabEye).
+
+### Schema (Alembic)
+- [ ] `products`, `technology_nodes`, `routes`, `route_steps` (step sequence per product)
+- [ ] `tools`, `chambers` (tool → chambers), `recipes` (versioned)
+- [ ] `lots`, `wafers`, `lot_events` (split / merge / hold / release)
+- [ ] `wafer_step_history` (wafer × step → tool, chamber, recipe, track-in/out time) — the genealogy table
+- [ ] `measurements` as a **TimescaleDB hypertable**
+- [ ] `sort_results` (die-level: wafer, die_x, die_y, bin) + `wafer_yield` derived
+- [ ] `excursions_ground_truth` (simulator log: type, tool/chamber, start, end, magnitude)
+- [ ] Constraints: FKs, uniques, check constraints (yield 0–100, pass ≤ total), sensible indexes
+- [ ] ADR-002 "Genealogy model and why chamber-level history matters"
+
+### Simulator
+- [ ] Config-driven (YAML): products, routes, tools/chambers, parameter specs
+- [ ] Wafers routed through chambers (round-robin / random dispatch) with timestamps
+- [ ] Correlated parameters (e.g. CD ↔ overlay) via covariance matrix
+- [ ] Excursion injectors: step shift, linear drift (pad wear), chamber-specific offset, recipe change, spatial defect patterns (edge-ring, center, scratch)
+- [ ] Die-level sort bins generated from wafer-map pattern + Poisson defect model (no hard yield clipping)
+- [ ] Every injected excursion logged to `excursions_ground_truth`
+- [ ] Deterministic by seed; scale knob (10k → 1M+ measurements)
+- [ ] Writes Parquet; loader is a separate module (keep simulate/ingest decoupled)
+
+### Ingest & data quality
+- [ ] pandera (or Pydantic) contracts per table
+- [ ] Bulk load via `COPY` (benchmark vs ORM inserts, note result in README)
+- [ ] Idempotent re-runs (truncate-and-load or upsert)
+
+### Real datasets
+- [ ] UCI SECOM downloader + loader → `raw_secom` (591 sensors + pass/fail)
+- [ ] Data cards in `docs/data/` (source, license, quirks, missingness)
+
+### Tests
+- [ ] Schema/constraint tests, simulator property tests (hypothesis), loader round-trip tests
+
+**Done when:** `make seed` builds 1M+ measurements with genealogy and ground truth; real datasets load; `EXPLAIN ANALYZE` of key queries noted in `docs/perf.md`.
+
+**CV line:** *Designed a fab genealogy schema (lot → wafer → chamber history → die bins) on TimescaleDB, loading 1M+ measurements via COPY.*
+
+---
+
+## Phase 2 — dbt + Dagster (~1 week)
+
+Goal: tested transformation layer and orchestrated, observable pipeline. **Design marts as a star schema now — Power BI consumes them in Phase 7.**
+
+### dbt
+- [ ] Sources + freshness checks
+- [ ] Staging models (1:1 cleanup, typing, renames)
+- [ ] Intermediate: `int_wafer_route_history`, `int_measurement_with_context`
+- [ ] Marts — facts: `fct_measurements`, `fct_wafer_yield`, `fct_spc_alarms`, `fct_die_bins`
+- [ ] Marts — dims: `dim_date`, `dim_tool`, `dim_chamber`, `dim_product`, `dim_node`, `dim_recipe`, `dim_lot`
+- [ ] Incremental model for `fct_measurements`
+- [ ] Tests: unique/not_null/relationships/accepted_values + custom (yield bounds, pass ≤ total)
+- [ ] `dbt docs` generated; lineage screenshot in README
+- [ ] Window functions / recursive CTE used where natural (lot split lineage)
+
+### Dagster
+- [ ] Assets: simulate → load → dbt models → SPC → root cause
+- [ ] dbt assets via `dagster-dbt`
+- [ ] Schedule (daily) + sensor (new Parquet files)
+- [ ] Asset checks wired to data contracts
+- [ ] Lineage graph screenshot in README
+
+**Done when:** one `dagster` materialization rebuilds everything end-to-end; `dbt test` green in CI.
+
+**CV line:** *Built a star-schema analytics layer in dbt orchestrated as Dagster assets with data-quality checks.*
+
+---
+
+## Phase 3 — SPC & root-cause engine (~1.5 weeks)
+
+Goal: detection that's **measured against ground truth**, not just "flags exist".
+
+### SPC
+- [ ] Phase I: estimate limits from an in-control baseline window; persist in `control_limits` (versioned)
+- [ ] Phase II: monitor new data against frozen limits
+- [ ] Shewhart + Western Electric rules 1–4 (vectorised)
+- [ ] EWMA chart
+- [ ] CUSUM chart
+- [ ] Hotelling T² for correlated parameter groups
+- [ ] Limits per tool **and** per chamber
+- [ ] Unique constraint on alarms (idempotent reruns)
+- [ ] hypothesis property tests (e.g. in-control data ⇒ false-alarm rate ≈ theoretical)
+
+### Benchmarking
+- [ ] ARL harness: ARL₀ (false alarms) and ARL₁ (detection delay) for shift sizes 0.25σ–3σ
+- [ ] Results table + plot: Shewhart vs WE rules vs EWMA vs CUSUM vs T²
+- [ ] Detection delay vs `excursions_ground_truth` on simulated data
+- [ ] ADR-003 "Why EWMA/CUSUM in addition to Western Electric"
+
+### Root cause
+- [ ] Commonality analysis in SQL: for low-yield wafers, rank tool/chamber/recipe by over-representation (e.g. chi-square / Fisher / lift)
+- [ ] Time-window aware (only chambers used in the excursion window)
+- [ ] Evaluate: root-cause chamber in top-1 / top-3 for N injected excursions
+- [ ] Excursion impact: dies lost, wafers affected
+
+**Done when:** README has an ARL table and a root-cause accuracy number.
+
+**CV lines:** *EWMA detected 0.5σ drift in N wafers vs M for Shewhart (ARL benchmark).* / *Commonality analysis ranked the true root-cause chamber top-1 in X/Y injected excursions.*
+
+---
+
+## Phase 4 — Grafana live monitoring (~4 days) → **M1: CV-ready**
+
+- [ ] Datasource + dashboards provisioned from git (no click-ops)
+- [ ] Dashboard 1 — **Fab overview**: WIP, yield trend, open alarms, top offending chambers
+- [ ] Dashboard 2 — **SPC control charts**: variables for tool/chamber/parameter; frozen limits as bands; EWMA/T² panels
+- [ ] Dashboard 3 — **Excursion review**: annotations for alarm time vs ground-truth start (detection delay visible)
+- [ ] TimescaleDB `time_bucket` / continuous aggregates powering heavy panels
+- [ ] Alert rules (e.g. T² beyond limit, chamber yield drop) → contact point (email/webhook)
+- [ ] Screenshots + short GIF in README
+
+**Done when:** `make up` gives a working Grafana at `localhost:3000` with all dashboards and a firing demo alert.
+
+**M1 checklist:** README results tables filled · CI green · architecture diagram · 3–4 ADRs · CV bullets drafted.
+
+---
+
+## Phase 5 — FabEye integration + process ML (~1.5 weeks) → **M2: Standout**
+
+Wafer-map classification already lives in [FabEye](https://github.com/anson10/FabEye) (WM-811K CNN/GNN/RF, lot-disjoint evaluation, conformal prediction, ONNX + FastAPI serving). **Do not rebuild it here.** WaferLens consumes FabEye as a service and adds what FabEye's README lists as missing: timestamps and process context.
+
+### 5a — FabEye as the wafer-map classifier
+- [ ] Add FabEye image as a `fabeye` service in docker-compose (API key via env)
+- [ ] Simulator wafer maps exported in FabEye's format (0 = off-wafer, 1 = good, 2 = fail)
+- [ ] Dagster asset: batch-score new wafers via `POST /predict/batch` → `fct_wafer_pattern` (pattern, confidence, conformal set, accept/review flag, model version)
+- [ ] Domain-shift check: score simulated maps against **injected ground-truth patterns** → accuracy, coverage, accept rate vs FabEye's numbers on real lots (report honestly, even if it drops)
+- [ ] Root cause using pattern: pattern × chamber commonality (e.g. edge-ring ↔ CMP chamber) → does adding pattern improve top-1 root-cause accuracy from Phase 3?
+- [ ] Time-ordered evaluation FabEye couldn't do: detection delay of a pattern-based alarm vs SPC alarms on the same excursion
+- [ ] Grafana: Prometheus datasource scraping FabEye `/metrics` → serving latency, prediction volume by pattern, review-queue rate
+- [ ] Cross-link READMEs (WaferLens ↔ FabEye)
+
+### 5b — SECOM: process-sensor fail prediction (new skill area: tabular ML)
+- [ ] Data card: 591 sensors, heavy missingness, ~6.6% fails, timestamps
+- [ ] **Time-ordered** train/test split (SECOM has timestamps) vs random split → leakage gap measured
+- [ ] Missing-value + feature-selection strategy documented (drop/impute, variance, correlation, L1 / mutual information)
+- [ ] Baselines: logistic regression → gradient boosting (LightGBM/XGBoost); imbalance handling
+- [ ] Metrics: PR-AUC, recall at fixed false-alarm rate (not accuracy)
+- [ ] SHAP / permutation importance → which sensors drive fails
+- [ ] Scores written back to DB → visible in Grafana
+
+### MLOps (new vs FabEye)
+- [ ] MLflow tracking + model registry in docker-compose (SECOM runs)
+- [ ] Dagster assets for SECOM training / batch scoring
+- [ ] ADR-004 "Consume FabEye as a service instead of retraining"
+- [ ] ADR-005 "SECOM evaluation: time split and PR-AUC"
+
+**Done when:** README reports FabEye's accuracy on simulated maps with ground truth, root-cause accuracy with vs without pattern, and SECOM PR-AUC on a time split.
+
+**CV lines:** *Integrated a separately deployed wafer-map classifier (FabEye) into the fab pipeline; pattern signals raised root-cause top-1 accuracy from X to Y.* / *Predicted wafer fails from 591 process sensors (SECOM) with PR-AUC X on a time-ordered split, tracked in MLflow.*
+
+---
+
+## Phase 6 — Streaming / real-time SPC (stretch, ~1 week)
+
+- [ ] Redpanda in docker-compose
+- [ ] Simulator "tool agents" publish measurement events (schema-versioned JSON/Avro)
+- [ ] Consumer: online SPC (EWMA/CUSUM state per chamber) → alarms to DB
+- [ ] Exactly-once-ish handling: idempotent writes, consumer offsets
+- [ ] Grafana live panels with short refresh; end-to-end latency measured
+- [ ] Demo script: start stream → inject drift → alarm appears in Grafana
+
+**CV line:** *Real-time SPC on streaming tool data (Redpanda → TimescaleDB), alarm latency < N s.*
+
+---
+
+## Phase 7 — Power BI reporting (Windows side, ~1–1.5 weeks)
+
+Setup across WSL ↔ Windows:
+- [ ] Postgres container port reachable from Windows (`localhost:5432`); test with Power BI Desktop's PostgreSQL connector (Npgsql)
+- [ ] Read-only DB role `powerbi_reader` limited to the marts schema
+- [ ] Enable PBIP / TMDL save format; project lives in `powerbi/` in the repo
+- [ ] `.gitignore` for Power BI cache files (`.pbi/cache.abf`, `localSettings.json`)
+
+Model:
+- [ ] Import dbt star schema (facts + dims), relationships single-direction, `dim_date` marked as date table
+- [ ] DAX measures: die-weighted yield, yield Δ WoW/MoM, dies lost, alarm rate, mean detection delay
+- [ ] Display folders + measure descriptions (reads like a real semantic model)
+
+Report pages:
+- [ ] Executive yield summary (KPIs, trend, by product/node)
+- [ ] Yield Pareto (loss by bin / pattern / product)
+- [ ] Commonality / root cause (chamber ranking, drillthrough)
+- [ ] Excursion report (impact, detection delay, cost)
+- [ ] Drillthrough lot → wafer → route history
+- [ ] Bookmarks / tooltips pages
+- [ ] Row-level security role (e.g. per product line)
+
+Delivery:
+- [ ] Screenshots + 1–2 min video walkthrough
+- [ ] `powerbi/README.md` explaining model design + DAX highlights
+- [ ] (Optional, in parallel) PL-300 certification
+
+**CV line:** *Built a Power BI semantic model on a dbt star schema (DAX, RLS, drillthrough), version-controlled as PBIP.*
+
+---
+
+## Phase 8 — Launch (~3–4 days) → **M3: Complete**
+
+- [ ] README: pitch → architecture diagram → results tables (ARL, root-cause accuracy, F1, PR-AUC, latency) → screenshots → quickstart
+- [ ] "Excursion story" demo: CMP chamber drift → alarm → commonality → wafer-map pattern → yield impact
+- [ ] 2–3 min demo video (link at top of README)
+- [ ] Technical write-up (blog / LinkedIn article): what worked, what didn't, numbers
+- [ ] Short German summary section in README (*Kurzbeschreibung*)
+- [ ] All ADRs complete; `docs/` index
+- [ ] Final CV bullets + LinkedIn project entry
+- [ ] Repo hygiene: no crib files, no scratch scripts, clean commit history, pinned versions, tagged `v2.0.0` release
+
+---
+
+## Rules for the whole project
+
+- Every claim in the README is reproducible by a `make` target.
+- Every phase ends green in CI before the next starts.
+- No tool goes in that can't be justified in two sentences (write the ADR).
+- Commits: `type(scope): subject` + 3–5 bullets, one feature branch per checklist group.
