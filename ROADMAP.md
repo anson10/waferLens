@@ -57,11 +57,11 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 
 | Profile | Lots | Wafers | Simulated time | Rows (approx.) | Used for |
 |---|---|---|---|---|---|
-| `dev` | 20 | 500 | 2 weeks | ~100k | Unit tests, CI (seconds) |
-| **`demo`** (default) | **1,000** | **25,000** | **6 months** | **~6M** | All README results, Grafana, Power BI, FabEye scoring |
-| `stress` | 5,000 | 125,000 | 12 months | ~30M | Performance write-up only (`docs/perf.md`) |
+| `dev` | 40 | 1,000 | 30 days | ~170k | Unit tests, CI (< 1 s) |
+| **`demo`** (default) | **1,000** | **25,000** | **6 months** | **4.74M** | All README results, Grafana, Power BI, FabEye scoring |
+| `stress` | 5,000 | 125,000 | 12 months | ~24M | Performance write-up only (`docs/perf.md`) |
 
-`demo` row budget: tool sensor data ~3M (every wafer, ~30 steps, ~4 sensors) · inline metrology ~1.6M (5 of 25 wafers per lot, 12 steps, 3 parameters, 9 sites) · genealogy ~750k · 25k wafer maps (one array per wafer) · ~40 injected excursions.
+`demo` (seed 42, measured): tool sensor readings 2.96M · inline metrology 985k (5 of 25 wafers per lot, 12 steps, 22 parameters, 9 sites) · genealogy 740k · 24,090 wafer maps (one array per wafer) · 40 injected excursions · mean yield 87.1%. Generates in ~5–20 s, ~1 GB peak memory. Details in `docs/simulator.md`.
 
 ### Schema (Alembic) — see `docs/schema.md`
 - [x] `products`, `technology_nodes`, `routes`, `route_steps` (step sequence per product)
@@ -78,18 +78,19 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 - [ ] ADR-002 "Genealogy model and why chamber-level history matters" — skeleton in `docs/adr/`, **write it yourself**
 - [ ] ADR-003 "Wafer maps as arrays, not die rows" — skeleton in `docs/adr/`, **write it yourself**
 
-### Simulator
-- [ ] Config-driven (YAML): products, routes, tools/chambers, parameter specs
-- [ ] Wafers routed through chambers (round-robin / random dispatch) with timestamps
-- [ ] Correlated parameters (e.g. CD ↔ overlay) via covariance matrix
-- [ ] Excursion injectors: step shift, linear drift (pad wear), chamber-specific offset, recipe change, spatial defect patterns (edge-ring, center, scratch)
-- [ ] Die-level sort bins generated from wafer-map pattern + Poisson defect model (no hard yield clipping)
-- [ ] Every injected excursion logged to `excursions_ground_truth`
-- [ ] Deterministic by seed; `--profile dev|demo|stress` (sizes in the table above)
-- [ ] Fully vectorised numpy (no `iterrows`); `demo` generates in < 2 min
-- [ ] Metrology sampling plan + multi-site measurements (within-wafer variation, e.g. edge vs center)
-- [ ] ~40 excursions spread over the 6 months for `demo`, mixed types and chambers
-- [ ] Writes Parquet; loader is a separate module (keep simulate/ingest decoupled)
+### Simulator — see `docs/simulator.md`
+- [x] Config-driven (`config/fab.yaml`, validated with pydantic): products, routes, tools/chambers, sensors, metrology specs
+- [x] Wafers routed through chambers (slot-based dispatch per tool) with timestamps, queue times, holds, splits, litho rework, scrap
+- [x] Correlated parameters (e.g. overlay x ↔ y, CD ↔ sheet resistance) via Cholesky factor of a correlation matrix
+- [x] Excursion injectors: step shift, linear drift, chamber offset, recipe change, spatial defect patterns (center, donut, edge ring, edge loc, loc, scratch, random)
+- [x] Die-level sort bins from a Poisson defect model + spatial patterns (no hard yield clipping)
+- [x] Every injected excursion logged to `excursions_ground_truth`
+- [x] Deterministic by seed (independent random stream per stage); `--profile dev|demo|stress`
+- [x] Fully vectorised numpy (loop over 30 steps only); `demo` generates in ~5–20 s
+- [x] Metrology sampling plan + 9-site measurements with radial within-wafer profile
+- [x] 40 excursions spread over 6 months for `demo`, mixed types and chambers
+- [x] Writes Parquet + manifest; loader is a separate module (keep simulate/ingest decoupled)
+- [x] Tests: output matches every table, PK/FK and CHECK rules hold (also property-tested over random seeds and sizes), injected shifts are measurable, recipe windows and spatial yield loss verified
 
 ### Ingest & data quality
 - [ ] pandera (or Pydantic) contracts per table
