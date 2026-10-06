@@ -39,7 +39,7 @@ Goal: clean repo where every later phase plugs into CI, Docker, and `make`.
 - [x] Package layout: `src/waferlens/{db,simulate,ingest,spc,rootcause,ml,stream,orchestration}`, `dbt/`, `grafana/`, `powerbi/`, `docs/adr/`
 - [x] `docker-compose.yml`: TimescaleDB + Grafana (datasource provisioned, no dashboards yet) with healthchecks
 - [x] `Makefile`: `install`, `up`, `down`, `reset`, `psql`, `lint`, `typecheck`, `test`, `check` (`seed` / `dbt` / `demo` land in phases 1 / 2 / 8)
-- [ ] GitHub Actions: lint + typecheck + tests (against a TimescaleDB service container) — workflow written, tick once green on GitHub
+- [x] GitHub Actions: lint + typecheck + tests (against a TimescaleDB service container) — green on PR #1 and `main`
 - [x] ADR template
 - [ ] ADR-001 "Postgres/TimescaleDB over SQLite/DuckDB" — skeleton in `docs/adr/`, **write the reasoning yourself**
 - [x] Rewrite `CLAUDE.md` for v2
@@ -49,20 +49,34 @@ Goal: clean repo where every later phase plugs into CI, Docker, and `make`.
 
 ---
 
-## Phase 1 — Data model, simulator, real data (~1.5 weeks)
+## Phase 1 — Data model, simulator, SECOM (~1.5 weeks)
 
 Goal: a realistic fab data model with genealogy, a simulator with **ground truth**, and SECOM loaded (WM-811K stays in FabEye).
+
+### Data scale
+
+| Profile | Lots | Wafers | Simulated time | Rows (approx.) | Used for |
+|---|---|---|---|---|---|
+| `dev` | 20 | 500 | 2 weeks | ~100k | Unit tests, CI (seconds) |
+| **`demo`** (default) | **1,000** | **25,000** | **6 months** | **~6M** | All README results, Grafana, Power BI, FabEye scoring |
+| `stress` | 5,000 | 125,000 | 12 months | ~30M | Performance write-up only (`docs/perf.md`) |
+
+`demo` row budget: tool sensor data ~3M (every wafer, ~30 steps, ~4 sensors) · inline metrology ~1.6M (5 of 25 wafers per lot, 12 steps, 3 parameters, 9 sites) · genealogy ~750k · 25k wafer maps (one array per wafer) · ~40 injected excursions.
 
 ### Schema (Alembic)
 - [ ] `products`, `technology_nodes`, `routes`, `route_steps` (step sequence per product)
 - [ ] `tools`, `chambers` (tool → chambers), `recipes` (versioned)
 - [ ] `lots`, `wafers`, `lot_events` (split / merge / hold / release)
 - [ ] `wafer_step_history` (wafer × step → tool, chamber, recipe, track-in/out time) — the genealogy table
-- [ ] `measurements` as a **TimescaleDB hypertable**
-- [ ] `sort_results` (die-level: wafer, die_x, die_y, bin) + `wafer_yield` derived
+- [ ] `tool_sensor_readings` (every wafer × step: chamber sensor summaries) as a **TimescaleDB hypertable**
+- [ ] `metrology_measurements` (sampled wafers, multi-site: site_x, site_y) as a **TimescaleDB hypertable**
+- [ ] `metrology_sampling_plans` (which wafers/steps/sites get measured)
+- [ ] `wafer_maps` (one row per wafer: die bin grid as a Postgres array, FabEye-compatible 0/1/2 encoding) — not one row per die
+- [ ] `wafer_bin_summary` (wafer × bin → die count) + `wafer_yield` derived
 - [ ] `excursions_ground_truth` (simulator log: type, tool/chamber, start, end, magnitude)
 - [ ] Constraints: FKs, uniques, check constraints (yield 0–100, pass ≤ total), sensible indexes
 - [ ] ADR-002 "Genealogy model and why chamber-level history matters"
+- [ ] ADR-003 "Wafer maps as arrays, not die rows"
 
 ### Simulator
 - [ ] Config-driven (YAML): products, routes, tools/chambers, parameter specs
@@ -71,7 +85,10 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 - [ ] Excursion injectors: step shift, linear drift (pad wear), chamber-specific offset, recipe change, spatial defect patterns (edge-ring, center, scratch)
 - [ ] Die-level sort bins generated from wafer-map pattern + Poisson defect model (no hard yield clipping)
 - [ ] Every injected excursion logged to `excursions_ground_truth`
-- [ ] Deterministic by seed; scale knob (10k → 1M+ measurements)
+- [ ] Deterministic by seed; `--profile dev|demo|stress` (sizes in the table above)
+- [ ] Fully vectorised numpy (no `iterrows`); `demo` generates in < 2 min
+- [ ] Metrology sampling plan + multi-site measurements (within-wafer variation, e.g. edge vs center)
+- [ ] ~40 excursions spread over the 6 months for `demo`, mixed types and chambers
 - [ ] Writes Parquet; loader is a separate module (keep simulate/ingest decoupled)
 
 ### Ingest & data quality
@@ -86,9 +103,9 @@ Goal: a realistic fab data model with genealogy, a simulator with **ground truth
 ### Tests
 - [ ] Schema/constraint tests, simulator property tests (hypothesis), loader round-trip tests
 
-**Done when:** `make seed` builds 1M+ measurements with genealogy and ground truth; real datasets load; `EXPLAIN ANALYZE` of key queries noted in `docs/perf.md`.
+**Done when:** `make seed` (demo profile) loads ~6M rows with genealogy, wafer maps and ground truth; SECOM loads; `make seed PROFILE=stress` works and `EXPLAIN ANALYZE` of key queries plus load times are noted in `docs/perf.md`.
 
-**CV line:** *Designed a fab genealogy schema (lot → wafer → chamber history → die bins) on TimescaleDB, loading 1M+ measurements via COPY.*
+**CV line:** *Simulated 6 months of fab operation (25,000 wafers, 1,000 lots, ~6M rows, 40 injected excursions) on a chamber-level genealogy schema in TimescaleDB, loaded via COPY and stress-tested to 30M rows.*
 
 ---
 
@@ -139,7 +156,7 @@ Goal: detection that's **measured against ground truth**, not just "flags exist"
 - [ ] ARL harness: ARL₀ (false alarms) and ARL₁ (detection delay) for shift sizes 0.25σ–3σ
 - [ ] Results table + plot: Shewhart vs WE rules vs EWMA vs CUSUM vs T²
 - [ ] Detection delay vs `excursions_ground_truth` on simulated data
-- [ ] ADR-003 "Why EWMA/CUSUM in addition to Western Electric"
+- [ ] ADR-004 "Why EWMA/CUSUM in addition to Western Electric"
 
 ### Root cause
 - [ ] Commonality analysis in SQL: for low-yield wafers, rank tool/chamber/recipe by over-representation (e.g. chi-square / Fisher / lift)
@@ -195,8 +212,8 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 ### MLOps (new vs FabEye)
 - [ ] MLflow tracking + model registry in docker-compose (SECOM runs)
 - [ ] Dagster assets for SECOM training / batch scoring
-- [ ] ADR-004 "Consume FabEye as a service instead of retraining"
-- [ ] ADR-005 "SECOM evaluation: time split and PR-AUC"
+- [ ] ADR-005 "Consume FabEye as a service instead of retraining"
+- [ ] ADR-006 "SECOM evaluation: time split and PR-AUC"
 
 **Done when:** README reports FabEye's accuracy on simulated maps with ground truth, root-cause accuracy with vs without pattern, and SECOM PR-AUC on a time split.
 
