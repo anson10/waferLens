@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs bench-load explain lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -48,6 +48,17 @@ dbt: ## Build and test the dbt models (staging, intermediate, marts) on loaded d
 dbt-docs: ## Generate dbt docs and docs/dbt.md (lineage + model table)
 	cd dbt && uv run dbt docs generate --profiles-dir .
 	uv run python -m waferlens.db.dbt_docs
+
+dagster: ## Open the Dagster UI on http://localhost:3001 (assets, jobs, checks, triggers)
+	DAGSTER_HOME=$(CURDIR)/.dagster_home uv run dagster dev -m waferlens.orchestration.definitions -p 3001
+
+pipeline: ## Run the full_rebuild job headless: simulate → contracts → load → SECOM → dbt (PROFILE=...)
+	mkdir -p .dagster_home
+	printf 'resources:\n  fab_data:\n    config:\n      profile: %s\n      seed: %s\n' $(PROFILE) $(SEED) > .dagster_home/run_config.yaml
+	DAGSTER_HOME=$(CURDIR)/.dagster_home uv run dagster job execute -m waferlens.orchestration.definitions -j full_rebuild -c .dagster_home/run_config.yaml
+
+pipeline-docs: ## Regenerate docs/pipeline.md from the Dagster asset graph
+	uv run python -m waferlens.orchestration.docs
 
 bench-load: ## Compare ORM, Core and COPY inserts on loaded data (rolled back)
 	uv run python -m waferlens.ingest.benchmark --data data/$(PROFILE)

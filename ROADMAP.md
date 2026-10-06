@@ -136,12 +136,14 @@ Goal: tested transformation layer and orchestrated, observable pipeline. **Desig
 - [x] Window functions (`lag` queue time, `row_number` final pass, `lead` recipe validity, bin share) and a recursive CTE (lot split lineage)
 - [x] ADR-004 "dbt for transformations, marts as a star schema"
 
-### Dagster
-- [ ] Assets: simulate → load → dbt models → SPC → root cause
-- [ ] dbt assets via `dagster-dbt`
-- [ ] Schedule (daily) + sensor (new Parquet files)
-- [ ] Asset checks wired to data contracts
-- [ ] Lineage graph screenshot in README
+### Dagster — see `docs/pipeline.md` (generated) and ADR-005
+- [x] Assets: `simulated_fab` → 24 warehouse tables (keys = dbt source names) → 40 dbt models; SPC and root-cause assets join in phase 3
+- [x] dbt assets via `dagster-dbt` (models grouped by layer; 78 dbt tests become asset checks)
+- [x] Schedule (`nightly_rebuild`, 03:00 UTC) + sensor (`new_parquet_drop`, ignores drops the pipeline wrote itself)
+- [x] Data contracts as a **blocking** asset check on the Parquet drop (tested: a failed check stops the load)
+- [x] Lineage as a generated Mermaid graph in `docs/pipeline.md` (`make pipeline-docs`) instead of a screenshot
+- [x] Jobs `full_rebuild` and `ingest`; `make pipeline` runs `full_rebuild` headless, `make dagster` opens the UI
+- [x] ADR-005 "Dagster for orchestration, modelled as assets"
 
 **Done when:** one `dagster` materialization rebuilds everything end-to-end; `dbt test` green in CI.
 
@@ -168,7 +170,7 @@ Goal: detection that's **measured against ground truth**, not just "flags exist"
 - [ ] ARL harness: ARL₀ (false alarms) and ARL₁ (detection delay) for shift sizes 0.25σ–3σ
 - [ ] Results table + plot: Shewhart vs WE rules vs EWMA vs CUSUM vs T²
 - [ ] Detection delay vs `excursions_ground_truth` on simulated data
-- [ ] ADR-005 "Why EWMA/CUSUM in addition to Western Electric"
+- [ ] ADR-006 "Why EWMA/CUSUM in addition to Western Electric"
 
 ### Root cause
 - [ ] `fct_spc_alarms` mart (moved from phase 2) feeding Grafana and Power BI
@@ -225,8 +227,8 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 ### MLOps (new vs FabEye)
 - [ ] MLflow tracking + model registry in docker-compose (SECOM runs)
 - [ ] Dagster assets for SECOM training / batch scoring
-- [ ] ADR-006 "Consume FabEye as a service instead of retraining"
-- [ ] ADR-007 "SECOM evaluation: time split and PR-AUC"
+- [ ] ADR-007 "Consume FabEye as a service instead of retraining"
+- [ ] ADR-008 "SECOM evaluation: time split and PR-AUC"
 
 **Done when:** README reports FabEye's accuracy on simulated maps with ground truth, root-cause accuracy with vs without pattern, and SECOM PR-AUC on a time split.
 
