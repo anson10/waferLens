@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: waferlens
+      POSTGRES_PASSWORD: waferlens
+      POSTGRES_DB: waferlens
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U waferlens"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://waferlens:waferlens@db:5432/waferlens
+    entrypoint: ["sh", "-c", "alembic upgrade head && python -m ingest.loader"]
+
+  dashboard:
+    build: .
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql+psycopg2://waferlens:waferlens@db:5432/waferlens
+    ports:
+      - "8501:8501"
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+
+volumes:
+  pgdata:
+  grafana-data:

@@ -1,0 +1,40 @@
+# Fly.io deploy config for the full Postgres-backed stack (dashboard only —
+# Fly's free tier doesn't fit Grafana + Postgres + app in one app definition,
+# so Postgres is provisioned separately via `fly postgres create`).
+#
+# Setup:
+#   fly launch --no-deploy               # first time only, creates the app
+#   fly postgres create --name waferlens-db
+#   fly postgres attach waferlens-db     # sets DATABASE_URL as a secret
+#   fly deploy
+
+app = "waferlens"
+primary_region = "lhr"
+
+[build]
+
+[deploy]
+  release_command = "sh -c 'alembic upgrade head && python -m ingest.loader'"
+
+[env]
+  STREAMLIT_SERVER_HEADLESS = "true"
+
+[http_service]
+  internal_port = 8501
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[checks]
+  [checks.health]
+    port = 8501
+    type = "http"
+    path = "/_stcore/health"
+    interval = "30s"
+    timeout = "5s"

@@ -7,3 +7,9 @@ __pycache__/
 htmlcov/
 data/*.db
 .DS_Store
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/.dbt-venv/
+dbt/package-lock.yml
+dbt/.user.yml

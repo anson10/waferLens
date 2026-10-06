@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: yield_by_lot
+    description: Average yield % and defect density per lot, matches analysis/queries.py::yield_by_lot.
+    columns:
+      - name: lot_id
+        data_tests: [unique, not_null]
+      - name: avg_yield_pct
+        data_tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+
+  - name: yield_by_technology_node
+    description: Average yield % and defect density per technology node.
+    columns:
+      - name: technology_node
+        data_tests: [unique, not_null]
+
+  - name: spc_flag_summary
+    description: Count of SPC flags per Western Electric rule violated.
+    columns:
+      - name: rule_violated
+        data_tests: [unique, not_null]
+      - name: flag_count
+        data_tests:
+          - dbt_utils.accepted_range:
+              min_value: 0

@@ -2,13 +2,29 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy.engine import CursorResult
+
+
+def _rows(result: CursorResult) -> list[dict]:
+    """Materialize a result as plain dicts, coercing Postgres NUMERIC/Decimal to float.
+
+    Postgres' ROUND() requires a numeric cast, which comes back as Decimal —
+    SQLite returns plain floats for the same query. Normalizing here keeps
+    query functions dialect-agnostic for callers (pandas, Plotly, tests).
+    """
+    return [
+        {k: (float(v) if isinstance(v, Decimal) else v) for k, v in row.items()}
+        for row in result.mappings().all()
+    ]
 
 
 def yield_by_lot(session: Session) -> list[dict]:
     """Average yield and defect density per lot, ordered by lot_id."""
-    rows = session.execute(
+    return _rows(session.execute(
         text(
             """
             SELECT
@@ -18,8 +34,8 @@ def yield_by_lot(session: Session) -> list[dict]:
                 l.start_date,
                 l.status,
                 COUNT(yr.record_id)              AS wafer_count,
-                ROUND(AVG(yr.yield_pct), 2)      AS avg_yield_pct,
-                ROUND(AVG(yr.defect_density), 4) AS avg_defect_density
+                ROUND(CAST(AVG(yr.yield_pct) AS NUMERIC), 2)      AS avg_yield_pct,
+                ROUND(CAST(AVG(yr.defect_density) AS NUMERIC), 4) AS avg_defect_density
             FROM lots l
             JOIN wafers       w  ON w.lot_id    = l.lot_id
             JOIN yield_records yr ON yr.wafer_id = w.wafer_id
@@ -27,20 +43,19 @@ def yield_by_lot(session: Session) -> list[dict]:
             ORDER BY l.lot_id
             """
         )
-    ).mappings().all()
-    return [dict(r) for r in rows]
+    ))
 
 
 def yield_by_product(session: Session) -> list[dict]:
     """Average yield grouped by product, ordered descending by yield."""
-    rows = session.execute(
+    return _rows(session.execute(
         text(
             """
             SELECT
                 l.product,
                 COUNT(yr.record_id)              AS wafer_count,
-                ROUND(AVG(yr.yield_pct), 2)      AS avg_yield_pct,
-                ROUND(AVG(yr.defect_density), 4) AS avg_defect_density
+                ROUND(CAST(AVG(yr.yield_pct) AS NUMERIC), 2)      AS avg_yield_pct,
+                ROUND(CAST(AVG(yr.defect_density) AS NUMERIC), 4) AS avg_defect_density
             FROM lots l
             JOIN wafers       w  ON w.lot_id    = l.lot_id
             JOIN yield_records yr ON yr.wafer_id = w.wafer_id
@@ -48,20 +63,19 @@ def yield_by_product(session: Session) -> list[dict]:
             ORDER BY avg_yield_pct DESC
             """
         )
-    ).mappings().all()
-    return [dict(r) for r in rows]
+    ))
 
 
 def yield_by_node(session: Session) -> list[dict]:
     """Average yield grouped by technology node."""
-    rows = session.execute(
+    return _rows(session.execute(
         text(
             """
             SELECT
                 l.technology_node,
                 COUNT(yr.record_id)              AS wafer_count,
-                ROUND(AVG(yr.yield_pct), 2)      AS avg_yield_pct,
-                ROUND(AVG(yr.defect_density), 4) AS avg_defect_density
+                ROUND(CAST(AVG(yr.yield_pct) AS NUMERIC), 2)      AS avg_yield_pct,
+                ROUND(CAST(AVG(yr.defect_density) AS NUMERIC), 4) AS avg_defect_density
             FROM lots l
             JOIN wafers       w  ON w.lot_id    = l.lot_id
             JOIN yield_records yr ON yr.wafer_id = w.wafer_id
@@ -69,13 +83,12 @@ def yield_by_node(session: Session) -> list[dict]:
             ORDER BY avg_yield_pct DESC
             """
         )
-    ).mappings().all()
-    return [dict(r) for r in rows]
+    ))
 
 
 def spc_flag_counts(session: Session) -> list[dict]:
     """Total SPC flags per rule, ordered by count descending."""
-    rows = session.execute(
+    return _rows(session.execute(
         text(
             """
             SELECT
@@ -86,15 +99,14 @@ def spc_flag_counts(session: Session) -> list[dict]:
             ORDER BY flag_count DESC
             """
         )
-    ).mappings().all()
-    return [dict(r) for r in rows]
+    ))
 
 
 def measurements_for_step(
     session: Session, step_id: int, parameter: str
 ) -> list[dict]:
     """Ordered measurements for a (step, parameter) pair — used for control charts."""
-    rows = session.execute(
+    return _rows(session.execute(
         text(
             """
             SELECT
@@ -109,13 +121,12 @@ def measurements_for_step(
             """
         ),
         {"step_id": step_id, "parameter": parameter},
-    ).mappings().all()
-    return [dict(r) for r in rows]
+    ))
 
 
 def spc_flags_detail(session: Session) -> list[dict]:
     """SPC flags joined with measurement and step context — used for flag history table."""
-    rows = session.execute(
+    return _rows(session.execute(
         text(
             """
             SELECT
@@ -139,13 +150,12 @@ def spc_flags_detail(session: Session) -> list[dict]:
             ORDER BY sf.flagged_at DESC
             """
         )
-    ).mappings().all()
-    return [dict(r) for r in rows]
+    ))
 
 
 def process_step_stats(session: Session) -> list[dict]:
     """Mean, std, and count per (step, parameter) — used for Process Explorer."""
-    rows = session.execute(
+    return _rows(session.execute(
         text(
             """
             SELECT
@@ -155,21 +165,20 @@ def process_step_stats(session: Session) -> list[dict]:
                 ps.layer,
                 m.parameter,
                 COUNT(*)                         AS measurement_count,
-                ROUND(AVG(m.value), 4)           AS mean_value,
-                ROUND(AVG(m.value * m.value) - AVG(m.value) * AVG(m.value), 6) AS variance
+                ROUND(CAST(AVG(m.value) AS NUMERIC), 4)           AS mean_value,
+                ROUND(CAST(AVG(m.value * m.value) - AVG(m.value) * AVG(m.value) AS NUMERIC), 6) AS variance
             FROM measurements m
             JOIN process_steps ps ON ps.step_id = m.step_id
             GROUP BY ps.step_id, ps.step_name, ps.tool_id, ps.layer, m.parameter
             ORDER BY ps.sequence_order, m.parameter
             """
         )
-    ).mappings().all()
-    return [dict(r) for r in rows]
+    ))
 
 
 def low_yield_wafers(session: Session, threshold: float = 80.0) -> list[dict]:
     """Wafers below a yield threshold, joined with lot context."""
-    rows = session.execute(
+    return _rows(session.execute(
         text(
             """
             SELECT
@@ -187,5 +196,4 @@ def low_yield_wafers(session: Session, threshold: float = 80.0) -> list[dict]:
             """
         ),
         {"threshold": threshold},
-    ).mappings().all()
-    return [dict(r) for r in rows]
+    ))

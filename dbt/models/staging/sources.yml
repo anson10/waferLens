@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: waferlens
+    schema: public
+    tables:
+      - name: lots
+      - name: wafers
+      - name: process_steps
+      - name: measurements
+      - name: yield_records
+      - name: spc_flags

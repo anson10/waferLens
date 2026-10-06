@@ -16,13 +16,16 @@ from sqlalchemy import text
 
 from db.models import Lot, Measurement, ProcessStep, Wafer, YieldRecord
 from db.session import get_session
+from ingest.validate import validate_all
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
 
 def _clear_tables(session) -> None:
     """Delete all rows in FK-safe reverse order."""
-    for table in ("yield_records", "measurements", "process_steps", "wafers", "lots"):
+    for table in (
+        "spc_flags", "yield_records", "measurements", "process_steps", "wafers", "lots",
+    ):
         session.execute(text(f"DELETE FROM {table}"))
 
 
@@ -59,6 +62,8 @@ def run(data_dir: Path = DATA_DIR, clear: bool = False) -> dict[str, int]:
     steps_df = pd.read_csv(data_dir / "process_steps.csv")
     measurements_df = pd.read_csv(data_dir / "measurements.csv")
     yield_df = pd.read_csv(data_dir / "yield_records.csv")
+
+    validate_all(lots_df, wafers_df, steps_df, measurements_df, yield_df)
 
     with get_session() as session:
         if clear:

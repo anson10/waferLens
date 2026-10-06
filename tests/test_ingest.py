@@ -7,13 +7,14 @@ import pandas as pd
 import pytest
 
 from ingest.loader import (
+    _clear_tables,
     load_lots,
     load_measurements,
     load_process_steps,
     load_wafers,
     load_yield_records,
 )
-from db.models import Lot, Measurement, ProcessStep, Wafer, YieldRecord
+from db.models import Lot, Measurement, ProcessStep, SpcFlag, Wafer, YieldRecord
 
 
 @pytest.fixture
@@ -118,6 +119,26 @@ def test_load_yield_records(db_session, lots_df, wafers_df, yield_df):
     assert db_session.query(YieldRecord).count() == 2
     yr = db_session.query(YieldRecord).filter_by(wafer_id=1).one()
     assert yr.yield_pct == pytest.approx(88.0)
+
+
+def test_clear_tables_with_existing_spc_flags(
+    db_session, lots_df, wafers_df, steps_df, measurements_df, yield_df
+):
+    """Reseeding after SPC has run must not violate the spc_flags -> measurements FK."""
+    load_lots(db_session, lots_df)
+    load_wafers(db_session, wafers_df)
+    load_process_steps(db_session, steps_df)
+    load_measurements(db_session, measurements_df)
+    load_yield_records(db_session, yield_df)
+    db_session.add(SpcFlag(flag_id=1, measurement_id=1, rule_violated="rule1_3sigma",
+                            flagged_at=date(2025, 10, 1)))
+    db_session.commit()
+
+    _clear_tables(db_session)
+    db_session.commit()
+
+    assert db_session.query(SpcFlag).count() == 0
+    assert db_session.query(Measurement).count() == 0
 
 
 def test_real_csvs_load(db_session):

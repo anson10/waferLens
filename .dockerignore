@@ -1,0 +1,12 @@
+.git
+.venv
+.pytest_cache
+__pycache__
+*.pyc
+.coverage
+htmlcov
+waferlens.db
+.env
+CODEBASE_WALKTHROUGH.md
+INTERVIEW_PREP.md
+test.py

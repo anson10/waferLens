@@ -1,0 +1,126 @@
+{
+  "title": "WaferLens — Fab Overview",
+  "uid": "waferlens-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "time": { "from": "now-1y", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Lots",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "waferlens-postgres" },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Lots\" FROM lots",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Wafers",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "waferlens-postgres" },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Wafers\" FROM wafers",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Avg Yield %",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "waferlens-postgres" },
+      "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 }, "overrides": [] },
+      "targets": [
+        {
+          "rawSql": "SELECT AVG(yield_pct) AS \"Avg Yield\" FROM yield_records",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "SPC Flags",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "waferlens-postgres" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" } }, "overrides": [] },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Flags\" FROM spc_flags",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Avg Yield % by Technology Node",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "postgres", "uid": "waferlens-postgres" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "targets": [
+        {
+          "rawSql": "SELECT l.technology_node AS \"node\", ROUND(AVG(yr.yield_pct)::numeric, 2) AS \"avg_yield_pct\" FROM lots l JOIN wafers w ON w.lot_id = l.lot_id JOIN yield_records yr ON yr.wafer_id = w.wafer_id GROUP BY l.technology_node ORDER BY avg_yield_pct DESC",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "SPC Flags by Rule Violated",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "postgres", "uid": "waferlens-postgres" },
+      "targets": [
+        {
+          "rawSql": "SELECT rule_violated AS \"rule\", COUNT(*) AS \"count\" FROM spc_flags GROUP BY rule_violated ORDER BY count DESC",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "SPC Flags Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": { "type": "postgres", "uid": "waferlens-postgres" },
+      "targets": [
+        {
+          "rawSql": "SELECT flagged_at AS \"time\", COUNT(*) AS \"flag_count\" FROM spc_flags GROUP BY flagged_at ORDER BY flagged_at",
+          "format": "time_series",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Yield % vs Defect Density by Lot",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": { "type": "postgres", "uid": "waferlens-postgres" },
+      "targets": [
+        {
+          "rawSql": "SELECT l.lot_id AS \"lot_id\", l.product AS \"product\", ROUND(AVG(yr.yield_pct)::numeric, 2) AS \"avg_yield_pct\", ROUND(AVG(yr.defect_density)::numeric, 4) AS \"avg_defect_density\" FROM lots l JOIN wafers w ON w.lot_id = l.lot_id JOIN yield_records yr ON yr.wafer_id = w.wafer_id GROUP BY l.lot_id, l.product ORDER BY l.lot_id",
+          "format": "table",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}
