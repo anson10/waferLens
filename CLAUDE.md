@@ -21,7 +21,7 @@ without reviewing it first.
 ## Related project: FabEye
 `~/FabEye` (github.com/anson10/FabEye) already does WM-811K wafer-map classification with
 lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/predict/batch`,
-`/metrics`). **Never retrain a wafer-map model here.** WaferLens calls FabEye as a service (`waferlens.patterns`, compose service `fabeye` built from the GitHub repo at a pinned commit; ADR-010). The simulator's `wafer_pattern_truth` is the per-wafer ground truth it is scored against.
+`/metrics`). **Never retrain a wafer-map model here.** WaferLens calls FabEye as a service (`waferlens.patterns`, compose service `fabeye` built from the GitHub repo at a pinned commit; ADR-010). The simulator's `wafer_pattern_truth` is the per-wafer ground truth it is scored against. Root cause can use the pattern as its signal (`rootcause_candidates.signal = 'pattern'`): start from a known pattern, never guess it from a time window (that was evaluated and failed, docs/root_cause.md). Phase-3 numbers always filter `signal = 'yield'`.
 
 ## Layout
 - `src/waferlens/` — db, simulate, ingest, spc, rootcause, patterns, dashboards, ml, stream, orchestration

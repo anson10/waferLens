@@ -247,6 +247,7 @@ def spc_results(config: SpcRunConfig, warehouse: Warehouse) -> Iterator[Material
     deps=[
         AssetKey(["marts", "fct_wafer_steps"]),
         AssetKey(["marts", "fct_wafer_yield"]),
+        AssetKey(["marts", "fct_wafer_pattern"]),  # pattern-led rankings (phase 5a)
         table_key("excursions_ground_truth"),
     ],
     group_name="rootcause",

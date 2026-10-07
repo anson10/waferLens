@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 from sqlalchemy import Engine, text
 
-from waferlens.rootcause.commonality import commonality
+from waferlens.rootcause.commonality import commonality, window_pattern
 
 pytestmark = pytest.mark.integration
 
@@ -57,11 +57,14 @@ def planted(engine: Engine) -> Iterator[None]:
     steps, yields = _scenario()
     with engine.begin() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS marts"))
-        conn.execute(text("DROP TABLE IF EXISTS marts.fct_wafer_steps, marts.fct_wafer_yield"))
+        conn.execute(text("DROP TABLE IF EXISTS marts.fct_wafer_steps, marts.fct_wafer_yield, "
+                          "marts.fct_wafer_pattern"))  # fmt: skip
         conn.execute(text("CREATE TABLE marts.fct_wafer_steps (wafer_id int, chamber_id int, "
                           "recipe_id int, track_in_at timestamptz)"))  # fmt: skip
         conn.execute(text("CREATE TABLE marts.fct_wafer_yield (wafer_id int, product_id int, "
                           "yield_pct numeric)"))  # fmt: skip
+        conn.execute(text("CREATE TABLE marts.fct_wafer_pattern (wafer_id int, "
+                          "predicted_pattern text)"))  # fmt: skip
         conn.execute(
             text("INSERT INTO marts.fct_wafer_steps VALUES (:w, :c, :r, :t)"),
             [{"w": w, "c": c, "r": r, "t": t} for w, c, r, t in steps.itertuples(index=False)],
@@ -70,9 +73,27 @@ def planted(engine: Engine) -> Iterator[None]:
             text("INSERT INTO marts.fct_wafer_yield VALUES (:w, :p, :y)"),
             [{"w": w, "p": p, "y": y} for w, p, y in yields.itertuples(index=False)],
         )
+        conn.execute(
+            text("INSERT INTO marts.fct_wafer_pattern VALUES (:w, :p)"),
+            [{"w": w, "p": p} for w, p in _patterns(steps).itertuples(index=False)],
+        )
     yield
     with engine.begin() as conn:
-        conn.execute(text("DROP TABLE IF EXISTS marts.fct_wafer_steps, marts.fct_wafer_yield"))
+        conn.execute(text("DROP TABLE IF EXISTS marts.fct_wafer_steps, marts.fct_wafer_yield, "
+                          "marts.fct_wafer_pattern"))  # fmt: skip
+
+
+def _patterns(steps: pd.DataFrame) -> pd.DataFrame:
+    """FabEye's view: a scratch on half the wafers through chamber 5 (step 2) inside the
+    window, which costs no yield, plus a sprinkle of 'Loc' everywhere as background."""
+    first = steps.drop_duplicates("wafer_id")
+    in_window = steps["track_in_at"].between(*WINDOW, inclusive="left")
+    through5 = set(steps.loc[(steps["chamber_id"] == 5) & in_window, "wafer_id"])
+    pattern = [
+        "Scratch" if w in through5 and w % 4 in (1, 3) else ("Loc" if w % 37 == 0 else "none")
+        for w in first["wafer_id"]
+    ]
+    return pd.DataFrame({"wafer_id": first["wafer_id"], "pattern": pattern})
 
 
 def _rank(ranked: pd.DataFrame, factor_type: str, factor_id: int) -> int | None:
@@ -116,3 +137,33 @@ def test_a_harmless_recipe_change_is_not_blamed(engine: Engine, planted: None) -
 def test_min_support_drops_tiny_groups(engine: Engine, planted: None) -> None:
     window_hours = (WINDOW[0], WINDOW[0] + timedelta(hours=6))
     assert commonality(engine, *window_hours, min_support=50).empty
+
+
+def test_pattern_signal_finds_a_cause_yield_cant_see(engine: Engine, planted: None) -> None:
+    # The scratch costs no yield, so the yield signal can't blame chamber 5; the pattern can.
+    by_pattern = commonality(engine, *WINDOW, pattern="Scratch")
+    assert _rank(by_pattern, "chamber", 5) == 1
+    by_yield = commonality(engine, *WINDOW)
+    assert _rank(by_yield, "chamber", 5) != 1
+
+
+def test_window_pattern_picks_the_over_represented_one(engine: Engine, planted: None) -> None:
+    wp = window_pattern(engine, *WINDOW)
+    assert wp is not None
+    assert wp.pattern == "Scratch"
+    # every scratch is inside a window holding ~1/3 of the wafers: lift ~3 at most
+    assert wp.lift > 2.5
+    assert wp.wafers >= 10
+    before = window_pattern(engine, T0, WINDOW[0])
+    assert before is None or before.pattern != "Scratch"
+
+
+def test_strong_needs_both_wafers_and_lift() -> None:
+    from waferlens.rootcause.commonality import PATTERN_MIN_LIFT, PATTERN_MIN_WAFERS, WindowPattern
+
+    def wp(wafers: int, lift: float) -> WindowPattern:
+        return WindowPattern("Scratch", wafers, 0.1, 0.1 / lift, lift)
+
+    assert wp(PATTERN_MIN_WAFERS, PATTERN_MIN_LIFT).strong
+    assert not wp(PATTERN_MIN_WAFERS - 1, 10.0).strong
+    assert not wp(100, PATTERN_MIN_LIFT - 0.1).strong

@@ -19,7 +19,7 @@ is a domain-shift test, not a retraining.
 | Error among auto-accepted (target ≤ 2.0%) | 0.8% | 1.9% |
 
 1,891 wafers carry an injected pattern; FabEye called
-99.8% of them *some* pattern. Of 22,199 wafers without an injected pattern, FabEye called 162 (0.7%) a pattern: Random 82, Loc 55, Scratch 11.
+99.8% of them *some* pattern. Of 22,199 wafers without an injected pattern, FabEye called 162 (0.7%) a pattern: Random 82, Loc 55, Scratch 11. 450 wafers got an empty prediction set: no class looked plausible, a sign the map is unlike FabEye's calibration lots.
 
 ## Per class
 

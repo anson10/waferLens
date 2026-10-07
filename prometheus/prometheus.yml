@@ -1,0 +1,10 @@
+# Scrapes the FabEye classifier's /metrics (request counts and latency, predictions by
+# pattern, accept/review decisions). Phase 5a.
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: fabeye
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["fabeye:8000"]

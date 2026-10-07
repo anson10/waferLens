@@ -91,6 +91,7 @@ def main() -> None:
                 "var-parameter": ex["parameter_id"]}, height=1380),
         render("waferlens-excursions", "excursions",
                {**window, "var-excursion": ex["excursion_id"]}, height=1040),
+        render("waferlens-fabeye", "fabeye", {"from": "now-20m", "to": "now"}, height=900),
         render("waferlens-secom", "secom",
                {"from": "1216425600000", "to": "1224288000000"}, height=1180),
     ]  # fmt: skip

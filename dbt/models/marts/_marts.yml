@@ -172,6 +172,37 @@ models:
           - dbt_utils.accepted_range:
               arguments: {min_value: 0}
 
+  - name: fct_pattern_alarms
+    description: >
+      One row per wafer whose sort result raised a wafer-map pattern alarm: at least
+      max(3, 3 x background per day) auto-accepted wafers with the same FabEye pattern sorted
+      within 24 hours, background from the first 30 days.
+    columns:
+      - name: wafer_id
+        data_tests: [unique, not_null]
+      - name: pattern
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('wafer_pattern_classes'), field: pattern}
+      - name: wafers_24h
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 3}
+
+  - name: fct_pattern_detection
+    description: >
+      One row per injected spatial-pattern excursion: whether the wafer-map pattern alarm
+      caught it, the delay from the excursion's start (and the sort lag that bounds it), a
+      placebo window before it, and whether SPC caught it.
+    columns:
+      - name: excursion_id
+        data_tests: [unique, not_null]
+      - name: delay_hours
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0}
+
   - name: fct_spc_alarms
     description: >
       One row per SPC alarm (a point that signalled on one chart of one series), with its
@@ -259,7 +290,7 @@ models:
     description: Ranked suspects (chambers, recipe versions) per excursion window, with the true cause flagged.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments: {combination_of_columns: [excursion_id, factor_type, chamber_id, recipe_id]}
+          arguments: {combination_of_columns: [excursion_id, signal, factor_type, chamber_id, recipe_id]}
     columns:
       - name: candidate_id
         data_tests: [unique, not_null]

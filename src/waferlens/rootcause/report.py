@@ -13,6 +13,7 @@ import pandas as pd
 from sqlalchemy import Engine, text
 
 from waferlens.db.session import get_engine
+from waferlens.rootcause.patterns import compare
 
 ROOT = Path(__file__).resolve().parents[3]
 OUTPUT = ROOT / "docs" / "root_cause.md"
@@ -106,7 +107,107 @@ def detail_table(df: pd.DataFrame) -> str:
     return "\n".join(rows)
 
 
-def render(df: pd.DataFrame) -> str:
+DETECTION_SQL = "select * from marts.fct_pattern_detection order by excursion_id"
+# The pattern section needs FabEye scores and the pattern marts (phase 5a).
+SCORED_SQL = """
+    select to_regclass('marts.fct_pattern_detection') is not null
+       and exists (select 1 from wafer_patterns)
+"""
+
+
+def _top(ranks: pd.Series, k: int = 1) -> str:
+    hits = int((ranks.fillna(10**6) <= k).sum())
+    return f"{hits} ({_pct(ranks.fillna(10**6) <= k)})"
+
+
+def pattern_rootcause_table(cmp: pd.DataFrame) -> str:
+    spatial = cmp[cmp["excursion_type"] == "spatial_pattern"]
+    cost = cmp[cmp["cost_yield"]]
+    rankings = [
+        ("Low yield (phase 3)", "true_rank", True),
+        ("Window rule: the window's dominant pattern", "rule_rank", True),
+        ("Pattern-led: the excursion's own pattern", "pattern_true_rank", False),
+    ]
+    rows = ["| Ranking | Spatial excursions: top-1 | top-3 | Excursions that cost yield: top-1 |",
+            "|---|---|---|---|"]  # fmt: skip
+    for label, col, all_excursions in rankings:
+        on_cost = _top(cost[col]) if all_excursions else "–"
+        rows.append(f"| {label} | {_top(spatial[col])} | {_top(spatial[col], 3)} | {on_cost} |")
+    return "\n".join(rows)
+
+
+def pattern_detection_table(det: pd.DataFrame) -> str:
+    rows = [
+        "| Id | Pattern | Magnitude (σ) | Pattern wafers | First sorted after (h) | "
+        "Alarm after (h) | Placebo alarm | SPC caught |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for r in det.to_dict("records"):
+        delay = "–" if pd.isna(r["delay_hours"]) else f"{float(r['delay_hours']):.0f}"
+        cells = [
+            str(r["excursion_id"]),
+            str(r["pattern"]),
+            f"{float(r['abs_magnitude_sigma']):.1f}",
+            str(int(r["pattern_wafers"])),
+            f"{float(r['sort_lag_hours']):.0f}",
+            delay,
+            "yes" if r["placebo_alarm"] else "",
+            "yes" if r["spc_detected"] else "",
+        ]
+        rows.append("| " + " | ".join(cells) + " |")
+    return "\n".join(rows)
+
+
+def patterns_section(cmp: pd.DataFrame, det: pd.DataFrame) -> str:
+    caught = det[det["detected"]]
+    after_sort = (caught["delay_hours"] - caught["sort_lag_hours"]).median()
+    rule_fired = int(cmp["rule_pattern"].notna().sum())
+    delay = caught["delay_hours"].median()
+    lag = det["sort_lag_hours"].median()
+    early = int((caught["delay_hours"] < caught["sort_lag_hours"]).sum())
+    return f"""
+## Wafer-map patterns (phase 5a)
+
+FabEye classifies every sorted wafer map ([docs/fabeye_eval.md](fabeye_eval.md)). Two
+questions: does the pattern help find the cause, and does it raise the alarm SPC can't?
+
+### Root cause
+
+{pattern_rootcause_table(cmp)}
+
+- **Pattern-led commonality finds every spatial cause first**: given the pattern on the
+  wafers, the wafers showing it share one chamber, even where low yield points elsewhere.
+- **Picking the pattern from the time window fails.** The rule (fixed before evaluation:
+  the window's most over-represented pattern, if >= 10 wafers at >= 3x background) fired
+  for {rule_fired} of {len(cmp)} windows, because excursions overlap and almost every window
+  holds *some* other excursion's pattern; it then blamed that excursion's chamber. It is
+  reported, not tuned: the lesson is to start from the pattern, as an alarm on it does.
+
+### Detection: the pattern alarm vs SPC
+
+Alarm rule (`fct_pattern_alarms`, fixed before evaluation): at least max(3, 3x background
+per day) wafers auto-accepted with the same pattern sorted within 24 hours; background from
+the first 30 days, like SPC's Phase I.
+
+{pattern_detection_table(det)}
+
+- **The pattern alarm caught {len(caught)} of {len(det)} spatial excursions; SPC caught
+  {int(det["spc_detected"].sum())}**: no sensor or metrology value moves, by design.
+- **It is slow, and the floor is the fab, not the model:** median {delay:.0f} h after the
+  excursion started, but the first patterned wafer only reached sort after a median
+  {lag:.0f} h, and the alarm followed it by a median {after_sort:.0f} h.
+  Wafer sort comes after the whole route; SPC sees a tool within minutes.
+- **The chance baseline is not clean:** {int(det["placebo_alarm"].sum())} of {len(det)} placebo
+  windows also alarmed, because another excursion with the same pattern was running.
+  Overlap also credits alarms early: {early} fired before the excursion's own first
+  patterned wafer was sorted, so another excursion raised them.
+- So the two monitors cover each other: SPC for sensor shifts within minutes, the pattern
+  alarm for spatial defects within about two days, and pattern-led commonality to name the
+  chamber.
+"""
+
+
+def render(df: pd.DataFrame, patterns: str = "") -> str:
     cost = df[df["cost_yield"]]
     return f"""# Root cause: commonality analysis vs ground truth
 
@@ -163,11 +264,17 @@ the sensor move, but they cost little yield, so there is little for commonality 
 ## Every excursion
 
 {detail_table(df)}
-"""
+{patterns}"""
 
 
 def main() -> None:
-    OUTPUT.write_text(render(load_frames(get_engine())))
+    engine = get_engine()
+    det = None
+    with engine.connect() as conn:
+        if conn.execute(text(SCORED_SQL)).scalar_one():
+            det = pd.DataFrame(conn.execute(text(DETECTION_SQL)).mappings().all())
+    patterns = "" if det is None else patterns_section(compare(engine), det)
+    OUTPUT.write_text(render(load_frames(engine), patterns))
     print(f"wrote {OUTPUT.relative_to(ROOT)}")
 
 

@@ -3,6 +3,8 @@ select
     excursion_id,
     window_start as window_start_at,
     window_end as window_end_at,
+    signal,
+    pattern,
     factor_type,
     chamber_id,
     recipe_id,

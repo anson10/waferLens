@@ -110,3 +110,60 @@ the sensor move, but they cost little yield, so there is little for commonality 
 | 38 | step_shift | 2.2 |  | 1 / 128 | -4.2 | 3,540 | yes |
 | 39 | chamber_offset | 0.5 |  | 64 / 131 | -0.2 | 1,026 | yes |
 | 40 | drift | 2.5 |  | 1 / 131 | -2.6 | 31,853 | yes |
+
+## Wafer-map patterns (phase 5a)
+
+FabEye classifies every sorted wafer map ([docs/fabeye_eval.md](fabeye_eval.md)). Two
+questions: does the pattern help find the cause, and does it raise the alarm SPC can't?
+
+### Root cause
+
+| Ranking | Spatial excursions: top-1 | top-3 | Excursions that cost yield: top-1 |
+|---|---|---|---|
+| Low yield (phase 3) | 11 (85%) | 11 (85%) | 23 (72%) |
+| Window rule: the window's dominant pattern | 9 (69%) | 9 (69%) | 15 (47%) |
+| Pattern-led: the excursion's own pattern | 13 (100%) | 13 (100%) | – |
+
+- **Pattern-led commonality finds every spatial cause first**: given the pattern on the
+  wafers, the wafers showing it share one chamber, even where low yield points elsewhere.
+- **Picking the pattern from the time window fails.** The rule (fixed before evaluation:
+  the window's most over-represented pattern, if >= 10 wafers at >= 3x background) fired
+  for 30 of 40 windows, because excursions overlap and almost every window
+  holds *some* other excursion's pattern; it then blamed that excursion's chamber. It is
+  reported, not tuned: the lesson is to start from the pattern, as an alarm on it does.
+
+### Detection: the pattern alarm vs SPC
+
+Alarm rule (`fct_pattern_alarms`, fixed before evaluation): at least max(3, 3x background
+per day) wafers auto-accepted with the same pattern sorted within 24 hours; background from
+the first 30 days, like SPC's Phase I.
+
+| Id | Pattern | Magnitude (σ) | Pattern wafers | First sorted after (h) | Alarm after (h) | Placebo alarm | SPC caught |
+|---|---|---|---|---|---|---|---|
+| 6 | Random | 2.3 | 119 | 21 | 50 |  |  |
+| 12 | Random | 2.3 | 196 | 38 | 63 | yes |  |
+| 13 | Edge-Loc | 2.5 | 294 | 34 | 39 |  |  |
+| 14 | Scratch | 2.1 | 63 | 51 | 61 |  |  |
+| 18 | Edge-Ring | 1.1 | 65 | 45 | 52 |  |  |
+| 19 | Edge-Loc | 1.2 | 175 | 47 | 49 |  |  |
+| 22 | Edge-Loc | 2.3 | 165 | 29 | 0 | yes |  |
+| 24 | Center | 1.7 | 132 | 72 | 74 |  |  |
+| 27 | Donut | 2.9 | 141 | 53 | 56 |  |  |
+| 28 | Center | 1.6 | 83 | 91 | 94 | yes |  |
+| 31 | Loc | 2.8 | 133 | 34 | 35 |  |  |
+| 32 | Edge-Ring | 1.8 | 99 | 48 | 64 |  |  |
+| 36 | Donut | 2.6 | 226 | 41 | 43 | yes |  |
+
+- **The pattern alarm caught 13 of 13 spatial excursions; SPC caught
+  0**: no sensor or metrology value moves, by design.
+- **It is slow, and the floor is the fab, not the model:** median 52 h after the
+  excursion started, but the first patterned wafer only reached sort after a median
+  45 h, and the alarm followed it by a median 3 h.
+  Wafer sort comes after the whole route; SPC sees a tool within minutes.
+- **The chance baseline is not clean:** 4 of 13 placebo
+  windows also alarmed, because another excursion with the same pattern was running.
+  Overlap also credits alarms early: 1 fired before the excursion's own first
+  patterned wafer was sorted, so another excursion raised them.
+- So the two monitors cover each other: SPC for sensor shifts within minutes, the pattern
+  alarm for spatial defects within about two days, and pattern-led commonality to name the
+  chamber.

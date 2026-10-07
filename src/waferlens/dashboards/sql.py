@@ -39,7 +39,8 @@ def dashboard_queries(name: str) -> Iterator[Query]:
             yield Query(f"{name} / annotation {anno['name']}", anno["target"]["rawSql"])
     for p in dash["panels"]:
         for t in p.get("targets", []):
-            yield Query(f"{name} / panel {p['id']} / {t['refId']}", t["rawSql"])
+            if "rawSql" in t:  # PromQL targets (FabEye serving) are not SQL
+                yield Query(f"{name} / panel {p['id']} / {t['refId']}", t["rawSql"])
 
 
 def alert_queries() -> Iterator[Query]:
