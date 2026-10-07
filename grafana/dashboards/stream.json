@@ -1,0 +1,362 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "EWMA and CUSUM on the live event stream (Redpanda): alarms as they commit, and the latency from tool event to alarm.",
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [
+    {
+      "asDropdown": true,
+      "tags": [
+        "waferlens"
+      ],
+      "title": "WaferLens",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "Next offset per partition, summed: every event the consumer has committed (exactly once, with its state and alarms).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT coalesce(sum(next_offset), 0) AS events FROM stream_offsets",
+          "refId": "A"
+        }
+      ],
+      "title": "Events consumed",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) FROM stream_alarms WHERE $__timeFilter(detected_at)",
+          "refId": "A"
+        }
+      ],
+      "title": "Alarms",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "From the tool agent publishing the event to the alarm committing in Postgres.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY extract(epoch from detected_at - produced_at) * 1000) FROM stream_alarms WHERE $__timeFilter(detected_at)",
+          "refId": "A"
+        }
+      ],
+      "title": "Latency p50",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 0,
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY extract(epoch from detected_at - produced_at) * 1000) FROM stream_alarms WHERE $__timeFilter(detected_at)",
+          "refId": "A"
+        }
+      ],
+      "title": "Latency p95",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT time_bucket('10 seconds', detected_at) AS time, count(*) AS \"ewma\" FROM stream_alarms WHERE chart = 'ewma' AND $__timeFilter(detected_at) GROUP BY 1 ORDER BY 1",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT time_bucket('10 seconds', detected_at) AS time, count(*) AS \"cusum\" FROM stream_alarms WHERE chart = 'cusum' AND $__timeFilter(detected_at) GROUP BY 1 ORDER BY 1",
+          "refId": "B"
+        }
+      ],
+      "title": "Alarms per 10 s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 5
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 6,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT detected_at AS time, extract(epoch from detected_at - produced_at) * 1000 AS \"latency\" FROM stream_alarms WHERE $__timeFilter(detected_at) ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "title": "End-to-end latency per alarm",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 7,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT a.detected_at AS \"detected\", c.chamber_label AS chamber, p.parameter_name AS sensor, a.chart, a.direction, round(a.statistic::numeric, 2) AS statistic, a.measured_at AS \"fab time\", round((extract(epoch from detected_at - produced_at) * 1000)::numeric) AS \"latency ms\" FROM stream_alarms AS a JOIN marts.dim_chamber AS c ON c.chamber_id = a.chamber_id JOIN marts.dim_parameter AS p ON p.parameter_id = a.parameter_id WHERE $__timeFilter(a.detected_at) ORDER BY a.detected_at DESC LIMIT 50",
+          "refId": "A"
+        }
+      ],
+      "title": "Latest alarms",
+      "type": "table"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": [
+    "waferlens"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timezone": "utc",
+  "title": "WaferLens \u00b7 Real-time SPC",
+  "uid": "waferlens-stream",
+  "version": 1
+}

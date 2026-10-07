@@ -96,8 +96,33 @@ services:
       - "${PROMETHEUS_PORT:-9090}:9090"
     depends_on: [fabeye]
 
+  # Kafka-compatible broker for real-time SPC (phase 6, `make stream-demo`). Opt-in profile:
+  # one core and 512 MB, dev-container mode (no fsync), enough for the demo's event rate.
+  redpanda:
+    image: redpandadata/redpanda:v24.2.18
+    profiles: [stream]
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=512M
+      - --overprovisioned
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "${KAFKA_PORT:-19092}:19092"
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health", "--exit-when-healthy"]
+      interval: 5s
+      timeout: 10s
+      retries: 24
+
 volumes:
   timescale-data:
   grafana-state:
   mlflow-state:
   prometheus-data:
+  redpanda-data:

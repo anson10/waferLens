@@ -92,6 +92,7 @@ def main() -> None:
         render("waferlens-excursions", "excursions",
                {**window, "var-excursion": ex["excursion_id"]}, height=1040),
         render("waferlens-fabeye", "fabeye", {"from": "now-20m", "to": "now"}, height=900),
+        render("waferlens-stream", "stream", {"from": "now-5m", "to": "now"}, height=1000),
         render("waferlens-secom", "secom",
                {"from": "1216425600000", "to": "1224288000000"}, height=1180),
     ]  # fmt: skip

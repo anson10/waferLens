@@ -597,8 +597,62 @@ def fabeye() -> Json:
                      time={"from": "now-6h", "to": "now"}, refresh="30s")  # fmt: skip
 
 
+# --------------------------------------------------------------------------- 6. real-time SPC
+
+
+STREAM_LATENCY = "extract(epoch from detected_at - produced_at) * 1000"
+
+
+def stream() -> Json:
+    def live_stat(pid: int, title: str, x: int, sql: str, **kw: Any) -> Json:
+        return stat(pid, title, x, sql, **kw) | {"gridPos": {"x": x, "y": 0, "w": 6, "h": 4}}
+
+    panels = [
+        live_stat(1, "Events consumed", 0,
+                  "SELECT coalesce(sum(next_offset), 0) AS events FROM stream_offsets",
+                  description="Next offset per partition, summed: every event the consumer "
+                              "has committed (exactly once, with its state and alarms)."),
+        live_stat(2, "Alarms", 6,
+                  "SELECT count(*) FROM stream_alarms WHERE $__timeFilter(detected_at)"),
+        live_stat(3, "Latency p50", 12, f"""
+            SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY {STREAM_LATENCY})
+            FROM stream_alarms WHERE $__timeFilter(detected_at)""", unit="ms", decimals=0,
+                  description="From the tool agent publishing the event to the alarm "
+                              "committing in Postgres."),
+        live_stat(4, "Latency p95", 18, f"""
+            SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY {STREAM_LATENCY})
+            FROM stream_alarms WHERE $__timeFilter(detected_at)""", unit="ms", decimals=0),
+        panel(5, "Alarms per 10 s", "timeseries", (0, 4, 12, 9), [
+            target(f"""
+                SELECT time_bucket('10 seconds', detected_at) AS time, count(*) AS "{chart}"
+                FROM stream_alarms
+                WHERE chart = '{chart}' AND $__timeFilter(detected_at)
+                GROUP BY 1 ORDER BY 1""", ref=chr(65 + i))
+            for i, chart in enumerate(("ewma", "cusum"))],
+              custom={"drawStyle": "bars", "fillOpacity": 70, "stacking": {"mode": "normal"}}),
+        panel(6, "End-to-end latency per alarm", "timeseries", (12, 4, 12, 9), [target(f"""
+            SELECT detected_at AS time, {STREAM_LATENCY} AS "latency"
+            FROM stream_alarms WHERE $__timeFilter(detected_at) ORDER BY 1""")],
+              unit="ms", custom={"drawStyle": "points", "pointSize": 5}),
+        panel(7, "Latest alarms", "table", (0, 13, 24, 9), [target(f"""
+            SELECT a.detected_at AS "detected", c.chamber_label AS chamber,
+                   p.parameter_name AS sensor, a.chart, a.direction,
+                   round(a.statistic::numeric, 2) AS statistic, a.measured_at AS "fab time",
+                   round(({STREAM_LATENCY})::numeric) AS "latency ms"
+            FROM stream_alarms AS a
+            JOIN marts.dim_chamber AS c ON c.chamber_id = a.chamber_id
+            JOIN marts.dim_parameter AS p ON p.parameter_id = a.parameter_id
+            WHERE $__timeFilter(a.detected_at)
+            ORDER BY a.detected_at DESC LIMIT 50""", fmt="table")]),
+    ]  # fmt: skip
+    return dashboard("waferlens-stream", "WaferLens · Real-time SPC",
+                     "EWMA and CUSUM on the live event stream (Redpanda): alarms as they "
+                     "commit, and the latency from tool event to alarm.", panels,
+                     time={"from": "now-15m", "to": "now"}, refresh="5s")  # fmt: skip
+
+
 DASHBOARDS = {"overview": overview, "spc": spc, "excursions": excursions, "secom": secom,
-              "fabeye": fabeye}  # fmt: skip
+              "fabeye": fabeye, "stream": stream}  # fmt: skip
 
 
 def render_all() -> dict[str, str]:
