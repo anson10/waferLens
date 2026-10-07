@@ -124,3 +124,45 @@ def test_sql_ewma_matches_the_python_chart(fab: None, engine: Engine) -> None:
 def test_the_reader_cannot_write(fab: None, reader: Engine, statement: str) -> None:
     with reader.connect() as conn, pytest.raises(ProgrammingError, match="permission denied"):
         conn.execute(text(statement))
+
+
+# --------------------------------------------------------------------------- Power BI reader
+
+
+@pytest.fixture(scope="module")
+def powerbi(test_db_url: str) -> Iterator[Engine]:
+    url = make_url(test_db_url).set(username="powerbi_reader", password="powerbi_reader")
+    eng = create_engine(url)
+    yield eng
+    eng.dispose()
+
+
+# Every mart the Power BI model imports.
+POWERBI_TABLES = [
+    "fct_wafer_yield", "fct_die_bins", "fct_wafer_steps", "fct_spc_alarms", "fct_wafer_pattern",
+    "fct_excursion_impact", "fct_excursion_detection", "fct_root_cause_eval",
+    "fct_root_cause_candidates", "dim_date", "dim_product", "dim_lot", "dim_wafer",
+    "dim_chamber", "dim_recipe", "dim_route_step", "dim_sort_bin", "dim_parameter",
+    "dim_excursion", "spc_charts", "wafer_pattern_classes",
+]  # fmt: skip
+
+
+@pytest.mark.parametrize("table", POWERBI_TABLES)
+def test_powerbi_reader_can_import_every_mart_in_the_guide(
+    fab: None, powerbi: Engine, table: str
+) -> None:
+    with powerbi.connect() as conn:
+        conn.execute(text(f"SELECT * FROM marts.{table} LIMIT 1")).all()
+
+
+@pytest.mark.parametrize("statement", [
+    "SELECT 1 FROM public.wafers LIMIT 1",  # raw tables: not its business
+    "SELECT 1 FROM staging.stg_wafers LIMIT 1",
+    "DELETE FROM marts.fct_wafer_yield",
+    "CREATE TABLE marts.scratch (i int)",
+])  # fmt: skip
+def test_powerbi_reader_sees_only_the_marts_and_cannot_write(
+    fab: None, powerbi: Engine, statement: str
+) -> None:
+    with powerbi.connect() as conn, pytest.raises(ProgrammingError, match="permission denied"):
+        conn.execute(text(statement))

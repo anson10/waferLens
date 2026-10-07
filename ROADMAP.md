@@ -259,13 +259,15 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 
 ---
 
-## Phase 7 — Power BI reporting (Windows side, ~1–1.5 weeks)
+## Phase 7 — Power BI reporting (Windows side, ~1–1.5 weeks) — ADR-011
 
 Setup across WSL ↔ Windows:
-- [ ] Postgres container port reachable from Windows (`localhost:5432`); test with Power BI Desktop's PostgreSQL connector (Npgsql)
-- [ ] Read-only DB role `powerbi_reader` limited to the marts schema
+- [x] Postgres container port reachable from Windows (`localhost:5432`, `Test-NetConnection` OK); [ ] connect with Power BI Desktop's PostgreSQL connector
+- [x] Read-only DB role `powerbi_reader` limited to the marts schema (migration 0011, dbt grants, tested; `make powerbi-check`)
 - [ ] Enable PBIP / TMDL save format; project lives in `powerbi/` in the repo
-- [ ] `.gitignore` for Power BI cache files (`.pbi/cache.abf`, `localSettings.json`)
+- [x] `.gitignore` for Power BI cache files (`.pbi/cache.abf`, `localSettings.json`, `*.pbix`)
+- [x] `dim_excursion` mart added, so the excursion-grain facts share one dimension
+- [x] ADR-011 "Power BI in Import mode on the dbt marts, saved as PBIP"
 
 Model:
 - [ ] Import dbt star schema (facts + dims), relationships single-direction, `dim_date` marked as date table
