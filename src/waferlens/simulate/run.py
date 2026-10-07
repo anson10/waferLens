@@ -82,6 +82,13 @@ def simulate(
             "description": [e.description for e in plan.excursions],
         }
     )  # fmt: skip
+    # Which sorted wafers show a spatial pattern, and from which excursion: ground truth for
+    # wafer-map classification (FabEye). Touched wafers that don't show it are not listed.
+    shows = np.flatnonzero((maps.pattern_of >= 0) & (maps.tested_dies > 0))
+    pattern_truth = pd.DataFrame(
+        {"wafer_id": (shows + 1).astype(np.int32),
+         "excursion_id": maps.pattern_of[shows].astype(np.int32)}
+    )  # fmt: skip
     simulation_runs = pd.DataFrame(
         {
             "run_id": [RUN_ID],
@@ -107,6 +114,7 @@ def simulate(
         "metrology_measurements": measured.metrology,
         "wafer_maps": maps.table,
         "excursions_ground_truth": ground_truth,
+        "wafer_pattern_truth": pattern_truth,
     }
     start = pd.Timestamp(cfg.start_date, tz="UTC")
     for table, columns in TIME_COLUMNS.items():

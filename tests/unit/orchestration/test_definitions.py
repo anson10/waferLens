@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from dagster import (
     AssetKey,
@@ -13,7 +14,7 @@ from dagster import (
     build_sensor_context,
 )
 
-from waferlens.db.models import ROOTCAUSE_TABLES, SPC_TABLES
+from waferlens.db.models import PATTERN_TABLES, ROOTCAUSE_TABLES, SPC_TABLES
 from waferlens.orchestration.assets import FAB_TABLES, ML_TABLES, SECOM_TABLES, simulated_fab
 from waferlens.orchestration.definitions import defs, new_parquet_drop, nightly_rebuild
 from waferlens.orchestration.resources import FabData
@@ -28,6 +29,7 @@ def test_definitions_load_with_expected_groups() -> None:
         "spc",
         "rootcause",
         "ml",
+        "patterns",
         "dbt_staging",
         "dbt_intermediate",
         "dbt_marts",
@@ -42,7 +44,14 @@ def test_every_dbt_source_is_produced_by_a_loader_asset() -> None:
     sources = {k for k in graph.get_all_asset_keys() if k.path[0] == "waferlens"}
     produced = {
         AssetKey(["waferlens", t])
-        for t in [*FAB_TABLES, *SECOM_TABLES, *SPC_TABLES, *ROOTCAUSE_TABLES, *ML_TABLES]
+        for t in [
+            *FAB_TABLES,
+            *SECOM_TABLES,
+            *SPC_TABLES,
+            *ROOTCAUSE_TABLES,
+            *ML_TABLES,
+            *PATTERN_TABLES,
+        ]
     }
     assert sources == produced
     assert all(graph.get(k).is_materializable for k in sources)
@@ -129,3 +138,20 @@ def test_pipeline_docs_describe_the_real_graph() -> None:
     assert "dbt tests, which dagster-dbt runs as blocking" in doc
     assert "| `full_rebuild` |" in doc
     assert "| sensor | `new_parquet_drop` | `ingest` |" in doc
+
+
+def test_memory_heavy_steps_never_run_together() -> None:
+    # Two of these at once ran an 8 GB machine out of memory (the kernel killed Postgres).
+    # The limit sits on the executor, so it holds whatever run config a job is given.
+    from waferlens.orchestration import assets
+
+    heavy = [assets.simulated_fab, assets.fab_contracts, assets.fab_tables,
+             assets.spc_results, assets.secom_model]  # fmt: skip
+    assert all(a.op.tags == assets.HEAVY for a in heavy)
+    for job in ("full_rebuild", "ingest"):
+        executor = defs.resolve_job_def(job).executor_def
+        assert executor.name == "multiprocess"
+        # configured(): a run config can't override it, an empty one resolves to the limits
+        schema: Any = executor.config_schema
+        resolved = schema.resolve_config({}).value
+        assert resolved["config"]["tag_concurrency_limits"] == assets.ONE_HEAVY_STEP

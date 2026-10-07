@@ -444,6 +444,20 @@ class ExcursionGroundTruth(Base):
 
 # --------------------------------------------------------------------------- SPC (phase 3)
 
+
+class WaferPatternTruth(Base):
+    """Sorted wafers whose map shows an injected spatial pattern, and which excursion put it
+    there (the strongest, if several touched the wafer). Wafers not listed show no pattern;
+    wafer-map classification (FabEye, phase 5a) is scored against this table."""
+
+    __tablename__ = "wafer_pattern_truth"
+
+    wafer_id: Mapped[int] = mapped_column(ForeignKey("wafers.wafer_id"), primary_key=True)
+    excursion_id: Mapped[int] = mapped_column(
+        ForeignKey("excursions_ground_truth.excursion_id"), index=True
+    )
+
+
 SPC_TABLES = ("spc_control_limits", "spc_alarms")  # written by waferlens.spc, not the loader
 SPC_SCOPES = ("chamber", "tool")
 SPC_SOURCES = ("sensor", "metrology")
@@ -534,6 +548,28 @@ class SpcAlarm(Base):
 # --------------------------------------------------------------------------- root cause (phase 3)
 
 ROOTCAUSE_TABLES = ("rootcause_candidates",)  # written by waferlens.rootcause, not the loader
+
+
+class WaferPattern(Base):
+    """FabEye's classification of one sorted wafer map (waferlens.patterns): the most likely
+    WM-811K pattern, its confidence, FabEye's auto-accept flag and conformal prediction set."""
+
+    __tablename__ = "wafer_patterns"
+
+    wafer_id: Mapped[int] = mapped_column(ForeignKey("wafers.wafer_id"), primary_key=True)
+    pattern: Mapped[str] = mapped_column(Text, index=True)
+    confidence: Mapped[float] = mapped_column(Double)
+    auto_accept: Mapped[bool]
+    prediction_set: Mapped[list[str]] = mapped_column(ARRAY(Text))
+    alpha: Mapped[float] = mapped_column(Double)
+    model: Mapped[str] = mapped_column(Text)
+    scored_at: Mapped[datetime] = mapped_column(TimestampTZ)
+
+    __table_args__ = (CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence_range"),)
+
+
+PATTERN_TABLES = ("wafer_patterns",)  # written by waferlens.patterns (FabEye), not the loader
+
 FACTOR_TYPES = ("chamber", "recipe")
 
 

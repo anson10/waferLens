@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc spc-report rootcause rootcause-report secom-model dashboards screenshots dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc spc-report rootcause rootcause-report secom-model fabeye-report dashboards screenshots dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -59,6 +59,9 @@ rootcause-report: ## Root-cause accuracy + impact + SPC coverage → docs/root_c
 
 secom-model: ## Train, evaluate + register the SECOM fail model (MLflow) → DB + docs/secom_model.md (after secom)
 	uv run python -m waferlens.ml
+
+fabeye-report: ## Score every sorted wafer with FabEye → wafer_patterns + docs/fabeye_eval.md (after load)
+	uv run python -m waferlens.patterns
 
 dashboards: ## Regenerate grafana/dashboards/*.json from waferlens.dashboards (Grafana reloads them)
 	uv run python -m waferlens.dashboards

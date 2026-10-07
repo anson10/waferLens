@@ -1,0 +1,10 @@
+pattern,simulator_pattern,description
+none,,no spatial pattern
+Center,center,failures concentrated in the wafer centre
+Donut,donut,a ring of failures at mid radius
+Edge-Loc,edge_loc,failures on one part of the edge
+Edge-Ring,edge_ring,failures all around the edge
+Loc,loc,a local cluster of failures away from the edge
+Near-full,near_full,almost every die fails
+Random,random,failures spread uniformly across the wafer
+Scratch,scratch,a thin line of failures

@@ -24,12 +24,14 @@ from dagster import (
     SensorEvaluationContext,
     SkipReason,
     define_asset_job,
+    multiprocess_executor,
     schedule,
     sensor,
 )
 from dagster_dbt import DbtCliResource
 
 from waferlens.orchestration.assets import (
+    ONE_HEAVY_STEP,
     dbt_models,
     dbt_project,
     fab_contracts,
@@ -39,8 +41,15 @@ from waferlens.orchestration.assets import (
     secom_tables,
     simulated_fab,
     spc_results,
+    wafer_patterns,
 )
-from waferlens.orchestration.resources import FabData, SecomSource, Tracking, Warehouse
+from waferlens.orchestration.resources import (
+    FabData,
+    FabEyeService,
+    SecomSource,
+    Tracking,
+    Warehouse,
+)
 
 full_rebuild = define_asset_job(
     "full_rebuild",
@@ -91,6 +100,7 @@ def nightly_rebuild() -> RunRequest:
 
 
 defs = Definitions(
+    executor=multiprocess_executor.configured({"tag_concurrency_limits": ONE_HEAVY_STEP}),
     assets=[
         simulated_fab,
         fab_tables,
@@ -99,6 +109,7 @@ defs = Definitions(
         spc_results,
         rootcause_candidates,
         secom_model,
+        wafer_patterns,
     ],
     asset_checks=[fab_contracts],
     jobs=[full_rebuild, ingest],
@@ -109,6 +120,7 @@ defs = Definitions(
         "warehouse": Warehouse(),
         "secom_source": SecomSource(),
         "tracking": Tracking(),
+        "fabeye": FabEyeService(),
         "dbt": DbtCliResource(project_dir=dbt_project),
     },
 )

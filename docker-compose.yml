@@ -73,6 +73,18 @@ services:
       timeout: 5s
       retries: 24
 
+  # Wafer-map pattern classifier from the sister project, built from its GitHub repo at a
+  # pinned commit (the ONNX model and calibration are in that repo). Phase 5a.
+  fabeye:
+    build:
+      context: https://github.com/anson10/FabEye.git#004be79af408ad99025c3431ed19d85f5e7ba5e8
+    image: waferlens/fabeye:004be79
+    environment:
+      WAFER_API_KEY: ${FABEYE_API_KEY:-change-me}
+      ORT_THREADS: "4"
+    ports:
+      - "${FABEYE_PORT:-8000}:8000"
+
 volumes:
   timescale-data:
   grafana-state:

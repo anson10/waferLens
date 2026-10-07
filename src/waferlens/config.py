@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://waferlens:waferlens@localhost:5432/waferlens"
     mlflow_tracking_uri: str = "http://localhost:5000"
+    fabeye_url: str = "http://localhost:8000"
+    fabeye_api_key: str = "change-me"
 
 
 @lru_cache

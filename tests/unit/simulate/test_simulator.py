@@ -211,6 +211,29 @@ def test_spatial_excursions_cost_yield_on_touched_wafers(signal_run: SimulationR
     assert fail_rate[is_touched].mean() > fail_rate[~is_touched].mean() + 0.03
 
 
+def test_pattern_truth_lists_the_wafers_that_show_a_pattern(signal_run: SimulationResult) -> None:
+    truth = frame(signal_run, "wafer_pattern_truth")
+    excursions = frame(signal_run, "excursions_ground_truth").set_index("excursion_id")
+    maps = frame(signal_run, "wafer_maps")
+    history = frame(signal_run, "wafer_step_history")
+    assert len(truth) > 20
+    assert truth["wafer_id"].is_unique
+    assert set(truth["wafer_id"]) <= set(maps["wafer_id"])  # only sorted wafers
+    source = excursions.loc[truth["excursion_id"]]
+    assert (source["excursion_type"] == "spatial_pattern").all()
+    # each listed wafer went through the excursion's chamber inside its window
+    for wafer_id, ex_id in truth.head(50).itertuples(index=False):
+        ex = excursions.loc[ex_id]
+        steps = history[
+            (history["wafer_id"] == wafer_id) & (history["chamber_id"] == ex["chamber_id"])
+        ]
+        assert steps["track_in"].between(ex["start_time"], ex["end_time"], inclusive="left").any()
+    # and its map is worse than an unlisted wafer's
+    fail_rate = pd.Series([_fail_rate(g) for g in maps["bin_map"]], index=maps["wafer_id"])
+    shown = fail_rate.index.isin(truth["wafer_id"])
+    assert fail_rate[shown].mean() > fail_rate[~shown].mean() + 0.05
+
+
 @pytest.mark.parametrize(
     ("pattern", "inside", "outside"),
     [

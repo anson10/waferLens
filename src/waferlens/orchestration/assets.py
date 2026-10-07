@@ -26,18 +26,32 @@ from dagster import (
 )
 from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
 
-from waferlens.db.models import ROOTCAUSE_TABLES, SPC_TABLES, Base
+from waferlens.db.models import PATTERN_TABLES, ROOTCAUSE_TABLES, SPC_TABLES, Base
 from waferlens.ingest.contracts import ContractError, check_tables
 from waferlens.ingest.loader import load, read_tables
 from waferlens.ingest.secom import download, load_secom, parse
 from waferlens.ml.experiment import run_experiment
 from waferlens.ml.secom import load as load_secom_dataset
 from waferlens.ml.store import write_results
-from waferlens.orchestration.resources import ROOT, FabData, SecomSource, Tracking, Warehouse
+from waferlens.orchestration.resources import (
+    ROOT,
+    FabData,
+    FabEyeService,
+    SecomSource,
+    Tracking,
+    Warehouse,
+)
+from waferlens.patterns.score import score_wafers
 from waferlens.rootcause.evaluate import evaluate_excursions
 from waferlens.simulate.config import load_config
 from waferlens.simulate.run import simulate, write_parquet
 from waferlens.spc.engine import SpcConfig, run_spc
+
+# Steps that hold a whole table in Python memory. On an 8 GB machine two of them at once,
+# plus Postgres, run out of memory (it happened: the SECOM model search ran beside the fab
+# contracts and the kernel killed Postgres). The executor allows one tagged step at a time.
+HEAVY = {"waferlens/memory": "heavy"}
+ONE_HEAVY_STEP = [{"key": "waferlens/memory", "value": "heavy", "limit": 1}]
 
 # --------------------------------------------------------------------------- simulate
 
@@ -46,6 +60,7 @@ from waferlens.spc.engine import SpcConfig, run_spc
     group_name="ingest",
     kinds={"python", "parquet"},
     description="Simulated fab written as one Parquet file per table + manifest.json.",
+    op_tags=HEAVY,
 )
 def simulated_fab(fab_data: FabData) -> MaterializeResult:
     result = simulate(load_config(), fab_data.profile, fab_data.seed)
@@ -70,6 +85,7 @@ def simulated_fab(fab_data: FabData) -> MaterializeResult:
 @asset_check(
     asset=simulated_fab,
     blocking=True,
+    op_tags=HEAVY,
     description=(
         "Data contracts (ingest/contracts.py): pandera schemas generated from the ORM "
         "metadata plus cross-table rules. Blocking: a failed check stops the load."
@@ -90,7 +106,11 @@ def fab_contracts(fab_data: FabData) -> AssetCheckResult:
 
 # --------------------------------------------------------------------------- warehouse
 
-ANALYSIS_TABLES = (*SPC_TABLES, *ROOTCAUSE_TABLES)  # written by later assets, not the loader
+ANALYSIS_TABLES = (
+    *SPC_TABLES,
+    *ROOTCAUSE_TABLES,
+    *PATTERN_TABLES,
+)  # written by later assets, not the loader
 FAB_TABLES = [t.name for t in Base.metadata.sorted_tables if t.name not in ANALYSIS_TABLES] + [
     "wafer_yield"
 ]
@@ -110,6 +130,7 @@ def table_key(name: str) -> AssetKey:
     ],
     can_subset=False,
     description="One-transaction COPY load of the Parquet drop (contracts already checked).",
+    op_tags=HEAVY,
 )  # fmt: skip
 def fab_tables(fab_data: FabData, warehouse: Warehouse) -> Iterator[MaterializeResult]:
     # The blocking contracts check has already passed in this run, so skip re-validating.
@@ -200,6 +221,7 @@ class SpcRunConfig(Config):
         "Phase I limits (frozen; relearn writes a new version) and Phase II alarms from "
         "Western Electric rules, EWMA, CUSUM and Hotelling T² (waferlens.spc)."
     ),
+    op_tags=HEAVY,
 )  # fmt: skip
 def spc_results(config: SpcRunConfig, warehouse: Warehouse) -> Iterator[MaterializeResult]:
     report = run_spc(
@@ -257,6 +279,7 @@ def rootcause_candidates(warehouse: Warehouse) -> MaterializeResult:
         "registered in MLflow; out-of-sample scores and sensor importance for Grafana "
         "(waferlens.ml)."
     ),
+    op_tags=HEAVY,
 )  # fmt: skip
 def secom_model(warehouse: Warehouse, tracking: Tracking) -> Iterator[MaterializeResult]:
     engine = warehouse.engine()
@@ -274,3 +297,25 @@ def secom_model(warehouse: Warehouse, tracking: Tracking) -> Iterator[Materializ
                             metadata={"rows": written["scores"]})  # fmt: skip
     yield MaterializeResult(asset_key=table_key("secom_sensor_importance"),
                             metadata={"rows": written["sensors"]})  # fmt: skip
+
+
+# --------------------------------------------------------------------------- wafer-map patterns
+
+
+@asset(
+    key=table_key("wafer_patterns"),
+    deps=[table_key("wafer_maps")],
+    group_name="patterns",
+    kinds={"python", "postgres"},
+    description=(
+        "Every sorted wafer map classified by FabEye (/predict/batch): WM-811K pattern, "
+        "confidence, auto-accept flag, conformal prediction set (waferlens.patterns)."
+    ),
+)
+def wafer_patterns(warehouse: Warehouse, fabeye: FabEyeService) -> MaterializeResult:
+    report = score_wafers(warehouse.engine(), fabeye.client())
+    return MaterializeResult(
+        metadata={"wafers": report.wafers, "auto_accepted": report.accepted,
+                  "by_pattern": json.dumps(report.by_pattern), "model": report.model,
+                  "seconds": report.seconds}
+    )  # fmt: skip
