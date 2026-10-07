@@ -40,6 +40,10 @@ sources:
       - name: wafer_yield
         description: Materialized view refreshed by the loader; used only to cross-check the mart.
       - name: excursions_ground_truth
+      - name: wafer_pattern_truth
+        description: Sorted wafers whose map shows an injected spatial pattern, and which excursion put it there.
+      - name: wafer_patterns
+        description: FabEye's classification of every sorted wafer map (waferlens.patterns).
       - name: spc_control_limits
         description: Frozen Phase I limits written by waferlens.spc (one row per series version).
       - name: spc_alarms

@@ -10,7 +10,7 @@ against that ground truth, commonality analysis, Grafana for live monitoring and
 yield reporting. Wafer-map pattern classification comes from its sister project,
 [FabEye](https://github.com/anson10/FabEye).
 
-**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 (SPC, detection benchmark, root cause) is done; phase 4 (Grafana) is done; phase 5b (SECOM fail prediction + MLflow) is done; phase 5a (FabEye) is next. See [ROADMAP.md](ROADMAP.md).
+**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 (SPC, detection benchmark, root cause) is done; phase 4 (Grafana) is done; phase 5b (SECOM fail prediction + MLflow) is done; phase 5a (FabEye integration) is in progress. See [ROADMAP.md](ROADMAP.md).
 The original v1 is preserved on the
 [`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
@@ -51,6 +51,22 @@ Forward in time the sensors barely predict fails, and **a random split, the eval
 published SECOM results use, overstates the model 2.7x**. Both models rank sensor 60 first.
 Runs and the registered model are tracked in MLflow. Report: [docs/secom_model.md](docs/secom_model.md);
 decision: [ADR-008](docs/adr/0008-secom-time-split-and-pr-auc.md).
+
+**Wafer-map patterns from [FabEye](https://github.com/anson10/FabEye)** — WaferLens doesn't
+train a wafer-map model; it calls FabEye's API for every sorted wafer and scores the answers
+against the simulator's per-wafer ground truth, a domain-shift test FabEye couldn't run on
+WM-811K:
+
+| | Simulated fab (24,090 wafers) | FabEye on unseen real lots |
+|---|---|---|
+| Macro-F1 | 0.909 | 0.858 |
+| 90% prediction set covers the truth | 97.1% | 89.3% |
+| Worst class coverage | **52% (Random)** | 86% |
+
+The simulated patterns are cleaner than real ones, so the overall score flatters FabEye; the
+finding is where its guarantees break: strong uniform "random" defect fields get called
+Near-full, and 450 maps get an empty prediction set. Report: [docs/fabeye_eval.md](docs/fabeye_eval.md);
+decision: [ADR-010](docs/adr/0010-consume-fabeye-as-a-service.md).
 
 ## Grafana
 
@@ -110,7 +126,7 @@ Needs Docker and [uv](https://docs.astral.sh/uv/).
 ```bash
 cp .env.example .env
 make install   # .venv + deps + git hooks
-make up        # TimescaleDB on :5432, Grafana on :3000, MLflow on :5000
+make up        # TimescaleDB :5432, Grafana :3000, MLflow :5000, FabEye :8000
 make seed      # migrate, simulate 6 months of fab data, load it + real SECOM (~2.5 min)
 make check     # lint + typecheck + all tests
 ```
@@ -122,13 +138,13 @@ After `make pipeline`, the dashboards are at <http://localhost:3000> (admin / ad
 `.env`) in the WaferLens folder, and MLflow at <http://localhost:5000>; `make secom-model`
 retrains the SECOM model on its own (~3 min), `make screenshots` re-renders the images above.
 
-Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [dbt models](docs/dbt.md) · [pipeline](docs/pipeline.md) · [SPC](docs/spc.md) · [SPC benchmark](docs/spc_benchmark.md) · [root cause](docs/root_cause.md) · [SECOM model](docs/secom_model.md) · [performance](docs/perf.md) ·
+Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [dbt models](docs/dbt.md) · [pipeline](docs/pipeline.md) · [SPC](docs/spc.md) · [SPC benchmark](docs/spc_benchmark.md) · [root cause](docs/root_cause.md) · [SECOM model](docs/secom_model.md) · [FabEye on simulated maps](docs/fabeye_eval.md) · [performance](docs/perf.md) ·
 [SECOM data card](docs/data/secom.md) · [decisions](docs/adr/)
 
 ## Layout
 
 ```
-src/waferlens/   db, simulate, ingest, spc, rootcause, ml, dashboards, stream, orchestration
+src/waferlens/   db, simulate, ingest, spc, rootcause, ml, patterns, dashboards, stream, orchestration
 tests/           unit/ (no containers) and integration/ (needs make up)
 dbt/             transformation layer (phase 2)
 grafana/         provisioned datasources and dashboards

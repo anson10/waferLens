@@ -35,6 +35,7 @@ class WaferMaps:
     table: pa.Table  # wafer_id, tested_at (minutes), bin_map list<list<int16>>
     good_dies: np.ndarray
     tested_dies: np.ndarray
+    pattern_of: np.ndarray  # per wafer_idx: the spatial excursion its map shows, or -1
 
 
 def pattern_field(
@@ -142,7 +143,7 @@ def generate_wafer_maps(
             tables.append(_to_arrow(geo, w, batch["tested_at"].to_numpy(), bins))
 
     table = pa.concat_tables(tables).sort_by("wafer_id") if tables else _empty_table()
-    return WaferMaps(table, good, tested)
+    return WaferMaps(table, good, tested, pattern_of)
 
 
 def _sort_batch(

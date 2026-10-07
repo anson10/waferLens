@@ -6,3 +6,12 @@ seeds:
     columns:
       - name: chart
         data_tests: [unique, not_null]
+  - name: wafer_pattern_classes
+    description: >
+      FabEye's WM-811K pattern classes and the simulator's name for each; the bridge between
+      FabEye's predictions and the simulator's ground truth.
+    columns:
+      - name: pattern
+        data_tests: [unique, not_null]
+      - name: simulator_pattern
+        data_tests: [unique]

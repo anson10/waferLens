@@ -9,6 +9,7 @@ from sqlalchemy import Engine, create_engine, pool
 
 from waferlens.config import get_settings
 from waferlens.ingest import secom
+from waferlens.patterns.fabeye import FabEye
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -57,3 +58,15 @@ class Tracking(ConfigurableResource):  # type: ignore[type-arg]
 
     def uri(self) -> str:
         return self.tracking_uri or get_settings().mlflow_tracking_uri
+
+
+class FabEyeService(ConfigurableResource):  # type: ignore[type-arg]
+    """The FabEye wafer-map classifier (docker-compose service). Empty = the app settings
+    (FABEYE_URL, FABEYE_API_KEY)."""
+
+    url: str = ""
+    api_key: str = ""
+
+    def client(self) -> FabEye:
+        settings = get_settings()
+        return FabEye(self.url or settings.fabeye_url, self.api_key or settings.fabeye_api_key)

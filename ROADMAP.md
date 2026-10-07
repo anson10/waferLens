@@ -214,11 +214,11 @@ Goal: detection that's **measured against ground truth**, not just "flags exist"
 
 Wafer-map classification already lives in [FabEye](https://github.com/anson10/FabEye) (WM-811K CNN/GNN/RF, lot-disjoint evaluation, conformal prediction, ONNX + FastAPI serving). **Do not rebuild it here.** WaferLens consumes FabEye as a service and adds what FabEye's README lists as missing: timestamps and process context.
 
-### 5a — FabEye as the wafer-map classifier
-- [ ] Add FabEye image as a `fabeye` service in docker-compose (API key via env)
-- [ ] Simulator wafer maps exported in FabEye's format (0 = off-wafer, 1 = good, 2 = fail)
-- [ ] Dagster asset: batch-score new wafers via `POST /predict/batch` → `fct_wafer_pattern` (pattern, confidence, conformal set, accept/review flag, model version)
-- [ ] Domain-shift check: score simulated maps against **injected ground-truth patterns** → accuracy, coverage, accept rate vs FabEye's numbers on real lots (report honestly, even if it drops)
+### 5a — FabEye as the wafer-map classifier — see `docs/fabeye_eval.md` (generated) and ADR-010
+- [x] Add FabEye as a `fabeye` service in docker-compose, built from its GitHub repo at a pinned commit (API key via env)
+- [x] Simulator logs per-wafer pattern ground truth (`wafer_pattern_truth`); maps sent in FabEye's format (0 = off-wafer, 1 = good, 2 = fail)
+- [x] Dagster asset `wafer_patterns`: batch-score every sorted wafer via `POST /predict/batch` → `fct_wafer_pattern` (pattern, confidence, conformal set, accept/review flag, model version)
+- [x] Domain-shift check against **injected ground-truth patterns**: macro-F1 0.909 (0.858 on real lots), but Random set coverage 52% vs ~90% (strong random fields called Near-full); 450 empty prediction sets
 - [ ] Root cause using pattern: pattern × chamber commonality (e.g. edge-ring ↔ CMP chamber) → does adding pattern improve top-1 root-cause accuracy from Phase 3?
 - [ ] Time-ordered evaluation FabEye couldn't do: detection delay of a pattern-based alarm vs SPC alarms on the same excursion
 - [ ] Grafana: Prometheus datasource scraping FabEye `/metrics` → serving latency, prediction volume by pattern, review-queue rate
@@ -238,7 +238,7 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 - [x] Dagster asset `secom_model` (train, register, score, write)
 - [x] ADR-008 "SECOM evaluation: time-ordered split, walk-forward selection, PR-AUC"
 - [x] ADR-009 "MLflow for experiment tracking and the model registry"
-- [ ] ADR-010 "Consume FabEye as a service instead of retraining" (5a)
+- [x] ADR-010 "Consume FabEye as a service instead of retraining"
 
 **Done when:** README reports FabEye's accuracy on simulated maps with ground truth, root-cause accuracy with vs without pattern, and SECOM PR-AUC on a time split.
 

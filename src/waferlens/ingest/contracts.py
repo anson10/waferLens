@@ -19,7 +19,7 @@ import pyarrow.compute as pc
 from sqlalchemy import Boolean, Double, Float, Integer, Numeric, SmallInteger, Table, Text
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
 
-from waferlens.db.models import ROOTCAUSE_TABLES, SPC_TABLES, Base
+from waferlens.db.models import PATTERN_TABLES, ROOTCAUSE_TABLES, SPC_TABLES, Base
 
 Tables = dict[str, pd.DataFrame | pa_arrow.Table]
 
@@ -27,7 +27,7 @@ Tables = dict[str, pd.DataFrame | pa_arrow.Table]
 # database from wafer_maps (ADR-0003); the SPC and root-cause tables are written by
 # waferlens.spc / waferlens.rootcause. The loader still truncates them: results derived from
 # replaced data are stale.
-DERIVED = frozenset({"wafer_bin_summary", *SPC_TABLES, *ROOTCAUSE_TABLES})
+DERIVED = frozenset({"wafer_bin_summary", *SPC_TABLES, *ROOTCAUSE_TABLES, *PATTERN_TABLES})
 # wafer_maps carries a nested list column; it's checked by check_wafer_maps instead.
 ARROW_TABLES = frozenset({"wafer_maps"})
 

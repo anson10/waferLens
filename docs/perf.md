@@ -73,6 +73,15 @@ Dagster job (phase 2b) uses it when the load asset changed.
 
 ## Whole pipeline (Dagster `full_rebuild`)
 
+**Phase 5 update:** once the SECOM model (2 min 54 s) joined the job, the first run on this
+7.4 GB machine ran out of memory: the SECOM model search ran beside the fab contracts check,
+the kernel killed Postgres, and the run failed. The steps that hold whole tables in Python
+(simulate, contracts, load, SPC, SECOM model) are now tagged and the executor runs one of
+them at a time. The run then takes **16 min 30 s**; the contracts check waits ~3 min for the
+SECOM model, the price of not crashing. FabEye scoring (phase 5a) adds ~90 s after the load.
+
+The rest of this section is the phase 3 run, before that change:
+
 `make pipeline` on demo: **8 min 39 s** end to end, one run, including SPC. Dagster splits
 the dbt project into steps around the SPC asset (measurements in, alarms out); steps without
 a dependency between them run in parallel, so the step times add up to more than the wall time.
