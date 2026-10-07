@@ -43,7 +43,9 @@ def test_measurement_tables_are_weekly_hypertables(engine: Engine) -> None:
         rows = conn.execute(
             text(
                 "SELECT hypertable_name, column_name, time_interval "
-                "FROM timescaledb_information.dimensions ORDER BY hypertable_name"
+                "FROM timescaledb_information.dimensions "
+                # the sensor_daily continuous aggregate keeps its own internal hypertable
+                "WHERE hypertable_schema = 'public' ORDER BY hypertable_name"
             )
         ).all()
     assert [(r.hypertable_name, r.column_name, r.time_interval) for r in rows] == [

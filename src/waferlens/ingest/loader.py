@@ -35,6 +35,7 @@ from waferlens.db.session import get_engine
 from waferlens.ingest.contracts import ARROW_TABLES, DERIVED, Tables, check_tables
 
 CHUNK_ROWS = 200_000
+CONTINUOUS_AGGREGATES = ("sensor_daily",)  # migration 0006; refreshed after each load
 LOAD_ORDER: list[Table] = [t for t in Base.metadata.sorted_tables if t.name not in DERIVED]
 
 # Bin counts per wafer, straight from the stored maps, so the two can never disagree.
@@ -120,6 +121,13 @@ def load(data_dir: Path, engine: Engine | None = None, *, validate: bool = True)
         t = time.perf_counter()
         conn.execute(text("ANALYZE"))
         report.seconds["analyze"] = round(time.perf_counter() - t, 2)
+
+    # Continuous aggregates can't be refreshed inside a transaction, so after the commit.
+    t = time.perf_counter()
+    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+        for cagg in CONTINUOUS_AGGREGATES:
+            conn.execute(text(f"CALL refresh_continuous_aggregate('{cagg}', NULL, NULL)"))
+    report.seconds["continuous_aggregates"] = round(time.perf_counter() - t, 2)
 
     report.total_seconds = round(time.perf_counter() - started, 2)
     return report

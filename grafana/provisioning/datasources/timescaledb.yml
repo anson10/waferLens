@@ -5,10 +5,11 @@ datasources:
     uid: waferlens-timescaledb
     type: grafana-postgresql-datasource
     url: db:5432
-    user: $POSTGRES_USER
+    # Read-only role from migration 0006: dashboards can never change data.
+    user: $GRAFANA_DB_USER
     isDefault: true
     secureJsonData:
-      password: $POSTGRES_PASSWORD
+      password: $GRAFANA_DB_PASSWORD
     jsonData:
       database: $POSTGRES_DB
       sslmode: disable

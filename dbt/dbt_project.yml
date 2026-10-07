@@ -12,6 +12,9 @@ clean-targets: [target, dbt_packages]
 
 models:
   waferlens:
+    # Dashboards read with the read-only role from migration 0006.
+    +grants:
+      select: [grafana_reader]
     staging:
       +schema: staging
       +materialized: view

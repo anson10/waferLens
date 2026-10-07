@@ -60,6 +60,8 @@ control as (
 select
     e.excursion_id,
     e.excursion_type,
+    e.started_at,
+    e.ended_at,
     count(l.wafer_id) as affected_wafers,
     round(avg(l.yield_pct)::numeric, 2) as affected_yield_pct,
     round(avg(c.control_yield_pct)::numeric, 2) as control_yield_pct,
@@ -69,4 +71,4 @@ select
 from excursions as e
 left join labelled as l on e.excursion_id = l.excursion_id and l.is_affected
 left join control as c on l.excursion_id = c.excursion_id and l.product_id = c.product_id
-group by e.excursion_id, e.excursion_type
+group by e.excursion_id, e.excursion_type, e.started_at, e.ended_at
