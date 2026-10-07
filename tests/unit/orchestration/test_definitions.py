@@ -13,7 +13,7 @@ from dagster import (
     build_sensor_context,
 )
 
-from waferlens.db.models import SPC_TABLES
+from waferlens.db.models import ROOTCAUSE_TABLES, SPC_TABLES
 from waferlens.orchestration.assets import FAB_TABLES, SECOM_TABLES, simulated_fab
 from waferlens.orchestration.definitions import defs, new_parquet_drop, nightly_rebuild
 from waferlens.orchestration.resources import FabData
@@ -22,7 +22,15 @@ from waferlens.orchestration.resources import FabData
 def test_definitions_load_with_expected_groups() -> None:
     graph = defs.resolve_asset_graph()
     groups = {graph.get(k).group_name for k in graph.get_all_asset_keys()}
-    assert groups == {"ingest", "warehouse", "spc", "dbt_staging", "dbt_intermediate", "dbt_marts"}
+    assert groups == {
+        "ingest",
+        "warehouse",
+        "spc",
+        "rootcause",
+        "dbt_staging",
+        "dbt_intermediate",
+        "dbt_marts",
+    }
     assert {j.name for j in defs.resolve_all_job_defs()} >= {"full_rebuild", "ingest"}
 
 
@@ -31,7 +39,10 @@ def test_every_dbt_source_is_produced_by_a_loader_asset() -> None:
     # those keys, or the lineage breaks silently between the warehouse and dbt.
     graph = defs.resolve_asset_graph()
     sources = {k for k in graph.get_all_asset_keys() if k.path[0] == "waferlens"}
-    produced = {AssetKey(["waferlens", t]) for t in [*FAB_TABLES, *SECOM_TABLES, *SPC_TABLES]}
+    produced = {
+        AssetKey(["waferlens", t])
+        for t in [*FAB_TABLES, *SECOM_TABLES, *SPC_TABLES, *ROOTCAUSE_TABLES]
+    }
     assert sources == produced
     assert all(graph.get(k).is_materializable for k in sources)
 

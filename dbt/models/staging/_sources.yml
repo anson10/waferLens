@@ -44,6 +44,8 @@ sources:
         description: Frozen Phase I limits written by waferlens.spc (one row per series version).
       - name: spc_alarms
         description: Phase II alarms written by waferlens.spc (one row per signalling point).
+      - name: rootcause_candidates
+        description: Ranked suspects from commonality analysis of each excursion window (waferlens.rootcause).
       - name: secom_runs
         description: Real UCI SECOM runs (docs/data/secom.md).
       - name: secom_readings

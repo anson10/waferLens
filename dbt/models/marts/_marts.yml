@@ -214,6 +214,44 @@ models:
           - accepted_values:
               arguments: {values: [chamber, tool]}
 
+  - name: fct_excursion_impact
+    description: >
+      One row per injected excursion: affected wafers, their yield against same-product wafers
+      processed in the same window that escaped it, and the dies lost.
+    columns:
+      - name: excursion_id
+        data_tests: [unique, not_null]
+      - name: affected_wafers
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0}
+
+  - name: fct_root_cause_candidates
+    description: Ranked suspects (chambers, recipe versions) per excursion window, with the true cause flagged.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments: {combination_of_columns: [excursion_id, factor_type, chamber_id, recipe_id]}
+    columns:
+      - name: candidate_id
+        data_tests: [unique, not_null]
+      - name: suspect
+        data_tests: [not_null]
+      - name: suspect_rank
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1}
+
+  - name: fct_root_cause_eval
+    description: One row per excursion with the true cause's rank (top-1 / top-3) and its yield impact.
+    columns:
+      - name: excursion_id
+        data_tests: [unique, not_null]
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "not top1 or top3"}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "true_rank is null or true_rank <= candidates"}
+
   # ------------------------------------------------------------------ dimensions
   - name: dim_date
     description: Calendar days (UTC) covering the data; Power BI's date table.

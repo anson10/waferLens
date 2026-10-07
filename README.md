@@ -10,7 +10,7 @@ against that ground truth, commonality analysis, Grafana for live monitoring and
 yield reporting. Wafer-map pattern classification comes from its sister project,
 [FabEye](https://github.com/anson10/FabEye).
 
-**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 has the SPC engine; benchmarking and root cause next. See [ROADMAP.md](ROADMAP.md).
+**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 (SPC, detection benchmark, root cause) is done; phase 4 (Grafana) is next. See [ROADMAP.md](ROADMAP.md).
 The original v1 is preserved on the
 [`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
@@ -29,6 +29,13 @@ cell, within 3% of published tables; 0σ = points between false alarms):
 On the demo fab's own ground truth, chamber-level EWMA and CUSUM first alarmed after a median of
 **8–9 affected wafers vs 33 for Shewhart** (chance baseline: 140–200). Full report:
 [docs/spc_benchmark.md](docs/spc_benchmark.md); decision: [ADR-006](docs/adr/0006-ewma-cusum-alongside-western-electric.md).
+
+**Root cause** — given only the time window of each injected excursion, commonality analysis
+(which chamber or recipe version the low-yield wafers share) ranked the true cause **first for
+23 of 32 excursions that measurably cost yield (72%)**, top 3 for 75%, against 0.8% for a random
+pick among ~129 suspects. SPC and commonality cover each other: 35 of 40 excursions are found by
+at least one; SPC can't see spatial defect patterns, commonality finds 11 of 13 of them.
+Report: [docs/root_cause.md](docs/root_cause.md).
 
 ## Planned architecture
 
@@ -60,7 +67,7 @@ make check     # lint + typecheck + all tests
 `make seed` is `make migrate simulate load`; add `PROFILE=dev` for a 1,000-wafer fab that
 loads in seconds. Then `make dbt` builds and tests the star-schema marts, or `make pipeline` runs everything as one Dagster job (`make dagster` for the UI). Run `make` with no arguments to list all targets.
 
-Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [dbt models](docs/dbt.md) · [pipeline](docs/pipeline.md) · [SPC](docs/spc.md) · [performance](docs/perf.md) ·
+Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [dbt models](docs/dbt.md) · [pipeline](docs/pipeline.md) · [SPC](docs/spc.md) · [SPC benchmark](docs/spc_benchmark.md) · [root cause](docs/root_cause.md) · [performance](docs/perf.md) ·
 [SECOM data card](docs/data/secom.md) · [decisions](docs/adr/)
 
 ## Layout

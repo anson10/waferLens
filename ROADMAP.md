@@ -176,14 +176,17 @@ Goal: detection that's **measured against ground truth**, not just "flags exist"
 
 ### Root cause
 - [x] `fct_spc_alarms` mart (moved from phase 2) feeding Grafana and Power BI, + `spc_charts` dbt seed
-- [ ] Commonality analysis in SQL: for low-yield wafers, rank tool/chamber/recipe by over-representation (e.g. chi-square / Fisher / lift)
-- [ ] Time-window aware (only chambers used in the excursion window)
-- [ ] Evaluate: root-cause chamber in top-1 / top-3 for N injected excursions
-- [ ] Excursion impact: dies lost, wafers affected
+- [x] Commonality analysis in SQL (`rootcause/commonality.py`): low yield = below the product's own normal; chambers and recipe versions ranked by 2×2 chi-square and lift; ad-hoc CLI for any window
+- [x] Time-window aware (only chambers and recipes used inside the window; planted-data tests incl. a product-confounding trap)
+- [x] Evaluate: true cause top-1 for 23/32 excursions that cost yield (72%), top-3 75%, random 0.8% (`fct_root_cause_eval`, `docs/root_cause.md`)
+- [x] Excursion impact vs same-product, same-window controls: wafers affected, yield delta, dies lost (`fct_excursion_impact`)
+- [x] SPC × commonality coverage: 35/40 excursions found by at least one method
 
 **Done when:** README has an ARL table and a root-cause accuracy number.
 
-**CV lines:** *EWMA and CUSUM detect a 0.5σ shift ~4× sooner than Shewhart (42/38 vs 156 points, ARL benchmark within 3% of published tables); on the fab's own ground truth, a median 8 wafers vs 33.* / *Commonality analysis ranked the true root-cause chamber top-1 in X/Y injected excursions.*
+**CV lines:** *EWMA and CUSUM detect a 0.5σ shift ~4× sooner than Shewhart (42/38 vs 156 points, ARL benchmark within 3% of published tables); on the fab's own ground truth, a median 8 wafers vs 33.* / *Commonality analysis in SQL ranked the true root-cause chamber or recipe first for 72% of yield-impacting excursions (random: 0.8%).*
+
+**Status: phase 3 complete (2026-10-07).** / *Commonality analysis ranked the true root-cause chamber top-1 in X/Y injected excursions.*
 
 ---
 

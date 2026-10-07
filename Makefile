@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc spc-report dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc spc-report rootcause rootcause-report dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -50,6 +50,12 @@ spc: ## Phase I limits (frozen) + Phase II alarms into spc_* tables (needs make 
 
 spc-report: ## Simulated ARL + detection vs ground truth → docs/spc_benchmark.md (after make spc + dbt)
 	uv run python -m waferlens.spc.report
+
+rootcause: ## Commonality analysis of every excursion window → rootcause_candidates (after make dbt)
+	uv run python -m waferlens.rootcause
+
+rootcause-report: ## Root-cause accuracy + impact + SPC coverage → docs/root_cause.md (after spc, rootcause, dbt)
+	uv run python -m waferlens.rootcause.report
 
 dbt-docs: ## Generate dbt docs and docs/dbt.md (lineage + model table)
 	cd dbt && uv run dbt docs generate --profiles-dir .
