@@ -184,6 +184,36 @@ models:
       - dbt_utils.expression_is_true:
           arguments: {expression: "(chart = 't2') = (parameter_id is null)"}
 
+  - name: fct_excursion_detection
+    description: >
+      One row per injected excursion x SPC chart x scope, scoring Phase II SPC against the
+      simulator's ground truth: detected or not, delay in hours and affected points, a placebo
+      window before the excursion, and whether it started inside the baseline window.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments: {combination_of_columns: [excursion_id, chart, scope]}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "detected = (first_alarm_at is not null)"}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "not detected or (delay_hours >= 0 and delay_points >= 1)"}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "placebo_alarm = (placebo_delay_points >= 1)"}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "placebo_delay_points <= placebo_window_points"}
+      - dbt_utils.expression_is_true:
+          arguments: {expression: "excursion_type <> 'spatial_pattern' or not monitored"}
+          config:
+            description: Spatial patterns change no sensor or metrology value, so no chart watches them.
+    columns:
+      - name: excursion_type
+        data_tests:
+          - accepted_values:
+              arguments: {values: [step_shift, drift, chamber_offset, recipe_change, spatial_pattern]}
+      - name: scope
+        data_tests:
+          - accepted_values:
+              arguments: {values: [chamber, tool]}
+
   # ------------------------------------------------------------------ dimensions
   - name: dim_date
     description: Calendar days (UTC) covering the data; Power BI's date table.

@@ -14,6 +14,22 @@ yield reporting. Wafer-map pattern classification comes from its sister project,
 The original v1 is preserved on the
 [`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
+## Results so far
+
+**SPC detection speed** — average points until the first alarm (simulated, 2,000 runs per
+cell, within 3% of published tables; 0σ = points between false alarms):
+
+| Chart | 0σ (false alarms) | 0.5σ | 1σ | 2σ | 3σ |
+|---|---|---|---|---|---|
+| Shewhart (WE rule 1) | 367 | 157 | 44 | 6.3 | 2.0 |
+| Western Electric 1–4 | 91 | 28 | 9.6 | 3.5 | 1.8 |
+| EWMA (λ 0.2, L 3) | 542 | 42 | 10.1 | 3.0 | 1.6 |
+| CUSUM (k 0.5, h 5) | 475 | 38 | 10.6 | 4.0 | 2.5 |
+
+On the demo fab's own ground truth, chamber-level EWMA and CUSUM first alarmed after a median of
+**8–9 affected wafers vs 33 for Shewhart** (chance baseline: 140–200). Full report:
+[docs/spc_benchmark.md](docs/spc_benchmark.md); decision: [ADR-006](docs/adr/0006-ewma-cusum-alongside-western-electric.md).
+
 ## Planned architecture
 
 ```mermaid

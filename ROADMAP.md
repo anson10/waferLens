@@ -167,11 +167,12 @@ Goal: detection that's **measured against ground truth**, not just "flags exist"
 - [x] hypothesis property tests: in-control false-alarm rates match theory (WE1 0.27%, WE4 0.78%, CUSUM ~0.22%); measured on demo too
 - [x] `spc_results` Dagster asset between the dbt measurement mart and `fct_spc_alarms`
 
-### Benchmarking
-- [ ] ARL harness: ARL₀ (false alarms) and ARL₁ (detection delay) for shift sizes 0.25σ–3σ
-- [ ] Results table + plot: Shewhart vs WE rules vs EWMA vs CUSUM vs T²
-- [ ] Detection delay vs `excursions_ground_truth` on simulated data
-- [ ] ADR-006 "Why EWMA/CUSUM in addition to Western Electric"
+### Benchmarking — see `docs/spc_benchmark.md` (generated) and ADR-006
+- [x] ARL harness: ARL₀ and ARL₁ for shifts 0–3σ (2,000 runs each), batch charts proven identical to the 1-D ones, within 3% of published tables
+- [x] Results table + plot: Shewhart vs WE rules vs EWMA vs CUSUM vs T² (`docs/img/arl.svg`, false-alarm cost in the legend)
+- [x] Detection delay vs `excursions_ground_truth`: `fct_excursion_detection` dbt mart with a placebo window as the chance baseline, chamber vs tool scope
+- [x] ADR-006 "EWMA and CUSUM alongside Western Electric, limits per chamber"
+- [x] Fixes the benchmark forced: F-based Phase II T² limit for estimated parameters (chi-square limit false-alarmed every ~5 points)
 
 ### Root cause
 - [x] `fct_spc_alarms` mart (moved from phase 2) feeding Grafana and Power BI, + `spc_charts` dbt seed
@@ -182,7 +183,7 @@ Goal: detection that's **measured against ground truth**, not just "flags exist"
 
 **Done when:** README has an ARL table and a root-cause accuracy number.
 
-**CV lines:** *EWMA detected 0.5σ drift in N wafers vs M for Shewhart (ARL benchmark).* / *Commonality analysis ranked the true root-cause chamber top-1 in X/Y injected excursions.*
+**CV lines:** *EWMA and CUSUM detect a 0.5σ shift ~4× sooner than Shewhart (42/38 vs 156 points, ARL benchmark within 3% of published tables); on the fab's own ground truth, a median 8 wafers vs 33.* / *Commonality analysis ranked the true root-cause chamber top-1 in X/Y injected excursions.*
 
 ---
 

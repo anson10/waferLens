@@ -78,6 +78,19 @@ def test_hotelling_t2_catches_a_broken_correlation_univariate_charts_miss() -> N
     assert stat[0] > limits.limit
 
 
+def test_t2_limit_widens_for_small_baselines_and_tends_to_chi_square() -> None:
+    from scipy import stats
+
+    rng = np.random.default_rng(4)
+    small = t2_limits(rng.normal(size=(30, 2)))
+    large = t2_limits(rng.normal(size=(20_000, 2)))
+    chi2 = stats.chi2.ppf(1 - 0.0027, 2)
+    assert small is not None
+    assert large is not None
+    assert small.limit > 1.3 * chi2  # estimated parameters: a wider limit
+    assert large.limit == pytest.approx(chi2, rel=0.01)
+
+
 def test_t2_limits_need_enough_rows() -> None:
     assert t2_limits(np.zeros((5, 2))) is None
 
