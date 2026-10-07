@@ -30,7 +30,10 @@ from waferlens.db.models import ROOTCAUSE_TABLES, SPC_TABLES, Base
 from waferlens.ingest.contracts import ContractError, check_tables
 from waferlens.ingest.loader import load, read_tables
 from waferlens.ingest.secom import download, load_secom, parse
-from waferlens.orchestration.resources import ROOT, FabData, SecomSource, Warehouse
+from waferlens.ml.experiment import run_experiment
+from waferlens.ml.secom import load as load_secom_dataset
+from waferlens.ml.store import write_results
+from waferlens.orchestration.resources import ROOT, FabData, SecomSource, Tracking, Warehouse
 from waferlens.rootcause.evaluate import evaluate_excursions
 from waferlens.simulate.config import load_config
 from waferlens.simulate.run import simulate, write_parquet
@@ -92,6 +95,7 @@ FAB_TABLES = [t.name for t in Base.metadata.sorted_tables if t.name not in ANALY
     "wafer_yield"
 ]
 SECOM_TABLES = ["secom_runs", "secom_readings"]
+ML_TABLES = ["secom_model_versions", "secom_scores", "secom_sensor_importance"]
 
 
 def table_key(name: str) -> AssetKey:
@@ -236,3 +240,37 @@ def rootcause_candidates(warehouse: Warehouse) -> MaterializeResult:
         metadata={"windows": report.windows, "candidates": report.candidates,
                   "seconds": report.seconds}
     )  # fmt: skip
+
+
+# --------------------------------------------------------------------------- SECOM model
+
+
+@multi_asset(
+    specs=[
+        AssetSpec(table_key(name), deps=[table_key(t) for t in SECOM_TABLES],
+                  group_name="ml", kinds={"python", "postgres", "mlflow"})
+        for name in ML_TABLES
+    ],
+    can_subset=False,
+    description=(
+        "SECOM fail model: selected by walk-forward CV, scored once on the latest 30% of runs, "
+        "registered in MLflow; out-of-sample scores and sensor importance for Grafana "
+        "(waferlens.ml)."
+    ),
+)  # fmt: skip
+def secom_model(warehouse: Warehouse, tracking: Tracking) -> Iterator[MaterializeResult]:
+    engine = warehouse.engine()
+    exp = run_experiment(load_secom_dataset(engine), tracking.uri())
+    written = write_results(engine, exp)
+    c = exp.chosen
+    yield MaterializeResult(
+        asset_key=table_key("secom_model_versions"),
+        metadata={"model_version": exp.model_version, "config": c.config.name,
+                  "holdout_pr_auc": c.scores.pr_auc, "chance": c.scores.prevalence,
+                  "random_split_pr_auc": float(c.random_split.mean()),
+                  "mlflow_run_id": str(exp.extras["mlflow_run_id"])},
+    )  # fmt: skip
+    yield MaterializeResult(asset_key=table_key("secom_scores"),
+                            metadata={"rows": written["scores"]})  # fmt: skip
+    yield MaterializeResult(asset_key=table_key("secom_sensor_importance"),
+                            metadata={"rows": written["sensors"]})  # fmt: skip

@@ -22,6 +22,7 @@ OUT_DIR = ROOT / "grafana" / "dashboards"
 DS = {"type": "grafana-postgresql-datasource", "uid": "waferlens-timescaledb"}
 # The demo fab simulates 2026-01-05 to 2026-07-05; open dashboards on that history.
 TIME_RANGE = {"from": "2026-01-05T00:00:00.000Z", "to": "2026-07-06T00:00:00.000Z"}
+SECOM_RANGE = {"from": "2008-07-19T00:00:00.000Z", "to": "2008-10-18T00:00:00.000Z"}
 
 Json = dict[str, Any]
 
@@ -30,6 +31,9 @@ Json = dict[str, Any]
 
 
 def target(sql: str, ref: str = "A", fmt: str = "time_series") -> Json:
+    # The SQL is collapsed onto one line, so a `--` comment would swallow the rest of it.
+    if "--" in sql:
+        raise ValueError("no -- comments in dashboard SQL; use the panel description")
     return {"refId": ref, "datasource": DS, "editorMode": "code", "rawQuery": True,
             "format": fmt, "rawSql": " ".join(sql.split())}  # fmt: skip
 
@@ -98,7 +102,8 @@ def variable(name: str, label: str, sql: str) -> Json:
 
 def dashboard(uid: str, title: str, description: str, panels: list[Json], *,
               variables: list[Json] | None = None,
-              annotations: list[Json] | None = None) -> Json:  # fmt: skip
+              annotations: list[Json] | None = None,
+              time: Json | None = None) -> Json:  # fmt: skip
     builtin = {"builtIn": 1, "datasource": {"type": "grafana", "uid": "-- Grafana --"},
                "enable": True, "hide": True, "iconColor": "rgba(0, 211, 255, 1)",
                "name": "Annotations & Alerts", "type": "dashboard"}  # fmt: skip
@@ -113,7 +118,7 @@ def dashboard(uid: str, title: str, description: str, panels: list[Json], *,
         "editable": True,
         "graphTooltip": 1,
         "refresh": "",
-        "time": TIME_RANGE,
+        "time": time or TIME_RANGE,
         "templating": {"list": variables or []},
         "annotations": {"list": [builtin, *(annotations or [])]},
         "panels": panels,
@@ -129,11 +134,15 @@ def quiet_stat(pid: int, title: str, x: int, sql: str, **kw: Any) -> Json:
 
 
 def stat(pid: int, title: str, x: int, sql: str, *, unit: str | None = None,
-         decimals: int | None = None, description: str = "") -> Json:  # fmt: skip
+         decimals: int | None = None, description: str = "",
+         text: bool = False) -> Json:  # fmt: skip
+    reduce: Json = {"calcs": ["lastNotNull"]}
+    if text:  # stat panels show numeric fields only unless told otherwise
+        reduce["fields"] = "/.*/"
     return panel(pid, title, "stat", (x, 0, 4, 4), [target(sql, fmt="table")], unit=unit,
                  decimals=decimals, description=description,
-                 options={"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "none",
-                          "graphMode": "none"})  # fmt: skip
+                 options={"reduceOptions": reduce, "colorMode": "none", "graphMode": "none",
+                          "textMode": "value"})  # fmt: skip
 
 
 # --------------------------------------------------------------------------- 1. overview
@@ -425,7 +434,99 @@ def excursions() -> Json:
                      annotations=annotations)  # fmt: skip
 
 
-DASHBOARDS = {"overview": overview, "spc": spc, "excursions": excursions}
+# --------------------------------------------------------------------------- 4. SECOM model
+
+
+def secom() -> Json:
+    variables = [
+        variable("sensor", "Sensor", """
+            SELECT 's' || lpad(sensor_no::text, 3, '0') AS __text, sensor_no AS __value
+            FROM secom_sensor_importance WHERE importance_rank <= 20
+            ORDER BY importance_rank"""),
+    ]  # fmt: skip
+    annotations = [
+        {"name": "Holdout starts", "datasource": DS, "enable": True, "iconColor": "purple",
+         "target": target("""
+            SELECT test_starts AS time,
+                   'Holdout: ' || test_runs || ' runs never seen in training or selection' AS text
+            FROM secom_model_versions""", ref="Anno", fmt="table")},
+    ]  # fmt: skip
+    model = "FROM secom_model_versions"
+    panels = [
+        stat(1, "Holdout PR-AUC", 0, f"SELECT holdout_pr_auc {model}", decimals=3,
+             description="Last 30% of runs, scored once by the registered model."),
+        stat(2, "Chance (holdout fail rate)", 4, f"SELECT holdout_prevalence {model}",
+             decimals=3, description="PR-AUC of a random ranking."),
+        stat(3, "Same model, random split", 8, f"SELECT random_split_pr_auc {model}", decimals=3,
+             description="Mean over 20 stratified random splits: what a time-blind evaluation "
+                         "would report."),
+        stat(4, "Logistic baseline (holdout)", 12, f"SELECT baseline_pr_auc {model}",
+             decimals=3),
+        stat(5, "Holdout fails", 16, f"SELECT test_fails {model}"),
+        stat(6, "Registered model", 20, f"SELECT model_version || ' · ' || config {model}",
+             text=True),
+        panel(7, "Out-of-sample fail score per run", "timeseries", (0, 4, 24, 9), [
+            target("""
+                SELECT r.run_time AS time, s.score AS "pass"
+                FROM secom_scores AS s JOIN secom_runs AS r USING (run_id)
+                WHERE NOT r.failed AND $__timeFilter(r.run_time) ORDER BY 1"""),
+            target("""
+                SELECT r.run_time AS time, s.score AS "fail"
+                FROM secom_scores AS s JOIN secom_runs AS r USING (run_id)
+                WHERE r.failed AND $__timeFilter(r.run_time) ORDER BY 1""", ref="B"),
+            target("""
+                SELECT t AS time, alarm_threshold AS "threshold (10% false alarms in training)"
+                FROM secom_model_versions,
+                     unnest(ARRAY[$__timeFrom()::timestamptz, $__timeTo()::timestamptz]) AS t
+                ORDER BY 1""", ref="C")],
+              description="Walk-forward scores before the holdout (each from a model trained "
+                          "only on earlier runs), the registered model's scores after it.",
+              custom={"drawStyle": "points", "pointSize": 4},
+              overrides=[points_only("pass", "#8a8a8a"), points_only("fail", "red"),
+                         dashed("threshold (10% false alarms in training)", "orange")]),
+        panel(8, "Weekly fail rate vs alarm rate", "timeseries", (0, 13, 12, 8), [target("""
+            SELECT date_trunc('week', r.run_time) AS time,
+                   100 * avg(r.failed::int) AS "fail rate",
+                   100 * avg(s.alarm::int) AS "alarm rate"
+            FROM secom_runs AS r LEFT JOIN secom_scores AS s USING (run_id)
+            WHERE $__timeFilter(r.run_time)
+            GROUP BY 1 ORDER BY 1""")],
+              unit="percent",
+              description="Fail rate over every run; alarm rate over scored runs. The fail "
+                          "rate drifts, so a threshold from the training period no longer "
+                          "gives the false-alarm rate it was set for.",
+              custom={"drawStyle": "line", "lineWidth": 2, "showPoints": "always",
+                      "pointSize": 6}),
+        panel(9, "Sensors behind the scores", "table", (12, 13, 12, 8), [target("""
+            SELECT importance_rank AS rank, 's' || lpad(sensor_no::text, 3, '0') AS sensor,
+                   round((100 * importance / sum(importance) OVER ())::numeric, 1)
+                       AS "share of importance %",
+                   round(missing_pct::numeric, 1) AS "missing in training %"
+            FROM secom_sensor_importance ORDER BY importance_rank LIMIT 15""", fmt="table")],
+              decimals=1, overrides=[by_name("rank", decimals=0)],
+              description="Mean |contribution| on the holdout (TreeSHAP for LightGBM)."),
+        panel(10, "Sensor value by outcome", "timeseries", (0, 21, 24, 8), [
+            target("""
+                SELECT r.run_time AS time, v.value AS "pass"
+                FROM secom_readings AS v JOIN secom_runs AS r USING (run_id)
+                WHERE v.sensor_no = $sensor AND NOT r.failed AND $__timeFilter(r.run_time)
+                ORDER BY 1"""),
+            target("""
+                SELECT r.run_time AS time, v.value AS "fail"
+                FROM secom_readings AS v JOIN secom_runs AS r USING (run_id)
+                WHERE v.sensor_no = $sensor AND r.failed AND $__timeFilter(r.run_time)
+                ORDER BY 1""", ref="B")],
+              custom={"drawStyle": "points", "pointSize": 4},
+              overrides=[points_only("pass", "#8a8a8a"), points_only("fail", "red")]),
+    ]  # fmt: skip
+    return dashboard("waferlens-secom", "WaferLens · SECOM fail prediction",
+                     "Real UCI SECOM data: the registered fail model's out-of-sample scores, "
+                     "its holdout result against chance and a random split, and the sensors "
+                     "behind it.", panels, variables=variables, annotations=annotations,
+                     time=SECOM_RANGE)  # fmt: skip
+
+
+DASHBOARDS = {"overview": overview, "spc": spc, "excursions": excursions, "secom": secom}
 
 
 def render_all() -> dict[str, str]:

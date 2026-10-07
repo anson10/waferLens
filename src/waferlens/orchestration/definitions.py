@@ -35,11 +35,12 @@ from waferlens.orchestration.assets import (
     fab_contracts,
     fab_tables,
     rootcause_candidates,
+    secom_model,
     secom_tables,
     simulated_fab,
     spc_results,
 )
-from waferlens.orchestration.resources import FabData, SecomSource, Warehouse
+from waferlens.orchestration.resources import FabData, SecomSource, Tracking, Warehouse
 
 full_rebuild = define_asset_job(
     "full_rebuild",
@@ -90,7 +91,15 @@ def nightly_rebuild() -> RunRequest:
 
 
 defs = Definitions(
-    assets=[simulated_fab, fab_tables, secom_tables, dbt_models, spc_results, rootcause_candidates],
+    assets=[
+        simulated_fab,
+        fab_tables,
+        secom_tables,
+        dbt_models,
+        spc_results,
+        rootcause_candidates,
+        secom_model,
+    ],
     asset_checks=[fab_contracts],
     jobs=[full_rebuild, ingest],
     sensors=[new_parquet_drop],
@@ -99,6 +108,7 @@ defs = Definitions(
         "fab_data": FabData(),
         "warehouse": Warehouse(),
         "secom_source": SecomSource(),
+        "tracking": Tracking(),
         "dbt": DbtCliResource(project_dir=dbt_project),
     },
 )

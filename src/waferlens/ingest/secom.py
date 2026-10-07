@@ -123,7 +123,10 @@ def load_secom(data: Secom, engine: Engine | None = None) -> dict[str, int]:
     with engine.begin() as conn:
         pg = conn.connection.driver_connection
         assert isinstance(pg, PgConnection)
-        conn.execute(text("TRUNCATE secom_readings, secom_runs"))
+        # Model results reference the runs and are stale after a reload: retrain (make
+        # secom-model) to get them back.
+        conn.execute(text("TRUNCATE secom_readings, secom_runs, secom_scores, "
+                          "secom_sensor_importance, secom_model_versions"))  # fmt: skip
         conn.execute(DropConstraint(fk))
         copy_frame(pg, RUNS, data.runs)
         copy_frame(pg, READINGS, data.readings)

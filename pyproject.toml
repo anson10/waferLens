@@ -18,6 +18,9 @@ dependencies = [
     "dagster>=1.9",
     "dagster-dbt>=0.25",
     "scipy>=1.14",
+    "scikit-learn>=1.9.1",
+    "lightgbm>=4.7.0",
+    "mlflow-skinny>=3.17.0",
 ]
 
 [dependency-groups]
@@ -63,6 +66,9 @@ select = ["E", "W", "F", "I", "N", "UP", "B", "SIM", "PT", "RUF"]
 "src/waferlens/dashboards/*" = ["RUF001", "RUF002"]
 "tests/unit/spc/*" = ["RUF001", "RUF002"]
 "tests/unit/rootcause/*" = ["RUF001", "RUF002"]
+# scikit-learn convention: X is the feature matrix.
+"src/waferlens/ml/*" = ["N803", "N806", "RUF001", "RUF002"]
+"tests/unit/ml/*" = ["N803", "N806"]
 
 [tool.pyright]
 include = ["src", "tests"]
@@ -76,6 +82,10 @@ testpaths = ["tests"]
 addopts = "-ra --strict-markers"
 markers = [
     "integration: needs the Postgres/TimescaleDB container (make up)",
+]
+filterwarnings = [
+    # MLflow's own SQLite tracking store uses a deprecated SQLAlchemy loader; not our code.
+    "ignore:The ``noload`` loader strategy is deprecated:DeprecationWarning",
 ]
 
 [tool.coverage.run]

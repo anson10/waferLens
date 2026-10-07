@@ -47,3 +47,13 @@ class SecomSource(ConfigurableResource):  # type: ignore[type-arg]
     url: str = secom.SECOM_URL
     sha256: str = secom.SECOM_SHA256
     directory: str = str(ROOT / secom.DEFAULT_DIR)
+
+
+class Tracking(ConfigurableResource):  # type: ignore[type-arg]
+    """MLflow tracking server and model registry. Empty URI = the app settings
+    (MLFLOW_TRACKING_URI)."""
+
+    tracking_uri: str = ""
+
+    def uri(self) -> str:
+        return self.tracking_uri or get_settings().mlflow_tracking_uri

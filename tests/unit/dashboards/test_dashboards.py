@@ -59,7 +59,7 @@ def test_alerts_link_to_existing_dashboard_panels() -> None:
 
 @pytest.mark.parametrize("name", sorted(DASHBOARDS))
 def test_every_query_expands_completely(name: str) -> None:
-    variables = {"tool": "ETCH-01", "chamber": 1, "parameter": 1, "excursion": 1}
+    variables = {"tool": "ETCH-01", "chamber": 1, "parameter": 1, "excursion": 1, "sensor": 60}
     for q in dashboard_queries(name):
         assert "$" not in expand(q.sql, variables, T0, T1), q.where
 
@@ -76,3 +76,11 @@ def test_expand_matches_grafana_macros() -> None:
 def test_expand_rejects_unknown_macros() -> None:
     with pytest.raises(ValueError, match="__timeGroup"):
         expand("SELECT $__timeGroup(t, '1h')", {}, T0, T1)
+
+
+def test_sql_comments_are_rejected() -> None:
+    # Grafana gets each query on one line; a -- comment would comment out everything after it.
+    from waferlens.dashboards.build import target
+
+    with pytest.raises(ValueError, match="comments"):
+        target("SELECT 1 -- note\nFROM t")

@@ -78,7 +78,10 @@ def _time_range(conn: Connection) -> tuple[datetime, datetime]:
     return row[0], row[1]
 
 
-@pytest.mark.parametrize("name", sorted(DASHBOARDS))
+FAB_DASHBOARDS = sorted(set(DASHBOARDS) - {"secom"})  # secom: tests/integration/test_secom_model.py
+
+
+@pytest.mark.parametrize("name", FAB_DASHBOARDS)
 def test_every_dashboard_query_runs_as_the_reader(fab: None, reader: Engine, name: str) -> None:
     empty: list[str] = []
     with reader.connect() as conn:
