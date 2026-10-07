@@ -68,7 +68,10 @@ The first CUSUM version used Page's identity (a cumulative sum minus its running
 which is vectorised but never resets: one false alarm then flagged every following point
 while the sum hovered above h, giving 1.61% instead of ~0.22%. CUSUM now resets after each
 signal, as the published ARL tables assume. A property test (`hypothesis`) checks these
-rates on simulated in-control data for random seeds.
+rates on simulated in-control data for random seeds. Its tolerances are 5 standard deviations of each
+rate measured over 300 seeds: a first, tighter WE4 bound failed in CI on seed 26 (0.66%),
+which turned out to be the lowest of the 300, not a broken chart. WE4 rates spread the most
+because its alarms cluster.
 
 ## What 3b and 3c add
 

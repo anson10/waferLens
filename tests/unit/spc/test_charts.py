@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from waferlens.spc.charts import (
@@ -98,12 +98,18 @@ def test_phase1_limits_need_ten_points() -> None:
 
 @settings(max_examples=6, deadline=None)
 @given(seed=st.integers(0, 2**32 - 1))
+@example(seed=26)  # found by hypothesis: WE4 at 0.66%, the lowest of 300 measured seeds
 def test_in_control_false_alarm_rates_match_theory(seed: int) -> None:
-    """Per-point alarm rates on in-control data: WE1 2 x P(Z > 3) = 0.27%; WE4
-    2 x 0.5^8 = 0.78%; CUSUM k=0.5, h=5 two-sided ARL ~465 → ~0.22% of points."""
+    """Per-point alarm rates on 200k in-control points: WE1 2 x P(Z > 3) = 0.27%;
+    WE4 2 x 0.5^8 = 0.78%; CUSUM k=0.5, h=5 two-sided ARL ~465 → ~0.21%.
+
+    Tolerances are 5 standard deviations of each rate, measured over 300 seeds
+    (WE1 sd 0.012%, WE4 0.033%, CUSUM 0.010%). WE4 spreads most because its alarms
+    cluster: one long run on one side flags every point after the eighth.
+    """
     z = np.random.default_rng(seed).normal(0, 1, 200_000)
     rules = western_electric(z)
     assert rules["we1"].mean() == pytest.approx(0.0027, abs=0.0006)
-    assert rules["we4"].mean() == pytest.approx(0.0078, abs=0.0012)
+    assert rules["we4"].mean() == pytest.approx(0.0078, abs=0.0016)
     _, _, up, down = cusum(z)
-    assert (up | down).mean() == pytest.approx(0.0022, abs=0.0008)
+    assert (up | down).mean() == pytest.approx(0.00214, abs=0.0005)
