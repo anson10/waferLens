@@ -30,8 +30,11 @@ Demo run: 900 series, 875 with usable limits (25 skipped for fewer than 20 basel
   (tested: 3-sigma drift, sigma estimated within 15%).
 - **Trimming:** one pass drops points beyond 4 sigma and re-estimates, so a baseline that
   catches an outlier or the start of an excursion still gives sane limits.
-- **T²:** baseline mean vector and inverse covariance; limit = chi-square(p) quantile at
-  alpha = 0.0027 (same false-alarm rate as a 3-sigma chart).
+- **T²:** baseline mean vector and inverse covariance; Phase II limit for estimated
+  parameters, p(m+1)(m-1)/(m²-mp)·F(1-α; p, m-p) with α = 0.0027 (same false-alarm rate as a
+  3-sigma chart). The first version used the chi-square limit, which assumes known parameters;
+  with ~30 baseline wafers it false-alarmed every ~5 points on demo (found by the detection
+  benchmark's placebo window).
 - **Frozen and versioned:** limits are stored and reused by every later run. `--relearn`
   writes a new version; alarms always point at the version that raised them.
 

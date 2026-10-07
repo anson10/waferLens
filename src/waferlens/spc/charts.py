@@ -125,19 +125,26 @@ class T2Limits:
 
 
 def t2_limits(x: np.ndarray, alpha: float = 0.0027) -> T2Limits | None:
-    """Phase I mean and inverse covariance for Hotelling T² on rows of ``x`` (n x p).
+    """Phase I mean and inverse covariance for Hotelling T² on rows of ``x`` (m x p).
 
-    The limit is the chi-square (1 - alpha) quantile with p degrees of freedom, the
-    large-sample Phase II limit; alpha = 0.0027 matches a 3-sigma univariate chart.
+    The Phase II limit for a new observation when mean and covariance are *estimated* from
+    m baseline rows (Montgomery, eq. 11.19):
+
+        UCL = p (m + 1) (m - 1) / (m^2 - m p) * F(1 - alpha; p, m - p)
+
+    It tends to the chi-square(p) quantile as m grows. With ~30 baseline wafers the
+    chi-square limit is far too tight: on demo it made T² false-alarm every ~5 points.
+    alpha = 0.0027 matches a 3-sigma univariate chart.
     """
     x = x[np.isfinite(x).all(axis=1)]
-    n, p = x.shape
-    if n < max(10, 3 * p):
+    m, p = x.shape
+    if m < max(10, 3 * p):
         return None
     cov = np.cov(x, rowvar=False)
     if np.linalg.cond(cov) > 1e12:
         return None
-    return T2Limits(x.mean(axis=0), np.linalg.inv(cov), float(stats.chi2.ppf(1 - alpha, p)), n)
+    limit = p * (m + 1) * (m - 1) / (m * m - m * p) * stats.f.ppf(1 - alpha, p, m - p)
+    return T2Limits(x.mean(axis=0), np.linalg.inv(cov), float(limit), m)
 
 
 def hotelling_t2(x: np.ndarray, limits: T2Limits) -> tuple[np.ndarray, np.ndarray]:
