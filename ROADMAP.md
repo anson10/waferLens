@@ -224,20 +224,21 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 - [ ] Grafana: Prometheus datasource scraping FabEye `/metrics` → serving latency, prediction volume by pattern, review-queue rate
 - [ ] Cross-link READMEs (WaferLens ↔ FabEye)
 
-### 5b — SECOM: process-sensor fail prediction (new skill area: tabular ML)
-- [ ] Data card: 591 sensors, heavy missingness, ~6.6% fails, timestamps
-- [ ] **Time-ordered** train/test split (SECOM has timestamps) vs random split → leakage gap measured
-- [ ] Missing-value + feature-selection strategy documented (drop/impute, variance, correlation, L1 / mutual information)
-- [ ] Baselines: logistic regression → gradient boosting (LightGBM/XGBoost); imbalance handling
-- [ ] Metrics: PR-AUC, recall at fixed false-alarm rate (not accuracy)
-- [ ] SHAP / permutation importance → which sensors drive fails
-- [ ] Scores written back to DB → visible in Grafana
+### 5b — SECOM: process-sensor fail prediction (new skill area: tabular ML) — see `docs/secom_model.md` (generated) and ADR-008
+- [x] Data card: 590 sensors (the source says 591), heavy missingness, ~6.6% fails, timestamps (`docs/data/secom.md`, phase 1)
+- [x] **Time-ordered** train/test split (last 30% holdout, scored once) vs 20 random splits → leakage gap measured (random split 2.7x higher)
+- [x] Missing-value + feature-selection strategy compared in walk-forward CV (median, median + was-missing indicators, LightGBM native; none, correlation pruning, L1, mutual information)
+- [x] Baselines: logistic regression → LightGBM; imbalance via balanced class weights
+- [x] Metrics: PR-AUC with bootstrap CI and chance level, recall at 5% / 10% false-alarm rate (forward threshold vs hindsight)
+- [x] TreeSHAP (LightGBM `pred_contrib`) / coefficient importance → which sensors drive fails (sensor 60 first in both models)
+- [x] Scores written back to DB (`secom_scores`, `secom_sensor_importance`, `secom_model_versions`) → SECOM dashboard in Grafana
 
 ### MLOps (new vs FabEye)
-- [ ] MLflow tracking + model registry in docker-compose (SECOM runs)
-- [ ] Dagster assets for SECOM training / batch scoring
-- [ ] ADR-008 "Consume FabEye as a service instead of retraining"
-- [ ] ADR-009 "SECOM evaluation: time split and PR-AUC"
+- [x] MLflow tracking + model registry in docker-compose (nested run per configuration, `secom-fail-predictor` versions)
+- [x] Dagster asset `secom_model` (train, register, score, write)
+- [x] ADR-008 "SECOM evaluation: time-ordered split, walk-forward selection, PR-AUC"
+- [x] ADR-009 "MLflow for experiment tracking and the model registry"
+- [ ] ADR-010 "Consume FabEye as a service instead of retraining" (5a)
 
 **Done when:** README reports FabEye's accuracy on simulated maps with ground truth, root-cause accuracy with vs without pattern, and SECOM PR-AUC on a time split.
 

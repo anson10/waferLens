@@ -55,7 +55,8 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "value"
       },
       "targets": [
         {
@@ -101,7 +102,8 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "value"
       },
       "targets": [
         {
@@ -145,7 +147,8 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "value"
       },
       "targets": [
         {
@@ -189,7 +192,8 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "value"
       },
       "targets": [
         {
@@ -233,7 +237,8 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "value"
       },
       "targets": [
         {
@@ -278,7 +283,8 @@
           "calcs": [
             "lastNotNull"
           ]
-        }
+        },
+        "textMode": "value"
       },
       "targets": [
         {

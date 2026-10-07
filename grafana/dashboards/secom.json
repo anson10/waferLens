@@ -19,8 +19,8 @@
           "uid": "waferlens-timescaledb"
         },
         "enable": true,
-        "iconColor": "red",
-        "name": "Ground-truth window",
+        "iconColor": "purple",
+        "name": "Holdout starts",
         "target": {
           "datasource": {
             "type": "grafana-postgresql-datasource",
@@ -29,33 +29,13 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT start_time AS time, end_time AS timeend, 'Injected: ' || description AS text, excursion_type AS tags FROM excursions_ground_truth WHERE excursion_id = $excursion",
-          "refId": "Anno"
-        }
-      },
-      {
-        "datasource": {
-          "type": "grafana-postgresql-datasource",
-          "uid": "waferlens-timescaledb"
-        },
-        "enable": true,
-        "iconColor": "orange",
-        "name": "First SPC alarm per chart",
-        "target": {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "waferlens-timescaledb"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT first_alarm_at AS time, chart || ' first alarm after ' || delay_points || ' points' AS text, chart AS tags FROM marts.fct_excursion_detection WHERE excursion_id = $excursion AND scope = 'chamber' AND detected",
+          "rawSql": "SELECT test_starts AS time, 'Holdout: ' || test_runs || ' runs never seen in training or selection' AS text FROM secom_model_versions",
           "refId": "Anno"
         }
       }
     ]
   },
-  "description": "One injected excursion: impact, SPC detection vs ground truth, and the commonality suspects.",
+  "description": "Real UCI SECOM data: the registered fail model's out-of-sample scores, its holdout result against chance and a random split, and the sensors behind it.",
   "editable": true,
   "graphTooltip": 1,
   "links": [
@@ -74,10 +54,11 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "",
+      "description": "Last 30% of runs, scored once by the registered model.",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "custom": {},
+          "decimals": 3
         },
         "overrides": []
       },
@@ -107,11 +88,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT affected_wafers FROM marts.fct_excursion_impact WHERE excursion_id = $excursion",
+          "rawSql": "SELECT holdout_pr_auc FROM secom_model_versions",
           "refId": "A"
         }
       ],
-      "title": "Affected wafers",
+      "title": "Holdout PR-AUC",
       "type": "stat"
     },
     {
@@ -119,12 +100,11 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "",
+      "description": "PR-AUC of a random ranking.",
       "fieldConfig": {
         "defaults": {
           "custom": {},
-          "decimals": 1,
-          "unit": "percent"
+          "decimals": 3
         },
         "overrides": []
       },
@@ -154,11 +134,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT yield_delta_pct FROM marts.fct_excursion_impact WHERE excursion_id = $excursion",
+          "rawSql": "SELECT holdout_prevalence FROM secom_model_versions",
           "refId": "A"
         }
       ],
-      "title": "Yield vs same-window controls",
+      "title": "Chance (holdout fail rate)",
       "type": "stat"
     },
     {
@@ -166,10 +146,11 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "",
+      "description": "Mean over 20 stratified random splits: what a time-blind evaluation would report.",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "custom": {},
+          "decimals": 3
         },
         "overrides": []
       },
@@ -199,11 +180,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT dies_lost FROM marts.fct_excursion_impact WHERE excursion_id = $excursion",
+          "rawSql": "SELECT random_split_pr_auc FROM secom_model_versions",
           "refId": "A"
         }
       ],
-      "title": "Dies lost",
+      "title": "Same model, random split",
       "type": "stat"
     },
     {
@@ -211,10 +192,11 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "Rank of the injected chamber or recipe among ~130 suspects, from the time window alone.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "custom": {},
+          "decimals": 3
         },
         "overrides": []
       },
@@ -244,11 +226,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT true_rank FROM marts.fct_root_cause_eval WHERE excursion_id = $excursion",
+          "rawSql": "SELECT baseline_pr_auc FROM secom_model_versions",
           "refId": "A"
         }
       ],
-      "title": "True cause rank (commonality)",
+      "title": "Logistic baseline (holdout)",
       "type": "stat"
     },
     {
@@ -289,11 +271,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT delay_points FROM marts.fct_excursion_detection WHERE excursion_id = $excursion AND chart = 'ewma' AND scope = 'chamber' AND detected",
+          "rawSql": "SELECT test_fails FROM secom_model_versions",
           "refId": "A"
         }
       ],
-      "title": "EWMA first alarm after (points)",
+      "title": "Holdout fails",
       "type": "stat"
     },
     {
@@ -301,7 +283,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "First EWMA alarm in the equal-length window before the excursion.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -321,7 +303,8 @@
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "/.*/"
         },
         "textMode": "value"
       },
@@ -334,11 +317,11 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT CASE WHEN placebo_alarm THEN placebo_delay_points ELSE placebo_window_points END AS placebo FROM marts.fct_excursion_detection WHERE excursion_id = $excursion AND chart = 'ewma' AND scope = 'chamber'",
+          "rawSql": "SELECT model_version || ' \u00b7 ' || config FROM secom_model_versions",
           "refId": "A"
         }
       ],
-      "title": "Chance baseline (points)",
+      "title": "Registered model",
       "type": "stat"
     },
     {
@@ -346,19 +329,19 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "Sensor excursions only; red region = ground truth, orange marks = first alarm per chart. Spatial patterns move no sensor.",
+      "description": "Walk-forward scores before the holdout (each from a model trained only on earlier runs), the registered model's scores after it.",
       "fieldConfig": {
         "defaults": {
           "custom": {
             "drawStyle": "points",
-            "pointSize": 3
+            "pointSize": 4
           }
         },
         "overrides": [
           {
             "matcher": {
               "id": "byName",
-              "options": "value"
+              "options": "pass"
             },
             "properties": [
               {
@@ -381,7 +364,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "EWMA/CUSUM alarm"
+              "options": "fail"
             },
             "properties": [
               {
@@ -395,6 +378,43 @@
               {
                 "id": "color",
                 "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "threshold (10% false alarms in training)"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              },
+              {
+                "id": "color",
+                "value": {
                   "fixedColor": "orange",
                   "mode": "fixed"
                 }
@@ -404,7 +424,7 @@
         ]
       },
       "gridPos": {
-        "h": 10,
+        "h": 9,
         "w": 24,
         "x": 0,
         "y": 4
@@ -420,7 +440,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT f.measured_at AS time, f.value AS \"value\" FROM marts.fct_measurements AS f JOIN excursions_ground_truth AS e ON e.chamber_id = f.chamber_id AND e.parameter_id = f.parameter_id WHERE e.excursion_id = $excursion AND f.source = 'sensor' AND $__timeFilter(f.measured_at) ORDER BY 1",
+          "rawSql": "SELECT r.run_time AS time, s.score AS \"pass\" FROM secom_scores AS s JOIN secom_runs AS r USING (run_id) WHERE NOT r.failed AND $__timeFilter(r.run_time) ORDER BY 1",
           "refId": "A"
         },
         {
@@ -431,11 +451,22 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT a.measured_at AS time, f.value AS \"EWMA/CUSUM alarm\" FROM marts.fct_spc_alarms AS a JOIN excursions_ground_truth AS e ON e.chamber_id = a.chamber_id AND e.parameter_id = a.parameter_id JOIN marts.fct_measurements AS f ON f.source = 'sensor' AND f.wafer_id = a.wafer_id AND f.route_step_id = a.route_step_id AND f.pass_no = a.pass_no AND f.parameter_id = a.parameter_id WHERE e.excursion_id = $excursion AND a.scope = 'chamber' AND a.chart_family = 'memory' AND $__timeFilter(a.measured_at) GROUP BY 1, 2 ORDER BY 1",
+          "rawSql": "SELECT r.run_time AS time, s.score AS \"fail\" FROM secom_scores AS s JOIN secom_runs AS r USING (run_id) WHERE r.failed AND $__timeFilter(r.run_time) ORDER BY 1",
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT t AS time, alarm_threshold AS \"threshold (10% false alarms in training)\" FROM secom_model_versions, unnest(ARRAY[$__timeFrom()::timestamptz, $__timeTo()::timestamptz]) AS t ORDER BY 1",
+          "refId": "C"
         }
       ],
-      "title": "The excursion's sensor: value and EWMA/CUSUM alarms",
+      "title": "Out-of-sample fail score per run",
       "type": "timeseries"
     },
     {
@@ -443,18 +474,24 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "Ranked from the time window only; the true cause is marked afterwards.",
+      "description": "Fail rate over every run; alarm rate over scored runs. The fail rate drifts, so a threshold from the training period no longer gives the false-alarm rate it was set for.",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "pointSize": 6,
+            "showPoints": "always"
+          },
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 13
       },
       "id": 8,
       "options": {},
@@ -465,32 +502,46 @@
             "uid": "waferlens-timescaledb"
           },
           "editorMode": "code",
-          "format": "table",
+          "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT suspect_rank AS rank, suspect, round(lift::numeric, 2) AS lift, round(chi2::numeric, 1) AS chi2, CASE WHEN is_true_cause THEN 'true cause' ELSE '' END AS truth FROM marts.fct_root_cause_candidates WHERE excursion_id = $excursion ORDER BY suspect_rank LIMIT 15",
+          "rawSql": "SELECT date_trunc('week', r.run_time) AS time, 100 * avg(r.failed::int) AS \"fail rate\", 100 * avg(s.alarm::int) AS \"alarm rate\" FROM secom_runs AS r LEFT JOIN secom_scores AS s USING (run_id) WHERE $__timeFilter(r.run_time) GROUP BY 1 ORDER BY 1",
           "refId": "A"
         }
       ],
-      "title": "Commonality suspects for this window",
-      "type": "table"
+      "title": "Weekly fail rate vs alarm rate",
+      "type": "timeseries"
     },
     {
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "",
+      "description": "Mean |contribution| on the holdout (TreeSHAP for LightGBM).",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "custom": {},
+          "decimals": 1
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rank"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 10,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 13
       },
       "id": 9,
       "options": {},
@@ -503,12 +554,109 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT chart, scope, delay_points AS \"first alarm (points)\", CASE WHEN placebo_alarm THEN placebo_delay_points ELSE placebo_window_points END AS \"chance (points)\" FROM marts.fct_excursion_detection WHERE excursion_id = $excursion AND monitored ORDER BY scope, chart",
+          "rawSql": "SELECT importance_rank AS rank, 's' || lpad(sensor_no::text, 3, '0') AS sensor, round((100 * importance / sum(importance) OVER ())::numeric, 1) AS \"share of importance %\", round(missing_pct::numeric, 1) AS \"missing in training %\" FROM secom_sensor_importance ORDER BY importance_rank LIMIT 15",
           "refId": "A"
         }
       ],
-      "title": "Detection by chart and scope",
+      "title": "Sensors behind the scores",
       "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 4
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "points"
+              },
+              {
+                "id": "custom.pointSize",
+                "value": 7
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8a8a8a",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fail"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "points"
+              },
+              {
+                "id": "custom.pointSize",
+                "value": 7
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 10,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT r.run_time AS time, v.value AS \"pass\" FROM secom_readings AS v JOIN secom_runs AS r USING (run_id) WHERE v.sensor_no = $sensor AND NOT r.failed AND $__timeFilter(r.run_time) ORDER BY 1",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT r.run_time AS time, v.value AS \"fail\" FROM secom_readings AS v JOIN secom_runs AS r USING (run_id) WHERE v.sensor_no = $sensor AND r.failed AND $__timeFilter(r.run_time) ORDER BY 1",
+          "refId": "B"
+        }
+      ],
+      "title": "Sensor value by outcome",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -524,13 +672,13 @@
           "type": "grafana-postgresql-datasource",
           "uid": "waferlens-timescaledb"
         },
-        "definition": "SELECT excursion_id AS __value, excursion_id || ' \u00b7 ' || excursion_type || ' \u00b7 ' || description AS __text FROM excursions_ground_truth ORDER BY excursion_id",
+        "definition": "SELECT 's' || lpad(sensor_no::text, 3, '0') AS __text, sensor_no AS __value FROM secom_sensor_importance WHERE importance_rank <= 20 ORDER BY importance_rank",
         "includeAll": false,
-        "label": "Excursion",
+        "label": "Sensor",
         "multi": false,
-        "name": "excursion",
+        "name": "sensor",
         "options": [],
-        "query": "SELECT excursion_id AS __value, excursion_id || ' \u00b7 ' || excursion_type || ' \u00b7 ' || description AS __text FROM excursions_ground_truth ORDER BY excursion_id",
+        "query": "SELECT 's' || lpad(sensor_no::text, 3, '0') AS __text, sensor_no AS __value FROM secom_sensor_importance WHERE importance_rank <= 20 ORDER BY importance_rank",
         "refresh": 1,
         "sort": 0,
         "type": "query"
@@ -538,11 +686,11 @@
     ]
   },
   "time": {
-    "from": "2026-01-05T00:00:00.000Z",
-    "to": "2026-07-06T00:00:00.000Z"
+    "from": "2008-07-19T00:00:00.000Z",
+    "to": "2008-10-18T00:00:00.000Z"
   },
   "timezone": "utc",
-  "title": "WaferLens \u00b7 Excursion review",
-  "uid": "waferlens-excursions",
+  "title": "WaferLens \u00b7 SECOM fail prediction",
+  "uid": "waferlens-secom",
   "version": 1
 }

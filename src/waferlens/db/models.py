@@ -621,3 +621,61 @@ class SecomReading(ExternalBase):
         CheckConstraint(f"sensor_no BETWEEN 1 AND {SECOM_SENSORS}", name="sensor_no_range"),
         Index(None, "sensor_no"),
     )
+
+
+# --------------------------------------------------------------------------- SECOM model results
+# Written by waferlens.ml.store after each experiment; replaced, not appended (latest model only;
+# MLflow keeps the history). On ExternalBase because they derive from SECOM alone.
+
+
+class SecomModelVersion(ExternalBase):
+    """The registered fail-prediction model and its holdout result (one row per version)."""
+
+    __tablename__ = "secom_model_versions"
+
+    model_version: Mapped[str] = mapped_column(Text, primary_key=True)
+    config: Mapped[str] = mapped_column(Text)
+    trained_at: Mapped[datetime] = mapped_column(TimestampTZ)
+    train_runs: Mapped[int]
+    test_runs: Mapped[int]
+    test_fails: Mapped[int]
+    test_starts: Mapped[datetime] = mapped_column(TimestampTZ)
+    holdout_pr_auc: Mapped[float] = mapped_column(Double)
+    holdout_pr_auc_low: Mapped[float] = mapped_column(Double)
+    holdout_pr_auc_high: Mapped[float] = mapped_column(Double)
+    holdout_prevalence: Mapped[float] = mapped_column(Double)
+    random_split_pr_auc: Mapped[float] = mapped_column(Double)
+    baseline_pr_auc: Mapped[float] = mapped_column(Double)
+    alarm_threshold: Mapped[float] = mapped_column(Double)
+    mlflow_run_id: Mapped[str] = mapped_column(Text)
+
+
+class SecomScore(ExternalBase):
+    """Out-of-sample fail score of one run: walk-forward inside the training period, the
+    registered model on the holdout. The first walk-forward block has no score."""
+
+    __tablename__ = "secom_scores"
+
+    run_id: Mapped[int] = mapped_column(ForeignKey("secom_runs.run_id"), primary_key=True)
+    model_version: Mapped[str] = mapped_column(ForeignKey("secom_model_versions.model_version"))
+    split: Mapped[str] = mapped_column(Text)
+    score: Mapped[float] = mapped_column(Double)
+    alarm: Mapped[bool]
+
+    __table_args__ = (CheckConstraint("split IN ('walk_forward', 'holdout')", name="split"),)
+
+
+class SecomSensorImportance(ExternalBase):
+    """Mean |contribution| of each sensor to the registered model's holdout scores."""
+
+    __tablename__ = "secom_sensor_importance"
+
+    sensor_no: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    model_version: Mapped[str] = mapped_column(ForeignKey("secom_model_versions.model_version"))
+    importance: Mapped[float] = mapped_column(Double)
+    importance_rank: Mapped[int] = mapped_column(SmallInteger)
+    missing_pct: Mapped[float] = mapped_column(Double)
+
+    __table_args__ = (
+        CheckConstraint(f"sensor_no BETWEEN 1 AND {SECOM_SENSORS}", name="sensor_no_range"),
+    )
