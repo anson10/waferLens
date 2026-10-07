@@ -19,12 +19,14 @@ import pyarrow.compute as pc
 from sqlalchemy import Boolean, Double, Float, Integer, Numeric, SmallInteger, Table, Text
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
 
-from waferlens.db.models import Base
+from waferlens.db.models import SPC_TABLES, Base
 
 Tables = dict[str, pd.DataFrame | pa_arrow.Table]
 
-# wafer_bin_summary is derived inside the database from wafer_maps (ADR-0003).
-DERIVED = frozenset({"wafer_bin_summary"})
+# Tables on Base that are not in the Parquet drop: wafer_bin_summary is derived inside the
+# database from wafer_maps (ADR-0003); the SPC tables are written by waferlens.spc. The loader
+# still truncates them, since results derived from replaced data are stale.
+DERIVED = frozenset({"wafer_bin_summary", *SPC_TABLES})
 # wafer_maps carries a nested list column; it's checked by check_wafer_maps instead.
 ARROW_TABLES = frozenset({"wafer_maps"})
 

@@ -16,13 +16,14 @@ from pydantic import ValidationError
 
 from tests.conftest import frame
 from waferlens.db import models as m
+from waferlens.ingest.contracts import DERIVED
 from waferlens.simulate.config import FabConfig, ProfileSpec
 from waferlens.simulate.excursions import MINUTES_PER_DAY
 from waferlens.simulate.master import SITES_MM
 from waferlens.simulate.run import SimulationResult, simulate, write_parquet
 from waferlens.simulate.wafer_maps import pattern_field
 
-LOADER_DERIVED = {"wafer_bin_summary"}  # built from wafer_maps at load time (ADR-0003)
+LOADER_DERIVED = DERIVED  # not in the Parquet drop: bin summary (ADR-0003), SPC results
 
 
 # --------------------------------------------------------------------------- schema contract

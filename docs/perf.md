@@ -73,18 +73,23 @@ Dagster job (phase 2b) uses it when the load asset changed.
 
 ## Whole pipeline (Dagster `full_rebuild`)
 
-`make pipeline` on demo: **4 min 42 s** end to end, one run.
+`make pipeline` on demo: **8 min 39 s** end to end, one run, including SPC. Dagster splits
+the dbt project into steps around the SPC asset (measurements in, alarms out); steps without
+a dependency between them run in parallel, so the step times add up to more than the wall time.
 
-| Step | Seconds |
+| Step | Time |
 |---|---|
-| `simulated_fab` (simulate + Parquet) | 10 |
-| `fab_contracts` (blocking check) | 7 |
-| `fab_tables` (atomic COPY load) | 99 |
-| `secom_tables` (cached download + load) | 7 |
-| `dbt_models` (`dbt build --full-refresh`, 40 models + 78 tests) | 93 |
+| `simulated_fab` (simulate + Parquet) | 24 s |
+| `fab_contracts` (blocking check) | 7 s |
+| `fab_tables` (atomic COPY load) | 2 min 33 s |
+| `secom_tables` (cached download + load) | 9 s |
+| `dbt_models` (staging → `fct_measurements`, full refresh) | 1 min 56 s |
+| `spc_results` (900 series, 156,779 alarms) | 1 min 31 s |
+| `dbt_models` (`fct_spc_alarms` and the other steps) | 25–32 s each |
 
-The dbt step is ~2x faster than `make dbt` straight after a reload (179 s), because the job
-builds `fct_measurements` with `--full-refresh` instead of the incremental delete+insert path.
+Before SPC was added the run took 4 min 42 s; the dbt step was ~2x faster than `make dbt`
+straight after a reload (179 s), because the job uses `--full-refresh` instead of the
+incremental delete+insert path.
 
 ## Key queries
 

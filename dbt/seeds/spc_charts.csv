@@ -1,0 +1,8 @@
+chart,chart_name,chart_family,detects
+we1,Western Electric 1: one point beyond 3 sigma,shewhart,large sudden shifts and outliers
+we2,Western Electric 2: 2 of 3 beyond 2 sigma (same side),shewhart,moderate shifts
+we3,Western Electric 3: 4 of 5 beyond 1 sigma (same side),shewhart,small to moderate shifts
+we4,Western Electric 4: 8 in a row on one side,shewhart,small sustained shifts
+ewma,"EWMA, lambda 0.2, L 3",memory,small shifts and slow drifts
+cusum,"Tabular CUSUM, k 0.5, h 5",memory,small sustained shifts
+t2,Hotelling T squared (all metrology parameters of a step),multivariate,changes in the joint behaviour of correlated parameters

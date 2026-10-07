@@ -1,0 +1,8 @@
+version: 2
+
+seeds:
+  - name: spc_charts
+    description: The SPC charts and rules waferlens.spc applies, and what each is good at.
+    columns:
+      - name: chart
+        data_tests: [unique, not_null]

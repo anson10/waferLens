@@ -40,6 +40,10 @@ sources:
       - name: wafer_yield
         description: Materialized view refreshed by the loader; used only to cross-check the mart.
       - name: excursions_ground_truth
+      - name: spc_control_limits
+        description: Frozen Phase I limits written by waferlens.spc (one row per series version).
+      - name: spc_alarms
+        description: Phase II alarms written by waferlens.spc (one row per signalling point).
       - name: secom_runs
         description: Real UCI SECOM runs (docs/data/secom.md).
       - name: secom_readings

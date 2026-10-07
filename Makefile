@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -44,6 +44,9 @@ seed: migrate simulate load secom ## Migrate, simulate, load the fab and SECOM (
 
 dbt: ## Build and test the dbt models (staging, intermediate, marts) on loaded data
 	cd dbt && uv run dbt deps --profiles-dir . && uv run dbt build --profiles-dir .
+
+spc: ## Phase I limits (frozen) + Phase II alarms into spc_* tables (needs make dbt first)
+	uv run python -m waferlens.spc
 
 dbt-docs: ## Generate dbt docs and docs/dbt.md (lineage + model table)
 	cd dbt && uv run dbt docs generate --profiles-dir .

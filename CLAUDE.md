@@ -38,6 +38,7 @@ lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/pre
 - Simulator output must log every injected excursion as ground truth, because detection is evaluated against it.
 - Complex aggregations are SQL (dbt models, or commented raw SQL) with comments on the business logic.
 - dbt marts are a star schema (`fct_*`, `dim_*`), since Power BI consumes them in phase 7.
+- dbt tests must only reference models built in the same Dagster step: dagster-dbt splits dbt around the SPC asset, and eager test selection pulls a cross-step test into the wrong step (it broke `fct_spc_alarms` → `spc_charts`; fixed by joining the seed).
 - Dagster assets live in `orchestration/`; loader asset keys must equal dbt source names (`["waferlens", <table>]`) — a unit test enforces it. No `from __future__ import annotations` in Dagster modules (it reads type hints at runtime). Regenerate `docs/pipeline.md` with `make pipeline-docs`.
 - dbt layers: `staging` = renames/types only, `intermediate` = reusable joins, `marts` = facts at a stated grain + dims. Every model gets tests; regenerate `docs/dbt.md` with `make dbt-docs`.
 - Every tool or significant design choice needs an ADR in `docs/adr/`; Claude may write it in full, the user reviews it.
