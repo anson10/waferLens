@@ -1,9 +1,13 @@
--- Grain: one row per excursion window x suspect (chamber or recipe version), from the
--- commonality analysis that saw only the window. Labels for reports and whether the suspect
--- is the excursion's true cause.
+-- Grain: one row per excursion window x signal x suspect (chamber or recipe version), from
+-- the commonality analysis that saw only the window. Signal 'yield' marks low-yield wafers
+-- as bad (every excursion); 'pattern' marks wafers FabEye sees the excursion's pattern on
+-- (spatial excursions, pattern-led). Labels for reports and whether the suspect is the
+-- excursion's true cause.
 select
     c.candidate_id,
     c.excursion_id,
+    c.signal,
+    c.pattern,
     c.factor_type,
     c.chamber_id,
     c.recipe_id,

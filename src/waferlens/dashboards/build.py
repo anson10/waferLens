@@ -20,6 +20,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 OUT_DIR = ROOT / "grafana" / "dashboards"
 DS = {"type": "grafana-postgresql-datasource", "uid": "waferlens-timescaledb"}
+PROM = {"type": "prometheus", "uid": "waferlens-prometheus"}
 # The demo fab simulates 2026-01-05 to 2026-07-05; open dashboards on that history.
 TIME_RANGE = {"from": "2026-01-05T00:00:00.000Z", "to": "2026-07-06T00:00:00.000Z"}
 SECOM_RANGE = {"from": "2008-07-19T00:00:00.000Z", "to": "2008-10-18T00:00:00.000Z"}
@@ -66,7 +67,8 @@ def panel(
         "type": kind,
         "title": title,
         "description": description,
-        "datasource": DS,
+        # Grafana runs a panel's targets on the panel's datasource: take it from the targets.
+        "datasource": targets[0]["datasource"] if targets else DS,
         "gridPos": {"x": x, "y": y, "w": w, "h": h},
         "targets": targets,
         "fieldConfig": {"defaults": defaults, "overrides": overrides or []},
@@ -103,7 +105,7 @@ def variable(name: str, label: str, sql: str) -> Json:
 def dashboard(uid: str, title: str, description: str, panels: list[Json], *,
               variables: list[Json] | None = None,
               annotations: list[Json] | None = None,
-              time: Json | None = None) -> Json:  # fmt: skip
+              time: Json | None = None, refresh: str = "") -> Json:  # fmt: skip
     builtin = {"builtIn": 1, "datasource": {"type": "grafana", "uid": "-- Grafana --"},
                "enable": True, "hide": True, "iconColor": "rgba(0, 211, 255, 1)",
                "name": "Annotations & Alerts", "type": "dashboard"}  # fmt: skip
@@ -117,7 +119,7 @@ def dashboard(uid: str, title: str, description: str, panels: list[Json], *,
         "version": 1,
         "editable": True,
         "graphTooltip": 1,
-        "refresh": "",
+        "refresh": refresh,
         "time": time or TIME_RANGE,
         "templating": {"list": variables or []},
         "annotations": {"list": [builtin, *(annotations or [])]},
@@ -369,10 +371,14 @@ def excursions() -> Json:
             SELECT dies_lost FROM marts.fct_excursion_impact
             WHERE excursion_id = $excursion"""),
         quiet_stat(4, "True cause rank (commonality)", 12, """
-            SELECT true_rank FROM marts.fct_root_cause_eval
+            SELECT true_rank::text
+                   || coalesce(' · pattern-led ' || pattern_true_rank::text, '') AS rank
+            FROM marts.fct_root_cause_eval
             WHERE excursion_id = $excursion""",
+                   text=True,
                    description="Rank of the injected chamber or recipe among ~130 suspects, "
-                               "from the time window alone."),
+                               "from the time window alone: by low yield, and for spatial "
+                               "excursions also by the wafer-map pattern FabEye sees."),
         quiet_stat(5, "EWMA first alarm after (points)", 16, """
             SELECT delay_points FROM marts.fct_excursion_detection
             WHERE excursion_id = $excursion AND chart = 'ewma' AND scope = 'chamber'
@@ -416,10 +422,10 @@ def excursions() -> Json:
                    round(lift::numeric, 2) AS lift, round(chi2::numeric, 1) AS chi2,
                    CASE WHEN is_true_cause THEN 'true cause' ELSE '' END AS truth
             FROM marts.fct_root_cause_candidates
-            WHERE excursion_id = $excursion
+            WHERE excursion_id = $excursion AND signal = 'yield'
             ORDER BY suspect_rank LIMIT 15""", fmt="table")],
-              description="Ranked from the time window only; the true cause is marked "
-                          "afterwards."),
+              description="Ranked by low yield from the time window only; the true cause is "
+                          "marked afterwards."),
         panel(9, "Detection by chart and scope", "table", (12, 14, 12, 10), [target("""
             SELECT chart, scope, delay_points AS "first alarm (points)",
                    CASE WHEN placebo_alarm THEN placebo_delay_points
@@ -526,7 +532,73 @@ def secom() -> Json:
                      time=SECOM_RANGE)  # fmt: skip
 
 
-DASHBOARDS = {"overview": overview, "spc": spc, "excursions": excursions, "secom": secom}
+# --------------------------------------------------------------------------- 5. FabEye serving
+
+
+def prom(expr: str, legend: str = "", ref: str = "A", instant: bool = False) -> Json:
+    """A PromQL target on the Prometheus datasource that scrapes FabEye's /metrics."""
+    return {"refId": ref, "datasource": PROM, "editorMode": "code", "expr": " ".join(expr.split()),
+            "legendFormat": legend, "instant": instant, "range": not instant}  # fmt: skip
+
+
+def prom_stat(pid: int, title: str, x: int, expr: str, **kw: Any) -> Json:
+    return panel(pid, title, "stat", (x, 0, 6, 4), [prom(expr, instant=True)],
+                 options={"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "none",
+                          "graphMode": "none", "textMode": "value"}, **kw)  # fmt: skip
+
+
+BATCH = 'path="/predict/batch"'
+
+
+def fabeye() -> Json:
+    panels = [
+        prom_stat(1, "Wafers classified", 0, "sum(increase(predictions_total[$__range]))",
+                  decimals=0,
+                  description="Prometheus extrapolates increase() to the range edges: an "
+                              "estimate, a few percent off the exact count."),
+        prom_stat(2, "Sent to review", 6, """
+            sum(increase(auto_accept_total{decision="review"}[$__range]))
+            / sum(increase(auto_accept_total[$__range]))""", unit="percentunit", decimals=1,
+                  description="Share of wafers below FabEye's auto-accept confidence: the "
+                              "engineer's review queue."),
+        prom_stat(3, "p95 latency per batch of 64", 12, f"""
+            histogram_quantile(0.95,
+              sum by (le) (rate(http_request_duration_seconds_bucket{{{BATCH}}}[$__range])))""",
+                  unit="s"),
+        prom_stat(4, "Failed requests", 18, """
+            (sum(increase(http_requests_total{status!~"2.."}[$__range])) or vector(0))
+            / sum(increase(http_requests_total[$__range]))""", unit="percentunit",
+                  description="Non-2xx responses. No failing request yet means no series: 0.",
+                  decimals=2),
+        panel(5, "Predictions per minute by pattern (excluding 'none')", "timeseries",
+              (0, 4, 12, 9),
+              [prom('sum by (pattern) (rate(predictions_total{pattern!="none"}[2m])) * 60',
+                    "{{pattern}}")],
+              custom={"drawStyle": "line", "lineWidth": 2, "stacking": {"mode": "normal"},
+                      "fillOpacity": 30}),
+        panel(6, "Batch latency", "timeseries", (12, 4, 12, 9), [
+            prom(f"""histogram_quantile(0.5, sum by (le)
+                     (rate(http_request_duration_seconds_bucket{{{BATCH}}}[2m])))""", "p50"),
+            prom(f"""histogram_quantile(0.95, sum by (le)
+                     (rate(http_request_duration_seconds_bucket{{{BATCH}}}[2m])))""", "p95",
+                 ref="B")], unit="s"),
+        panel(7, "Review rate", "timeseries", (0, 13, 12, 8), [prom("""
+            sum(rate(auto_accept_total{decision="review"}[5m]))
+            / sum(rate(auto_accept_total[5m]))""", "review share")], unit="percentunit",
+              description="A rising review share means the maps look less like FabEye's "
+                          "calibration lots: a domain-shift early warning."),
+        panel(8, "Requests per second by endpoint", "timeseries", (12, 13, 12, 8),
+              [prom("sum by (path) (rate(http_requests_total[2m]))", "{{path}}")],
+              unit="reqps"),
+    ]  # fmt: skip
+    return dashboard("waferlens-fabeye", "WaferLens · FabEye serving",
+                     "The FabEye classifier as a service: volume by pattern, review queue, "
+                     "latency and errors, scraped by Prometheus.", panels,
+                     time={"from": "now-6h", "to": "now"}, refresh="30s")  # fmt: skip
+
+
+DASHBOARDS = {"overview": overview, "spc": spc, "excursions": excursions, "secom": secom,
+              "fabeye": fabeye}  # fmt: skip
 
 
 def render_all() -> dict[str, str]:

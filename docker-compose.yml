@@ -85,7 +85,19 @@ services:
     ports:
       - "${FABEYE_PORT:-8000}:8000"
 
+  # Scrapes FabEye's /metrics for the "FabEye serving" Grafana dashboard (phase 5a).
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=15d"]
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    depends_on: [fabeye]
+
 volumes:
   timescale-data:
   grafana-state:
   mlflow-state:
+  prometheus-data:

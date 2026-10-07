@@ -211,7 +211,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "Rank of the injected chamber or recipe among ~130 suspects, from the time window alone.",
+      "description": "Rank of the injected chamber or recipe among ~130 suspects, from the time window alone: by low yield, and for spatial excursions also by the wafer-map pattern FabEye sees.",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -231,7 +231,8 @@
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "/.*/"
         },
         "textMode": "value"
       },
@@ -244,7 +245,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT true_rank FROM marts.fct_root_cause_eval WHERE excursion_id = $excursion",
+          "rawSql": "SELECT true_rank::text || coalesce(' \u00b7 pattern-led ' || pattern_true_rank::text, '') AS rank FROM marts.fct_root_cause_eval WHERE excursion_id = $excursion",
           "refId": "A"
         }
       ],
@@ -443,7 +444,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "waferlens-timescaledb"
       },
-      "description": "Ranked from the time window only; the true cause is marked afterwards.",
+      "description": "Ranked by low yield from the time window only; the true cause is marked afterwards.",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -467,7 +468,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT suspect_rank AS rank, suspect, round(lift::numeric, 2) AS lift, round(chi2::numeric, 1) AS chi2, CASE WHEN is_true_cause THEN 'true cause' ELSE '' END AS truth FROM marts.fct_root_cause_candidates WHERE excursion_id = $excursion ORDER BY suspect_rank LIMIT 15",
+          "rawSql": "SELECT suspect_rank AS rank, suspect, round(lift::numeric, 2) AS lift, round(chi2::numeric, 1) AS chi2, CASE WHEN is_true_cause THEN 'true cause' ELSE '' END AS truth FROM marts.fct_root_cause_candidates WHERE excursion_id = $excursion AND signal = 'yield' ORDER BY suspect_rank LIMIT 15",
           "refId": "A"
         }
       ],

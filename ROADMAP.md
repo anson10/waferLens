@@ -219,10 +219,10 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 - [x] Simulator logs per-wafer pattern ground truth (`wafer_pattern_truth`); maps sent in FabEye's format (0 = off-wafer, 1 = good, 2 = fail)
 - [x] Dagster asset `wafer_patterns`: batch-score every sorted wafer via `POST /predict/batch` → `fct_wafer_pattern` (pattern, confidence, conformal set, accept/review flag, model version)
 - [x] Domain-shift check against **injected ground-truth patterns**: macro-F1 0.909 (0.858 on real lots), but Random set coverage 52% vs ~90% (strong random fields called Near-full); 450 empty prediction sets
-- [ ] Root cause using pattern: pattern × chamber commonality (e.g. edge-ring ↔ CMP chamber) → does adding pattern improve top-1 root-cause accuracy from Phase 3?
-- [ ] Time-ordered evaluation FabEye couldn't do: detection delay of a pattern-based alarm vs SPC alarms on the same excursion
-- [ ] Grafana: Prometheus datasource scraping FabEye `/metrics` → serving latency, prediction volume by pattern, review-queue rate
-- [ ] Cross-link READMEs (WaferLens ↔ FabEye)
+- [x] Root cause using pattern: pattern-led commonality ranks the true chamber 1st for 13/13 spatial excursions (yield: 11/13); picking the pattern from the time window fails (top-1 72% → 47%), reported as is
+- [x] Time-ordered evaluation FabEye couldn't do: pattern alarm (`fct_pattern_alarms`) caught 13/13 spatial excursions vs SPC 0/13, median 52 h after start (sort lag 45 h); placebo windows alarmed 4/13 (overlap)
+- [x] Grafana: Prometheus datasource scraping FabEye `/metrics` → "FabEye serving" dashboard (volume by pattern, review queue, latency, errors)
+- [x] Cross-link READMEs (WaferLens ↔ FabEye)
 
 ### 5b — SECOM: process-sensor fail prediction (new skill area: tabular ML) — see `docs/secom_model.md` (generated) and ADR-008
 - [x] Data card: 590 sensors (the source says 591), heavy missingness, ~6.6% fails, timestamps (`docs/data/secom.md`, phase 1)

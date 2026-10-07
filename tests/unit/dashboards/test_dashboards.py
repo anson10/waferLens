@@ -37,15 +37,28 @@ def test_panels_have_unique_ids_and_fit_the_grid(name: str) -> None:
         assert grid["x"] + grid["w"] <= 24, p["title"]
 
 
-def test_every_query_uses_the_provisioned_datasource() -> None:
-    uid = yaml.safe_load(DATASOURCES.read_text())["datasources"][0]["uid"]
+def test_every_query_uses_a_provisioned_datasource() -> None:
+    provisioned = {
+        ds["uid"]: ds["type"]
+        for f in DATASOURCES.parent.glob("*.yml")
+        for ds in yaml.safe_load(f.read_text())["datasources"]
+    }
     for name in DASHBOARDS:
         dash = DASHBOARDS[name]()
         sources = [v["datasource"] for v in dash["templating"]["list"]]
         sources += [t["datasource"] for p in dash["panels"] for t in p.get("targets", [])]
-        assert {s["uid"] for s in sources} == {uid}, name
+        for s in sources:
+            assert provisioned.get(s["uid"]) == s["type"], (name, s)
     for rule in _alert_rules():
-        assert {d["datasourceUid"] for d in rule["data"]} <= {uid, "__expr__"}, rule["uid"]
+        assert {d["datasourceUid"] for d in rule["data"]} <= {*provisioned, "__expr__"}
+
+
+@pytest.mark.parametrize("name", sorted(DASHBOARDS))
+def test_panels_query_their_targets_datasource(name: str) -> None:
+    # Grafana sends a panel's targets to the panel-level datasource; a mismatch is "No data".
+    for p in DASHBOARDS[name]()["panels"]:
+        for t in p.get("targets", []):
+            assert t["datasource"] == p["datasource"], (name, p["title"])
 
 
 def test_alerts_link_to_existing_dashboard_panels() -> None:

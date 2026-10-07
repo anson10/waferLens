@@ -589,6 +589,10 @@ class RootcauseCandidate(Base):
     )
     window_start: Mapped[datetime] = mapped_column(TimestampTZ)
     window_end: Mapped[datetime] = mapped_column(TimestampTZ)
+    # What made a wafer count as "bad": low yield (phase 3), or showing ``pattern`` on its
+    # wafer map according to FabEye (phase 5a, pattern-led investigation).
+    signal: Mapped[str] = mapped_column(Text, server_default="yield")
+    pattern: Mapped[str | None] = mapped_column(Text)
     factor_type: Mapped[str] = mapped_column(Text)
     chamber_id: Mapped[int | None] = mapped_column(ForeignKey("chambers.chamber_id"))
     recipe_id: Mapped[int | None] = mapped_column(ForeignKey("recipes.recipe_id"))
@@ -601,8 +605,10 @@ class RootcauseCandidate(Base):
     suspect_rank: Mapped[int] = mapped_column(Integer)
 
     __table_args__ = (
-        UniqueConstraint("excursion_id", "factor_type", "chamber_id", "recipe_id",
+        UniqueConstraint("excursion_id", "signal", "factor_type", "chamber_id", "recipe_id",
                          postgresql_nulls_not_distinct=True),
+        CheckConstraint("signal IN ('yield', 'pattern')", name="signal_valid"),
+        CheckConstraint("(signal = 'pattern') = (pattern IS NOT NULL)", name="pattern_iff_signal"),
         CheckConstraint(_in("factor_type", FACTOR_TYPES), name="factor_type_valid"),
         CheckConstraint(
             "(factor_type = 'chamber') = (chamber_id IS NOT NULL AND recipe_id IS NULL)"
