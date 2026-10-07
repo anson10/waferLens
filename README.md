@@ -10,7 +10,7 @@ against that ground truth, commonality analysis, Grafana for live monitoring and
 yield reporting. Wafer-map pattern classification comes from its sister project,
 [FabEye](https://github.com/anson10/FabEye).
 
-**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 (SPC and root cause) is next. See [ROADMAP.md](ROADMAP.md).
+**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 has the SPC engine; benchmarking and root cause next. See [ROADMAP.md](ROADMAP.md).
 The original v1 is preserved on the
 [`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
@@ -44,7 +44,7 @@ make check     # lint + typecheck + all tests
 `make seed` is `make migrate simulate load`; add `PROFILE=dev` for a 1,000-wafer fab that
 loads in seconds. Then `make dbt` builds and tests the star-schema marts, or `make pipeline` runs everything as one Dagster job (`make dagster` for the UI). Run `make` with no arguments to list all targets.
 
-Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [dbt models](docs/dbt.md) · [pipeline](docs/pipeline.md) · [performance](docs/perf.md) ·
+Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [dbt models](docs/dbt.md) · [pipeline](docs/pipeline.md) · [SPC](docs/spc.md) · [performance](docs/perf.md) ·
 [SECOM data card](docs/data/secom.md) · [decisions](docs/adr/)
 
 ## Layout

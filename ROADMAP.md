@@ -155,16 +155,17 @@ Goal: tested transformation layer and orchestrated, observable pipeline. **Desig
 
 Goal: detection that's **measured against ground truth**, not just "flags exist".
 
-### SPC
-- [ ] Phase I: estimate limits from an in-control baseline window; persist in `control_limits` (versioned)
-- [ ] Phase II: monitor new data against frozen limits
-- [ ] Shewhart + Western Electric rules 1–4 (vectorised)
-- [ ] EWMA chart
-- [ ] CUSUM chart
-- [ ] Hotelling T² for correlated parameter groups
-- [ ] Limits per tool **and** per chamber
-- [ ] Unique constraint on alarms (idempotent reruns)
-- [ ] hypothesis property tests (e.g. in-control data ⇒ false-alarm rate ≈ theoretical)
+### SPC — see `docs/spc.md`
+- [x] Phase I: robust limits (median, moving range, 4σ trim) from each series' first 30 days; persisted in `spc_control_limits`, versioned
+- [x] Phase II: monitor every later point against frozen limits (reruns reuse them; `--relearn` writes a new version)
+- [x] Shewhart + Western Electric rules 1–4 (vectorised)
+- [x] EWMA chart (λ 0.2, L 3, exact limits)
+- [x] CUSUM chart (k 0.5, h 5, reset after signal)
+- [x] Hotelling T² for correlated parameter groups (all metrology parameters of a step, per chamber)
+- [x] Limits per tool **and** per chamber (900 series on demo)
+- [x] Unique constraint on alarms (idempotent reruns, tested)
+- [x] hypothesis property tests: in-control false-alarm rates match theory (WE1 0.27%, WE4 0.78%, CUSUM ~0.22%); measured on demo too
+- [x] `spc_results` Dagster asset between the dbt measurement mart and `fct_spc_alarms`
 
 ### Benchmarking
 - [ ] ARL harness: ARL₀ (false alarms) and ARL₁ (detection delay) for shift sizes 0.25σ–3σ
@@ -173,7 +174,7 @@ Goal: detection that's **measured against ground truth**, not just "flags exist"
 - [ ] ADR-006 "Why EWMA/CUSUM in addition to Western Electric"
 
 ### Root cause
-- [ ] `fct_spc_alarms` mart (moved from phase 2) feeding Grafana and Power BI
+- [x] `fct_spc_alarms` mart (moved from phase 2) feeding Grafana and Power BI, + `spc_charts` dbt seed
 - [ ] Commonality analysis in SQL: for low-yield wafers, rank tool/chamber/recipe by over-representation (e.g. chi-square / Fisher / lift)
 - [ ] Time-window aware (only chambers used in the excursion window)
 - [ ] Evaluate: root-cause chamber in top-1 / top-3 for N injected excursions

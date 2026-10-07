@@ -5,6 +5,7 @@ profile: waferlens
 
 model-paths: ["models"]
 macro-paths: ["macros"]
+seed-paths: ["seeds"]
 test-paths: ["tests"]
 target-path: target
 clean-targets: [target, dbt_packages]
@@ -20,6 +21,10 @@ models:
     marts:
       +schema: marts
       +materialized: table
+
+seeds:
+  waferlens:
+    +schema: marts
 
 data_tests:
   waferlens:

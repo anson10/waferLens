@@ -1,8 +1,8 @@
 """Dagster definitions for WaferLens: ``dagster dev -m waferlens.orchestration.definitions``.
 
 Jobs
-    full_rebuild  simulate → contracts → load → SECOM → dbt build: the whole stack from config
-    ingest        load the current Parquet drop → dbt build (no simulation)
+    full_rebuild  simulate → contracts → load → SECOM → dbt → SPC → SPC marts: everything
+    ingest        load the current Parquet drop → dbt → SPC → SPC marts (no simulation)
 
 Triggers
     new_parquet_drop  sensor: runs ``ingest`` when a Parquet drop appears that this pipeline
@@ -36,19 +36,20 @@ from waferlens.orchestration.assets import (
     fab_tables,
     secom_tables,
     simulated_fab,
+    spc_results,
 )
 from waferlens.orchestration.resources import FabData, SecomSource, Warehouse
 
 full_rebuild = define_asset_job(
     "full_rebuild",
     selection=AssetSelection.all(),
-    description="Simulate, check contracts, load, load SECOM and build every dbt model.",
+    description="Simulate, check contracts, load, load SECOM, build dbt, run SPC.",
 )
 
 ingest = define_asset_job(
     "ingest",
     selection=AssetSelection.assets(fab_tables).downstream(),
-    description="Load the current Parquet drop and rebuild the dbt models that depend on it.",
+    description="Load the current Parquet drop and rebuild everything downstream of it.",
 )
 
 
@@ -88,7 +89,7 @@ def nightly_rebuild() -> RunRequest:
 
 
 defs = Definitions(
-    assets=[simulated_fab, fab_tables, secom_tables, dbt_models],
+    assets=[simulated_fab, fab_tables, secom_tables, dbt_models, spc_results],
     asset_checks=[fab_contracts],
     jobs=[full_rebuild, ingest],
     sensors=[new_parquet_drop],

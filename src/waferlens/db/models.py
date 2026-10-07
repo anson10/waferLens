@@ -442,6 +442,95 @@ class ExcursionGroundTruth(Base):
     )
 
 
+# --------------------------------------------------------------------------- SPC (phase 3)
+
+SPC_TABLES = ("spc_control_limits", "spc_alarms")  # written by waferlens.spc, not the loader
+SPC_SCOPES = ("chamber", "tool")
+SPC_SOURCES = ("sensor", "metrology")
+SPC_CHARTS = ("we1", "we2", "we3", "we4", "ewma", "cusum", "t2")
+
+
+class SpcControlLimit(Base):
+    """Phase I limits for one monitored series, frozen for Phase II monitoring.
+
+    A series is a source (sensor / metrology), a scope (one chamber, or a whole tool pooled)
+    and a parameter; metrology series are also per route step. Hotelling T² series have no
+    parameter: they cover all metrology parameters of a step together (``t2_*`` columns).
+    Re-estimating creates a new ``version``; alarms point at the version that raised them.
+    """
+
+    __tablename__ = "spc_control_limits"
+
+    limit_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source: Mapped[str] = mapped_column(Text)
+    scope: Mapped[str] = mapped_column(Text)
+    chamber_id: Mapped[int | None] = mapped_column(ForeignKey("chambers.chamber_id"))
+    tool_id: Mapped[str] = mapped_column(ForeignKey("tools.tool_id"))
+    parameter_id: Mapped[int | None] = mapped_column(ForeignKey("parameters.parameter_id"))
+    route_step_id: Mapped[int | None] = mapped_column(ForeignKey("route_steps.route_step_id"))
+    is_multivariate: Mapped[bool]
+    version: Mapped[int] = mapped_column(SmallInteger, server_default=text("1"))
+    center: Mapped[float | None] = mapped_column(Double)
+    sigma: Mapped[float | None] = mapped_column(Double)
+    t2_dims: Mapped[int | None] = mapped_column(SmallInteger)
+    t2_limit: Mapped[float | None] = mapped_column(Double)
+    # Phase I mean vector and inverse covariance, so frozen T² limits can be reused.
+    t2_mean: Mapped[list[float] | None] = mapped_column(ARRAY(Double))
+    t2_cov_inv: Mapped[list[list[float]] | None] = mapped_column(ARRAY(Double, dimensions=2))
+    n_baseline: Mapped[int] = mapped_column(Integer)
+    baseline_start: Mapped[datetime] = mapped_column(TimestampTZ)
+    baseline_end: Mapped[datetime] = mapped_column(TimestampTZ)
+    method: Mapped[str] = mapped_column(Text)
+    computed_at: Mapped[datetime] = mapped_column(TimestampTZ, server_default=text("now()"))
+
+    __table_args__ = (
+        UniqueConstraint(
+            "source", "scope", "chamber_id", "tool_id", "parameter_id", "route_step_id",
+            "is_multivariate", "version", postgresql_nulls_not_distinct=True,
+        ),
+        CheckConstraint(_in("source", SPC_SOURCES), name="source_valid"),
+        CheckConstraint(_in("scope", SPC_SCOPES), name="scope_valid"),
+        CheckConstraint("(scope = 'chamber') = (chamber_id IS NOT NULL)", name="chamber_scope"),
+        CheckConstraint(
+            "is_multivariate = (parameter_id IS NULL)", name="multivariate_has_no_parameter"
+        ),
+        CheckConstraint(
+            "is_multivariate OR (center IS NOT NULL AND sigma > 0)", name="univariate_limits"
+        ),
+        CheckConstraint(
+            "NOT is_multivariate OR (t2_dims >= 2 AND t2_limit > 0 AND t2_mean IS NOT NULL"
+            " AND t2_cov_inv IS NOT NULL)",
+            name="t2_limits",
+        ),
+        CheckConstraint("baseline_end > baseline_start", name="baseline_ordered"),
+    )  # fmt: skip
+
+
+class SpcAlarm(Base):
+    """One point that signalled on one chart. Unique per series, chart and measurement, so
+    rerunning SPC can never duplicate an alarm."""
+
+    __tablename__ = "spc_alarms"
+
+    alarm_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    limit_id: Mapped[int] = mapped_column(ForeignKey("spc_control_limits.limit_id"))
+    chart: Mapped[str] = mapped_column(Text)
+    wafer_id: Mapped[int] = mapped_column(ForeignKey("wafers.wafer_id"))
+    route_step_id: Mapped[int] = mapped_column(ForeignKey("route_steps.route_step_id"))
+    pass_no: Mapped[int] = mapped_column(SmallInteger)
+    measured_at: Mapped[datetime] = mapped_column(TimestampTZ)
+    statistic: Mapped[float] = mapped_column(Double)
+    direction: Mapped[str | None] = mapped_column(Text)
+
+    __table_args__ = (
+        UniqueConstraint("limit_id", "chart", "wafer_id", "route_step_id", "pass_no"),
+        CheckConstraint(_in("chart", SPC_CHARTS), name="chart_valid"),
+        CheckConstraint("direction IS NULL OR direction IN ('up', 'down')", name="direction_valid"),
+        Index(None, "measured_at"),
+        Index(None, "wafer_id"),
+    )
+
+
 # --------------------------------------------------------------------------- external datasets
 
 

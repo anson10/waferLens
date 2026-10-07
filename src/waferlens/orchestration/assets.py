@@ -26,13 +26,14 @@ from dagster import (
 )
 from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
 
-from waferlens.db.models import Base
+from waferlens.db.models import SPC_TABLES, Base
 from waferlens.ingest.contracts import ContractError, check_tables
 from waferlens.ingest.loader import load, read_tables
 from waferlens.ingest.secom import download, load_secom, parse
 from waferlens.orchestration.resources import ROOT, FabData, SecomSource, Warehouse
 from waferlens.simulate.config import load_config
 from waferlens.simulate.run import simulate, write_parquet
+from waferlens.spc.engine import SpcConfig, run_spc
 
 # --------------------------------------------------------------------------- simulate
 
@@ -85,7 +86,9 @@ def fab_contracts(fab_data: FabData) -> AssetCheckResult:
 
 # --------------------------------------------------------------------------- warehouse
 
-FAB_TABLES = [t.name for t in Base.metadata.sorted_tables] + ["wafer_yield"]
+FAB_TABLES = [t.name for t in Base.metadata.sorted_tables if t.name not in SPC_TABLES] + [
+    "wafer_yield"
+]
 SECOM_TABLES = ["secom_runs", "secom_readings"]
 
 
@@ -136,9 +139,11 @@ if not dbt_project.manifest_path.exists():
 
 
 class WaferlensDbtTranslator(DagsterDbtTranslator):
-    """dbt models grouped by layer (dbt_staging, dbt_intermediate, dbt_marts)."""
+    """dbt models grouped by layer (dbt_staging, dbt_intermediate, dbt_marts); seeds join marts."""
 
     def get_group_name(self, dbt_resource_props: Mapping[str, Any]) -> str | None:
+        if dbt_resource_props.get("resource_type") == "seed":
+            return "dbt_marts"  # seeds are built into the marts schema
         fqn = dbt_resource_props.get("fqn", [])
         layer = next((p for p in fqn if p in ("staging", "intermediate", "marts")), None)
         return f"dbt_{layer}" if layer else super().get_group_name(dbt_resource_props)
@@ -159,5 +164,48 @@ class DbtBuildConfig(Config):
 def dbt_models(
     context: AssetExecutionContext, dbt: DbtCliResource, config: DbtBuildConfig
 ) -> Iterator[Any]:
-    args = ["build", "--full-refresh"] if config.full_refresh else ["build"]
+    # Dagster splits the dbt project into several steps around the SPC asset. With dbt's
+    # default (eager) selection a step also runs every test touching its models, including
+    # tests that need a model from a later step, which then fail. Cautious selection runs a
+    # test only when all its models are in the step; the full `dbt build` (make dbt, CI)
+    # still runs every test.
+    args = ["build", "--indirect-selection", "cautious"]
+    if config.full_refresh:
+        args.append("--full-refresh")
     yield from dbt.cli(args, context=context).stream()
+
+
+# --------------------------------------------------------------------------- SPC
+
+
+class SpcRunConfig(Config):
+    baseline_days: float = 30.0
+    relearn: bool = False
+
+
+@multi_asset(
+    specs=[
+        AssetSpec(table_key(name), deps=[AssetKey(["marts", "fct_measurements"])],
+                  group_name="spc", kinds={"python", "postgres"})
+        for name in SPC_TABLES
+    ],
+    can_subset=False,
+    description=(
+        "Phase I limits (frozen; relearn writes a new version) and Phase II alarms from "
+        "Western Electric rules, EWMA, CUSUM and Hotelling T² (waferlens.spc)."
+    ),
+)  # fmt: skip
+def spc_results(config: SpcRunConfig, warehouse: Warehouse) -> Iterator[MaterializeResult]:
+    report = run_spc(
+        warehouse.engine(), SpcConfig(baseline_days=config.baseline_days), relearn=config.relearn
+    )
+    yield MaterializeResult(
+        asset_key=table_key("spc_control_limits"),
+        metadata={"series": report.series, "skipped": report.skipped,
+                  "new": report.limits_new, "reused": report.limits_reused},
+    )  # fmt: skip
+    yield MaterializeResult(
+        asset_key=table_key("spc_alarms"),
+        metadata={"alarms": sum(report.alarms.values()), "by_chart": json.dumps(report.alarms),
+                  "seconds": report.seconds},
+    )  # fmt: skip

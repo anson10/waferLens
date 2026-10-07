@@ -6,25 +6,27 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-from dagster import AssetKey, AssetSelection, materialize
+from dagster import AssetKey, AssetSelection, RunConfig, materialize
 from dagster_dbt import DbtCliResource
 from sqlalchemy import Engine, make_url, text
 
 from waferlens.db.models import Base
 from waferlens.ingest.contracts import ContractError
 from waferlens.orchestration.assets import (
+    SpcRunConfig,
     dbt_models,
     dbt_project,
     fab_contracts,
     fab_tables,
     secom_tables,
     simulated_fab,
+    spc_results,
 )
 from waferlens.orchestration.resources import FabData, SecomSource, Warehouse
 
 pytestmark = pytest.mark.integration
 
-ASSETS = [simulated_fab, fab_contracts, fab_tables, secom_tables, dbt_models]
+ASSETS = [simulated_fab, fab_contracts, fab_tables, secom_tables, dbt_models, spc_results]
 
 
 @pytest.fixture
@@ -57,7 +59,8 @@ def test_one_run_rebuilds_simulation_load_and_marts(
 ) -> None:
     # Everything except SECOM, which needs the network; its dbt models build on empty tables.
     selection = AssetSelection.all() - AssetSelection.assets(secom_tables)
-    result = materialize(ASSETS, resources=resources, selection=selection)
+    run_config = RunConfig({"spc_results": SpcRunConfig(baseline_days=7)})  # dev = 30 days
+    result = materialize(ASSETS, resources=resources, selection=selection, run_config=run_config)
 
     assert result.success
     checks = {e.asset_check_key.name: e.passed for e in result.get_asset_check_evaluations()}
@@ -69,6 +72,9 @@ def test_one_run_rebuilds_simulation_load_and_marts(
     assert wafers == 1_000
     assert _count(engine, "marts.fct_wafer_yield") == _count(engine, "wafer_maps")
     assert _count(engine, "marts.fct_measurements") > 100_000
+    alarms = _count(engine, "spc_alarms")
+    assert alarms > 0
+    assert _count(engine, "marts.fct_spc_alarms") == alarms  # dbt ran again after SPC
     materialized = {e.asset_key for e in result.get_asset_materialization_events()}
     assert AssetKey(["marts", "fct_measurements"]) in {
         k for k in materialized if isinstance(k, AssetKey)
