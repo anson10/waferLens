@@ -107,6 +107,7 @@ reporting. "Blocks" is 8 kB pages touched; "chunks" is hypertable chunks actuall
 | 05 commonality (chambers behind the worst 10%) | 286.3 | 482.1 | 337,363 | 0 |
 | 06 weekly yield by product | 98.5 | 355.2 | 23,900 | 0 |
 | 07 excursion impact (wafers + yield per excursion) | 69.3 | 634.7 | 36,450 | 0 |
+| 08 = 02 from the `sensor_daily` continuous aggregate | **3.1** | – | | |
 
 ### What the plans showed, and what changed
 
@@ -124,8 +125,8 @@ reporting. "Blocks" is 8 kB pages touched; "chunks" is hypertable chunks actuall
 2. **Index for query 02 rejected.** The only sensor index leads with `chamber_id`, so "one
    sensor across all chambers" reads 258k blocks (2 GB). An index on `(parameter_id, time)`
    halved it (583 → 301 ms) but costs 450 MB and 15 s on every load. A dashboard aggregate
-   over all history is the job of a TimescaleDB continuous aggregate (phase 4), which turns
-   this into a lookup of pre-computed daily rows.
+   over all history is the job of a TimescaleDB continuous aggregate, which turns this into a
+   lookup of pre-computed daily rows: see 5.
 
 3. **Chunk exclusion.** Query 03 bounds time with a scalar subquery, and TimescaleDB excludes
    chunks at run time: it reads 6 of 53. Queries 01 and 04 get their time bounds from a join,
@@ -138,9 +139,20 @@ reporting. "Blocks" is 8 kB pages touched; "chunks" is hypertable chunks actuall
    all 3.7M rows, and the query takes 635 ms. That's a reasonable choice at that selectivity,
    and the reason to measure at more than one scale.
 
+5. **Continuous aggregate for daily sensor rollups (phase 4).** Migration 0006 adds
+   `sensor_daily`: count, mean, sd, min and max per day, chamber and sensor, refreshed by the
+   loader after each load (`materialized_only = false`, so rows newer than the last refresh
+   still show). Query 08 is query 02 rewritten against it; both return the same 1,629 rows.
+
+   | Demo | Query 02 (raw readings) | Query 08 (`sensor_daily`) |
+   |---|---|---|
+   | Time | 302.8 ms | **3.1 ms** (~100x) |
+   | Blocks | 22,440 | 309 |
+   | Rows aggregated | 98,140 readings | 1,629 daily rows (of 28,864) |
+
+   Grafana's "daily mean ± 1 sd" panel reads it, so a whole-period view costs nothing.
+
 ## Not done yet
 
-- Continuous aggregates for dashboard rollups (phase 4) — query 02.
-- `dbt` marts (phase 2) will give reporting queries pre-joined fact tables.
 - Load: streaming large tables by row group (memory), parallel COPY of the two hypertables,
   binary COPY, and TimescaleDB compression for older chunks.

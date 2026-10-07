@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc spc-report rootcause rootcause-report dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
+.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc spc-report rootcause rootcause-report dashboards screenshots dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -56,6 +56,13 @@ rootcause: ## Commonality analysis of every excursion window → rootcause_candi
 
 rootcause-report: ## Root-cause accuracy + impact + SPC coverage → docs/root_cause.md (after spc, rootcause, dbt)
 	uv run python -m waferlens.rootcause.report
+
+dashboards: ## Regenerate grafana/dashboards/*.json from waferlens.dashboards (Grafana reloads them)
+	uv run python -m waferlens.dashboards
+
+screenshots: ## Render the dashboards to docs/img/grafana-*.png (starts the image renderer)
+	docker compose --profile screenshots up -d --wait renderer grafana
+	uv run python -m waferlens.dashboards.screenshots
 
 dbt-docs: ## Generate dbt docs and docs/dbt.md (lineage + model table)
 	cd dbt && uv run dbt docs generate --profiles-dir .

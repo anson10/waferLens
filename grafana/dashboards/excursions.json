@@ -1,0 +1,542 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "waferlens-timescaledb"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "Ground-truth window",
+        "target": {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT start_time AS time, end_time AS timeend, 'Injected: ' || description AS text, excursion_type AS tags FROM excursions_ground_truth WHERE excursion_id = $excursion",
+          "refId": "Anno"
+        }
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "waferlens-timescaledb"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "name": "First SPC alarm per chart",
+        "target": {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT first_alarm_at AS time, chart || ' first alarm after ' || delay_points || ' points' AS text, chart AS tags FROM marts.fct_excursion_detection WHERE excursion_id = $excursion AND scope = 'chamber' AND detected",
+          "refId": "Anno"
+        }
+      }
+    ]
+  },
+  "description": "One injected excursion: impact, SPC detection vs ground truth, and the commonality suspects.",
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [
+    {
+      "asDropdown": true,
+      "tags": [
+        "waferlens"
+      ],
+      "title": "WaferLens",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT affected_wafers FROM marts.fct_excursion_impact WHERE excursion_id = $excursion",
+          "refId": "A"
+        }
+      ],
+      "title": "Affected wafers",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 1,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT yield_delta_pct FROM marts.fct_excursion_impact WHERE excursion_id = $excursion",
+          "refId": "A"
+        }
+      ],
+      "title": "Yield vs same-window controls",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT dies_lost FROM marts.fct_excursion_impact WHERE excursion_id = $excursion",
+          "refId": "A"
+        }
+      ],
+      "title": "Dies lost",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "Rank of the injected chamber or recipe among ~130 suspects, from the time window alone.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT true_rank FROM marts.fct_root_cause_eval WHERE excursion_id = $excursion",
+          "refId": "A"
+        }
+      ],
+      "title": "True cause rank (commonality)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT delay_points FROM marts.fct_excursion_detection WHERE excursion_id = $excursion AND chart = 'ewma' AND scope = 'chamber' AND detected",
+          "refId": "A"
+        }
+      ],
+      "title": "EWMA first alarm after (points)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "First EWMA alarm in the equal-length window before the excursion.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE WHEN placebo_alarm THEN placebo_delay_points ELSE placebo_window_points END AS placebo FROM marts.fct_excursion_detection WHERE excursion_id = $excursion AND chart = 'ewma' AND scope = 'chamber'",
+          "refId": "A"
+        }
+      ],
+      "title": "Chance baseline (points)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "Sensor excursions only; red region = ground truth, orange marks = first alarm per chart. Spatial patterns move no sensor.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 3
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "value"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "points"
+              },
+              {
+                "id": "custom.pointSize",
+                "value": 7
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8a8a8a",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "EWMA/CUSUM alarm"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "points"
+              },
+              {
+                "id": "custom.pointSize",
+                "value": 7
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 7,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT f.measured_at AS time, f.value AS \"value\" FROM marts.fct_measurements AS f JOIN excursions_ground_truth AS e ON e.chamber_id = f.chamber_id AND e.parameter_id = f.parameter_id WHERE e.excursion_id = $excursion AND f.source = 'sensor' AND $__timeFilter(f.measured_at) ORDER BY 1",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT a.measured_at AS time, f.value AS \"EWMA/CUSUM alarm\" FROM marts.fct_spc_alarms AS a JOIN excursions_ground_truth AS e ON e.chamber_id = a.chamber_id AND e.parameter_id = a.parameter_id JOIN marts.fct_measurements AS f ON f.source = 'sensor' AND f.wafer_id = a.wafer_id AND f.route_step_id = a.route_step_id AND f.pass_no = a.pass_no AND f.parameter_id = a.parameter_id WHERE e.excursion_id = $excursion AND a.scope = 'chamber' AND a.chart_family = 'memory' AND $__timeFilter(a.measured_at) GROUP BY 1, 2 ORDER BY 1",
+          "refId": "B"
+        }
+      ],
+      "title": "The excursion's sensor: value and EWMA/CUSUM alarms",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "Ranked from the time window only; the true cause is marked afterwards.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 8,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT suspect_rank AS rank, suspect, round(lift::numeric, 2) AS lift, round(chi2::numeric, 1) AS chi2, CASE WHEN is_true_cause THEN 'true cause' ELSE '' END AS truth FROM marts.fct_root_cause_candidates WHERE excursion_id = $excursion ORDER BY suspect_rank LIMIT 15",
+          "refId": "A"
+        }
+      ],
+      "title": "Commonality suspects for this window",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 9,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT chart, scope, delay_points AS \"first alarm (points)\", CASE WHEN placebo_alarm THEN placebo_delay_points ELSE placebo_window_points END AS \"chance (points)\" FROM marts.fct_excursion_detection WHERE excursion_id = $excursion AND monitored ORDER BY scope, chart",
+          "refId": "A"
+        }
+      ],
+      "title": "Detection by chart and scope",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "waferlens"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "waferlens-timescaledb"
+        },
+        "definition": "SELECT excursion_id AS __value, excursion_id || ' \u00b7 ' || excursion_type || ' \u00b7 ' || description AS __text FROM excursions_ground_truth ORDER BY excursion_id",
+        "includeAll": false,
+        "label": "Excursion",
+        "multi": false,
+        "name": "excursion",
+        "options": [],
+        "query": "SELECT excursion_id AS __value, excursion_id || ' \u00b7 ' || excursion_type || ' \u00b7 ' || description AS __text FROM excursions_ground_truth ORDER BY excursion_id",
+        "refresh": 1,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "2026-01-05T00:00:00.000Z",
+    "to": "2026-07-06T00:00:00.000Z"
+  },
+  "timezone": "utc",
+  "title": "WaferLens \u00b7 Excursion review",
+  "uid": "waferlens-excursions",
+  "version": 1
+}

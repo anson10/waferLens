@@ -1,0 +1,119 @@
+# Alerting as code: one contact point (a webhook sink that logs every notification), one
+# policy, two rules. The rules look at the latest day / week *of data* rather than "now":
+# the demo fab is simulated history, and "now" would always be empty.
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: alert-sink
+    receivers:
+      - uid: waferlens-alert-sink
+        type: webhook
+        settings:
+          url: http://alert-sink:8080/grafana-alerts
+          httpMethod: POST
+
+policies:
+  - orgId: 1
+    receiver: alert-sink
+    group_by: [grafana_folder, alertname]
+    group_wait: 10s
+    group_interval: 1m
+    repeat_interval: 4h
+
+groups:
+  - orgId: 1
+    name: waferlens-process
+    folder: WaferLens
+    interval: 1m
+    rules:
+      - uid: waferlens-ewma-burst
+        title: EWMA alarm burst on a chamber
+        condition: B
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+          area: spc
+        annotations:
+          summary: "{{ $labels.chamber }}: {{ $values.A }} EWMA alarms on the latest day of data"
+          description: >-
+            A burst of EWMA alarms on one chamber means a sustained shift, not noise
+            (EWMA false-alarms about once per 540 points). Open the SPC control chart for it.
+          __dashboardUid__: waferlens-spc
+          __panelId__: "1"
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: waferlens-timescaledb
+            model:
+              refId: A
+              editorMode: code
+              rawQuery: true
+              format: table
+              rawSql: >-
+                WITH last_day AS (SELECT date_trunc('day', max(measured_at)) AS d
+                                  FROM marts.fct_spc_alarms)
+                SELECT c.chamber_label AS chamber, count(*)::float AS alarms
+                FROM marts.fct_spc_alarms AS a
+                JOIN marts.dim_chamber AS c ON c.chamber_id = a.chamber_id, last_day
+                WHERE a.chart = 'ewma' AND a.scope = 'chamber' AND a.measured_at >= last_day.d
+                GROUP BY 1
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: {type: gt, params: [8]}
+
+      - uid: waferlens-chamber-yield-drop
+        title: Chamber yield below its products' normal
+        condition: B
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+          area: yield
+        annotations:
+          summary: "{{ $labels.chamber }}: yield {{ $values.A }} points vs normal, last 7 days of data"
+          description: >-
+            Wafers that passed this chamber in the last 7 days of data (20 or more) yield more
+            than 3 points below their products' median. Run commonality for the window.
+          __dashboardUid__: waferlens-excursions
+          __panelId__: "8"
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: waferlens-timescaledb
+            model:
+              refId: A
+              editorMode: code
+              rawQuery: true
+              format: table
+              rawSql: >-
+                WITH normal AS (
+                    SELECT product_id,
+                           percentile_cont(0.5) WITHIN GROUP (ORDER BY yield_pct) AS median_yield
+                    FROM marts.fct_wafer_yield GROUP BY product_id),
+                recent AS (
+                    SELECT * FROM marts.fct_wafer_yield
+                    WHERE tested_at >= (SELECT max(tested_at) FROM marts.fct_wafer_yield)
+                                       - INTERVAL '7 days')
+                SELECT c.chamber_label AS chamber, avg(r.yield_pct - n.median_yield)::float AS delta
+                FROM recent AS r
+                JOIN normal AS n ON n.product_id = r.product_id
+                JOIN marts.fct_wafer_steps AS s ON s.wafer_id = r.wafer_id
+                JOIN marts.dim_chamber AS c ON c.chamber_id = s.chamber_id
+                GROUP BY 1 HAVING count(DISTINCT r.wafer_id) >= 20
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: {type: lt, params: [-3]}

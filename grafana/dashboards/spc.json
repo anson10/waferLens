@@ -1,0 +1,621 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Phase II monitoring of one chamber's sensor against frozen limits.",
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [
+    {
+      "asDropdown": true,
+      "tags": [
+        "waferlens"
+      ],
+      "title": "WaferLens",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "Limits are the latest frozen Phase I version for this chamber.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 3
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "value"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "points"
+              },
+              {
+                "id": "custom.pointSize",
+                "value": 7
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8a8a8a",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "UCL"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "LCL"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "center"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "EWMA/CUSUM alarm"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "points"
+              },
+              {
+                "id": "custom.pointSize",
+                "value": 7
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT measured_at AS time, value AS \"value\" FROM marts.fct_measurements WHERE source = 'sensor' AND chamber_id = $chamber AND parameter_id = $parameter AND $__timeFilter(measured_at) ORDER BY 1",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH l AS ( SELECT center, sigma, baseline_end FROM spc_control_limits WHERE source = 'sensor' AND scope = 'chamber' AND chamber_id = $chamber AND parameter_id = $parameter ORDER BY version DESC LIMIT 1 ) SELECT t AS time, l.center AS \"center\", l.center + 3 * l.sigma AS \"UCL\", l.center - 3 * l.sigma AS \"LCL\" FROM l, unnest(ARRAY[$__timeFrom()::timestamptz, $__timeTo()::timestamptz]) AS t ORDER BY 1",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT a.measured_at AS time, f.value AS \"EWMA/CUSUM alarm\" FROM marts.fct_spc_alarms AS a JOIN marts.fct_measurements AS f ON f.source = 'sensor' AND f.wafer_id = a.wafer_id AND f.route_step_id = a.route_step_id AND f.pass_no = a.pass_no AND f.parameter_id = a.parameter_id WHERE a.scope = 'chamber' AND a.chamber_id = $chamber AND a.parameter_id = $parameter AND a.chart_family = 'memory' AND $__timeFilter(a.measured_at) GROUP BY 1, 2 ORDER BY 1",
+          "refId": "C"
+        }
+      ],
+      "title": "Sensor value against frozen 3\u03c3 limits",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "Computed in SQL with the ewma() aggregate from migration 0006, from the end of the baseline, exactly as waferlens.spc does.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "showPoints": "never"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "+L"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "-L"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 2,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH l AS ( SELECT center, sigma, baseline_end FROM spc_control_limits WHERE source = 'sensor' AND scope = 'chamber' AND chamber_id = $chamber AND parameter_id = $parameter ORDER BY version DESC LIMIT 1 ) , pts AS ( SELECT f.measured_at, (f.value - l.center) / l.sigma AS z FROM marts.fct_measurements AS f, l WHERE f.source = 'sensor' AND f.chamber_id = $chamber AND f.parameter_id = $parameter AND f.measured_at >= l.baseline_end ), e AS ( SELECT measured_at, ewma(z, 0.2) OVER w AS ewma, row_number() OVER w AS i FROM pts WINDOW w AS (ORDER BY measured_at) ) SELECT measured_at AS time, ewma AS \"EWMA\", 3 * sqrt(0.2 / 1.8 * (1 - power(0.8, 2 * i))) AS \"+L\", -3 * sqrt(0.2 / 1.8 * (1 - power(0.8, 2 * i))) AS \"-L\" FROM e WHERE $__timeFilter(measured_at) ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "title": "EWMA of the standardised value (\u03bb 0.2) with its limits",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "From the sensor_daily continuous aggregate: ~100x faster than scanning raw readings over months (docs/perf.md).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "+1 sd"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8a8a8a",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "-1 sd"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    6
+                  ],
+                  "fill": "dash"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "never"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8a8a8a",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 3,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT day AS time, mean_value AS \"mean\", mean_value + sd_value AS \"+1 sd\", mean_value - sd_value AS \"-1 sd\" FROM sensor_daily WHERE chamber_id = $chamber AND parameter_id = $parameter AND $__timeFilter(day) ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "title": "Daily mean \u00b1 1 sd (continuous aggregate)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "T\u00b2 combines a step's metrology parameters; only steps followed by metrology have one.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 6
+          },
+          "noValue": "No T\u00b2 alarms: none, or no metrology after this chamber"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 4,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT a.measured_at AS time, a.statistic AS \"T\u00b2\", l.t2_limit AS \"limit\" FROM marts.fct_spc_alarms AS a JOIN spc_control_limits AS l ON l.limit_id = a.limit_id WHERE a.chart = 't2' AND a.chamber_id = $chamber AND $__timeFilter(a.measured_at) ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "title": "Hotelling T\u00b2 alarms on this chamber's metrology steps",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "waferlens-timescaledb"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 5,
+      "options": {},
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "waferlens-timescaledb"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT a.measured_at AS time, a.chart, a.direction, round(a.statistic::numeric, 2) AS statistic, a.wafer_id AS wafer, a.route_step_id AS \"route step\" FROM marts.fct_spc_alarms AS a WHERE a.scope = 'chamber' AND a.chamber_id = $chamber AND a.parameter_id = $parameter AND $__timeFilter(a.measured_at) ORDER BY a.measured_at DESC LIMIT 200",
+          "refId": "A"
+        }
+      ],
+      "title": "Alarm history (this chamber and sensor)",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "waferlens"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "waferlens-timescaledb"
+        },
+        "definition": "SELECT tool_id FROM marts.dim_tool ORDER BY 1",
+        "includeAll": false,
+        "label": "Tool",
+        "multi": false,
+        "name": "tool",
+        "options": [],
+        "query": "SELECT tool_id FROM marts.dim_tool ORDER BY 1",
+        "refresh": 1,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "waferlens-timescaledb"
+        },
+        "definition": "SELECT chamber_label AS __text, chamber_id AS __value FROM marts.dim_chamber WHERE tool_id = '$tool' ORDER BY 1",
+        "includeAll": false,
+        "label": "Chamber",
+        "multi": false,
+        "name": "chamber",
+        "options": [],
+        "query": "SELECT chamber_label AS __text, chamber_id AS __value FROM marts.dim_chamber WHERE tool_id = '$tool' ORDER BY 1",
+        "refresh": 1,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "waferlens-timescaledb"
+        },
+        "definition": "SELECT p.name AS __text, l.parameter_id AS __value FROM spc_control_limits AS l JOIN parameters AS p ON p.parameter_id = l.parameter_id WHERE l.source = 'sensor' AND l.scope = 'chamber' AND l.chamber_id = $chamber GROUP BY 1, 2 ORDER BY 1",
+        "includeAll": false,
+        "label": "Sensor",
+        "multi": false,
+        "name": "parameter",
+        "options": [],
+        "query": "SELECT p.name AS __text, l.parameter_id AS __value FROM spc_control_limits AS l JOIN parameters AS p ON p.parameter_id = l.parameter_id WHERE l.source = 'sensor' AND l.scope = 'chamber' AND l.chamber_id = $chamber GROUP BY 1, 2 ORDER BY 1",
+        "refresh": 1,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "2026-01-05T00:00:00.000Z",
+    "to": "2026-07-06T00:00:00.000Z"
+  },
+  "timezone": "utc",
+  "title": "WaferLens \u00b7 SPC control chart",
+  "uid": "waferlens-spc",
+  "version": 1
+}

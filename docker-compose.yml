@@ -23,9 +23,11 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
-      POSTGRES_USER: ${POSTGRES_USER:-waferlens}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-waferlens}
       POSTGRES_DB: ${POSTGRES_DB:-waferlens}
+      GRAFANA_DB_USER: ${GRAFANA_DB_USER:-grafana_reader}
+      GRAFANA_DB_PASSWORD: ${GRAFANA_DB_PASSWORD:-grafana_reader}
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     volumes:
@@ -37,6 +39,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+
+  # Receives Grafana alert notifications and logs them: `docker compose logs alert-sink`.
+  alert-sink:
+    image: mendhak/http-https-echo:35
+    environment:
+      HTTP_PORT: 8080
+      LOG_IGNORE_PATH: /health
+
+  # Server-side rendering for `make screenshots`; only started with the screenshots profile.
+  renderer:
+    image: grafana/grafana-image-renderer:3.12.1
+    profiles: [screenshots]
 
 volumes:
   timescale-data:
