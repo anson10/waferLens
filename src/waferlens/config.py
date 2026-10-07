@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     mlflow_tracking_uri: str = "http://localhost:5000"
     fabeye_url: str = "http://localhost:8000"
     fabeye_api_key: str = "change-me"
+    kafka_bootstrap: str = "localhost:19092"
 
 
 @lru_cache

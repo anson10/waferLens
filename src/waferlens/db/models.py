@@ -21,6 +21,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    BigInteger,
     CheckConstraint,
     Double,
     ForeignKey,
@@ -569,6 +570,74 @@ class WaferPattern(Base):
 
 
 PATTERN_TABLES = ("wafer_patterns",)  # written by waferlens.patterns (FabEye), not the loader
+
+
+# --------------------------------------------------------------------------- real-time SPC
+# Written by the stream consumer (waferlens.stream), one transaction per batch of events: the
+# alarms, the chart state and the next offset to read commit together, so a crash or a
+# replay can neither lose nor duplicate an alarm.
+
+
+class StreamOffset(Base):
+    """Next Kafka offset to read per topic partition. Stored here, not in Kafka, so it
+    commits atomically with the state and alarms it produced."""
+
+    __tablename__ = "stream_offsets"
+
+    topic: Mapped[str] = mapped_column(Text, primary_key=True)
+    partition: Mapped[int] = mapped_column(Integer, primary_key=True)
+    next_offset: Mapped[int] = mapped_column(BigInteger)
+    updated_at: Mapped[datetime] = mapped_column(TimestampTZ, server_default=text("now()"))
+
+
+class StreamSpcState(Base):
+    """Online EWMA / CUSUM state of one chamber x sensor series (waferlens.stream.online)."""
+
+    __tablename__ = "stream_spc_state"
+
+    chamber_id: Mapped[int] = mapped_column(ForeignKey("chambers.chamber_id"), primary_key=True)
+    parameter_id: Mapped[int] = mapped_column(
+        ForeignKey("parameters.parameter_id"), primary_key=True
+    )
+    limit_id: Mapped[int] = mapped_column(ForeignKey("spc_control_limits.limit_id"))
+    n: Mapped[int] = mapped_column(Integer)
+    ewma: Mapped[float] = mapped_column(Double)
+    cusum_up: Mapped[float] = mapped_column(Double)
+    cusum_down: Mapped[float] = mapped_column(Double)
+    last_measured_at: Mapped[datetime | None] = mapped_column(TimestampTZ)
+    last_event_id: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(TimestampTZ, server_default=text("now()"))
+
+
+class StreamAlarm(Base):
+    """An EWMA or CUSUM alarm raised by the stream consumer, with its end-to-end latency
+    (from the tool agent publishing the event to the alarm row committing)."""
+
+    __tablename__ = "stream_alarms"
+
+    alarm_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    event_id: Mapped[str] = mapped_column(Text)
+    chart: Mapped[str] = mapped_column(Text)
+    chamber_id: Mapped[int] = mapped_column(ForeignKey("chambers.chamber_id"))
+    parameter_id: Mapped[int] = mapped_column(ForeignKey("parameters.parameter_id"))
+    limit_id: Mapped[int] = mapped_column(ForeignKey("spc_control_limits.limit_id"))
+    wafer_id: Mapped[int] = mapped_column(Integer)
+    route_step_id: Mapped[int] = mapped_column(Integer)
+    measured_at: Mapped[datetime] = mapped_column(TimestampTZ)
+    statistic: Mapped[float] = mapped_column(Double)
+    direction: Mapped[str] = mapped_column(Text)
+    produced_at: Mapped[datetime] = mapped_column(TimestampTZ)
+    detected_at: Mapped[datetime] = mapped_column(TimestampTZ, server_default=text("now()"))
+
+    __table_args__ = (
+        UniqueConstraint("event_id", "chart"),
+        CheckConstraint("chart IN ('ewma', 'cusum')", name="chart_valid"),
+        CheckConstraint("direction IN ('up', 'down')", name="direction_valid"),
+        Index(None, "detected_at"),
+    )
+
+
+STREAM_TABLES = ("stream_offsets", "stream_spc_state", "stream_alarms")  # waferlens.stream
 
 FACTOR_TYPES = ("chamber", "recipe")
 

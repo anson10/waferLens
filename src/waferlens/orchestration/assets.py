@@ -26,7 +26,7 @@ from dagster import (
 )
 from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
 
-from waferlens.db.models import PATTERN_TABLES, ROOTCAUSE_TABLES, SPC_TABLES, Base
+from waferlens.db.models import PATTERN_TABLES, ROOTCAUSE_TABLES, SPC_TABLES, STREAM_TABLES, Base
 from waferlens.ingest.contracts import ContractError, check_tables
 from waferlens.ingest.loader import load, read_tables
 from waferlens.ingest.secom import download, load_secom, parse
@@ -111,9 +111,13 @@ ANALYSIS_TABLES = (
     *ROOTCAUSE_TABLES,
     *PATTERN_TABLES,
 )  # written by later assets, not the loader
-FAB_TABLES = [t.name for t in Base.metadata.sorted_tables if t.name not in ANALYSIS_TABLES] + [
-    "wafer_yield"
-]
+# The stream consumer is a long-running service, not a pipeline asset: its tables are
+# neither loaded nor materialized by Dagster.
+FAB_TABLES = [
+    t.name
+    for t in Base.metadata.sorted_tables
+    if t.name not in ANALYSIS_TABLES and t.name not in STREAM_TABLES
+] + ["wafer_yield"]
 SECOM_TABLES = ["secom_runs", "secom_readings"]
 ML_TABLES = ["secom_model_versions", "secom_scores", "secom_sensor_importance"]
 

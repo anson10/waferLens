@@ -161,6 +161,27 @@ reporting. "Blocks" is 8 kB pages touched; "chunks" is hypertable chunks actuall
 
    Grafana's "daily mean ± 1 sd" panel reads it, so a whole-period view costs nothing.
 
+## Real-time SPC (phase 6)
+
+`make stream-demo`: one day of the demo fab (17,632 sensor events) published at 800 events/s
+to Redpanda (one core, 512 MB) and consumed in batches of up to 500 with a 0.5 s poll window.
+
+| | Value |
+|---|---|
+| Wall time for the day | ~34 s (publishing at 800/s is the bottleneck) |
+| End-to-end latency, event published → alarm committed | p50 ~270 ms, p95 ~515 ms |
+| Injected +2σ step caught after | 3 points (CUSUM) |
+| Background alarm rate on undisturbed series | ~0.5% (EWMA + CUSUM design ~0.4%) |
+
+Latency is dominated by the batching window: the consumer waits up to 0.5 s to fill a batch,
+and commits once per batch. A smaller window lowers latency at the cost of more, smaller
+transactions.
+
+**Clock caveat.** On this WSL2 machine the wall clock stepped back by 858 ms and 985 ms within
+75 s (WSL's systemd-timesyncd and the Windows host both correcting it), and wall-clock
+latencies came out negative for a few alarms. The demo therefore measures latency on the
+monotonic clock; the `stream_alarms` timestamps are wall clock and need synced hosts.
+
 ## Not done yet
 
 - Load: streaming large tables by row group (memory), parallel COPY of the two hypertables,

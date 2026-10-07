@@ -78,7 +78,8 @@ def _time_range(conn: Connection) -> tuple[datetime, datetime]:
     return row[0], row[1]
 
 
-FAB_DASHBOARDS = sorted(set(DASHBOARDS) - {"secom"})  # secom: tests/integration/test_secom_model.py
+# secom: tests/integration/test_secom_model.py; stream: tests/integration/test_stream.py
+FAB_DASHBOARDS = sorted(set(DASHBOARDS) - {"secom", "stream"})
 
 
 @pytest.mark.parametrize("name", FAB_DASHBOARDS)

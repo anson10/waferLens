@@ -246,14 +246,14 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 
 ---
 
-## Phase 6 — Streaming / real-time SPC (stretch, ~1 week)
+## Phase 6 — Streaming / real-time SPC (stretch, ~1 week) — ADR-012, `make stream-demo`
 
-- [ ] Redpanda in docker-compose
-- [ ] Simulator "tool agents" publish measurement events (schema-versioned JSON/Avro)
-- [ ] Consumer: online SPC (EWMA/CUSUM state per chamber) → alarms to DB
-- [ ] Exactly-once-ish handling: idempotent writes, consumer offsets
-- [ ] Grafana live panels with short refresh; end-to-end latency measured
-- [ ] Demo script: start stream → inject drift → alarm appears in Grafana
+- [x] Redpanda in docker-compose (opt-in `stream` profile, 512 MB)
+- [x] Tool agents replay the simulator's sensor readings as events (versioned JSON `waferlens.sensor_reading/v1`, keyed by chamber)
+- [x] Consumer: online EWMA/CUSUM per chamber x sensor on the frozen limits → `stream_alarms`; equals the batch engine's alarms exactly (tested, with a restart)
+- [x] Exactly once: alarms, chart state and offsets commit in one Postgres transaction; replays skipped; tested
+- [x] Grafana "Real-time SPC" dashboard (5 s refresh); latency p50 ~270 ms, p95 ~515 ms (monotonic clock: WSL2's wall clock steps ~1 s)
+- [x] `make stream-demo`: a day of events, +2σ drift injected, caught by CUSUM after 3 points
 
 **CV line:** *Real-time SPC on streaming tool data (Redpanda → TimescaleDB), alarm latency < N s.*
 

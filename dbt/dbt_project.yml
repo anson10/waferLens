@@ -10,6 +10,10 @@ test-paths: ["tests"]
 target-path: target
 clean-targets: [target, dbt_packages]
 
+# Schema-level USAGE for the read-only roles: survives the marts schema being recreated.
+on-run-end:
+  - "{{ grant_reader_usage(schemas) }}"
+
 models:
   waferlens:
     # Dashboards read with the read-only role from migration 0006.
