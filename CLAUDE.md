@@ -34,6 +34,8 @@ lot-disjoint evaluation, conformal prediction, ONNX and a FastAPI service (`/pre
 - Simulator and ingest stay decoupled: the simulator writes files, ingest reads them.
 - The loader is one transaction (truncate, drop FKs, COPY, re-add FKs); keep it atomic.
 - Real external data (SECOM) lives on `ExternalBase`, never `Base`, so fab reloads can't wipe it.
+- Analysis results (SPC, root cause) live on `Base` but are not loaded: list new ones in `DERIVED` (contracts) and `ANALYSIS_TABLES` (Dagster), with their own asset.
+- Evaluate every detector against `excursions_ground_truth` with a chance baseline (placebo window, random ranking); never report a hit rate without one.
 - SECOM models must use a time-ordered split: the fail rate drifts 22% → 3% (docs/data/secom.md).
 - Simulator output must log every injected excursion as ground truth, because detection is evaluated against it.
 - Complex aggregations are SQL (dbt models, or commented raw SQL) with comments on the business logic.

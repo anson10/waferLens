@@ -1,7 +1,7 @@
 """Dagster definitions for WaferLens: ``dagster dev -m waferlens.orchestration.definitions``.
 
 Jobs
-    full_rebuild  simulate → contracts → load → SECOM → dbt → SPC → SPC marts: everything
+    full_rebuild  simulate → contracts → load → SECOM → dbt → SPC + root cause → their marts
     ingest        load the current Parquet drop → dbt → SPC → SPC marts (no simulation)
 
 Triggers
@@ -34,6 +34,7 @@ from waferlens.orchestration.assets import (
     dbt_project,
     fab_contracts,
     fab_tables,
+    rootcause_candidates,
     secom_tables,
     simulated_fab,
     spc_results,
@@ -43,7 +44,7 @@ from waferlens.orchestration.resources import FabData, SecomSource, Warehouse
 full_rebuild = define_asset_job(
     "full_rebuild",
     selection=AssetSelection.all(),
-    description="Simulate, check contracts, load, load SECOM, build dbt, run SPC.",
+    description="Simulate, check contracts, load, load SECOM, build dbt, run SPC and root cause.",
 )
 
 ingest = define_asset_job(
@@ -89,7 +90,7 @@ def nightly_rebuild() -> RunRequest:
 
 
 defs = Definitions(
-    assets=[simulated_fab, fab_tables, secom_tables, dbt_models, spc_results],
+    assets=[simulated_fab, fab_tables, secom_tables, dbt_models, spc_results, rootcause_candidates],
     asset_checks=[fab_contracts],
     jobs=[full_rebuild, ingest],
     sensors=[new_parquet_drop],

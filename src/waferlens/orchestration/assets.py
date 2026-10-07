@@ -26,11 +26,12 @@ from dagster import (
 )
 from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
 
-from waferlens.db.models import SPC_TABLES, Base
+from waferlens.db.models import ROOTCAUSE_TABLES, SPC_TABLES, Base
 from waferlens.ingest.contracts import ContractError, check_tables
 from waferlens.ingest.loader import load, read_tables
 from waferlens.ingest.secom import download, load_secom, parse
 from waferlens.orchestration.resources import ROOT, FabData, SecomSource, Warehouse
+from waferlens.rootcause.evaluate import evaluate_excursions
 from waferlens.simulate.config import load_config
 from waferlens.simulate.run import simulate, write_parquet
 from waferlens.spc.engine import SpcConfig, run_spc
@@ -86,7 +87,8 @@ def fab_contracts(fab_data: FabData) -> AssetCheckResult:
 
 # --------------------------------------------------------------------------- warehouse
 
-FAB_TABLES = [t.name for t in Base.metadata.sorted_tables if t.name not in SPC_TABLES] + [
+ANALYSIS_TABLES = (*SPC_TABLES, *ROOTCAUSE_TABLES)  # written by later assets, not the loader
+FAB_TABLES = [t.name for t in Base.metadata.sorted_tables if t.name not in ANALYSIS_TABLES] + [
     "wafer_yield"
 ]
 SECOM_TABLES = ["secom_runs", "secom_readings"]
@@ -208,4 +210,29 @@ def spc_results(config: SpcRunConfig, warehouse: Warehouse) -> Iterator[Material
         asset_key=table_key("spc_alarms"),
         metadata={"alarms": sum(report.alarms.values()), "by_chart": json.dumps(report.alarms),
                   "seconds": report.seconds},
+    )  # fmt: skip
+
+
+# --------------------------------------------------------------------------- root cause
+
+
+@asset(
+    key=table_key("rootcause_candidates"),
+    deps=[
+        AssetKey(["marts", "fct_wafer_steps"]),
+        AssetKey(["marts", "fct_wafer_yield"]),
+        table_key("excursions_ground_truth"),
+    ],
+    group_name="rootcause",
+    kinds={"python", "postgres"},
+    description=(
+        "Commonality analysis of every injected excursion's time window: chambers and recipe "
+        "versions ranked by over-representation among low-yield wafers (waferlens.rootcause)."
+    ),
+)
+def rootcause_candidates(warehouse: Warehouse) -> MaterializeResult:
+    report = evaluate_excursions(warehouse.engine())
+    return MaterializeResult(
+        metadata={"windows": report.windows, "candidates": report.candidates,
+                  "seconds": report.seconds}
     )  # fmt: skip

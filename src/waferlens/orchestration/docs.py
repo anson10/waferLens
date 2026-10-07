@@ -12,7 +12,15 @@ from dagster import Definitions, ScheduleDefinition
 
 ROOT = Path(__file__).resolve().parents[3]
 OUTPUT = ROOT / "docs" / "pipeline.md"
-GROUP_ORDER = ["ingest", "warehouse", "dbt_staging", "dbt_intermediate", "dbt_marts"]
+GROUP_ORDER = [
+    "ingest",
+    "warehouse",
+    "dbt_staging",
+    "dbt_intermediate",
+    "dbt_marts",
+    "spc",
+    "rootcause",
+]
 
 
 def group_lineage(defs: Definitions) -> tuple[Counter[str], Counter[tuple[str, str]]]:

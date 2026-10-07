@@ -531,6 +531,55 @@ class SpcAlarm(Base):
     )
 
 
+# --------------------------------------------------------------------------- root cause (phase 3)
+
+ROOTCAUSE_TABLES = ("rootcause_candidates",)  # written by waferlens.rootcause, not the loader
+FACTOR_TYPES = ("chamber", "recipe")
+
+
+class RootcauseCandidate(Base):
+    """One suspect from a commonality analysis of one time window: a chamber or recipe version
+    the low-yield wafers met inside the window, with its 2x2 evidence and its rank.
+
+    The evaluation runs one analysis per injected excursion, given only the excursion's time
+    window, and ``excursion_id`` records which; the rank of the true cause is the score.
+    """
+
+    __tablename__ = "rootcause_candidates"
+
+    candidate_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    excursion_id: Mapped[int] = mapped_column(
+        ForeignKey("excursions_ground_truth.excursion_id"), index=True
+    )
+    window_start: Mapped[datetime] = mapped_column(TimestampTZ)
+    window_end: Mapped[datetime] = mapped_column(TimestampTZ)
+    factor_type: Mapped[str] = mapped_column(Text)
+    chamber_id: Mapped[int | None] = mapped_column(ForeignKey("chambers.chamber_id"))
+    recipe_id: Mapped[int | None] = mapped_column(ForeignKey("recipes.recipe_id"))
+    n_through: Mapped[int] = mapped_column(Integer)
+    low_through: Mapped[int] = mapped_column(Integer)
+    n_population: Mapped[int] = mapped_column(Integer)
+    n_low: Mapped[int] = mapped_column(Integer)
+    lift: Mapped[float | None] = mapped_column(Double)
+    chi2: Mapped[float | None] = mapped_column(Double)
+    suspect_rank: Mapped[int] = mapped_column(Integer)
+
+    __table_args__ = (
+        UniqueConstraint("excursion_id", "factor_type", "chamber_id", "recipe_id",
+                         postgresql_nulls_not_distinct=True),
+        CheckConstraint(_in("factor_type", FACTOR_TYPES), name="factor_type_valid"),
+        CheckConstraint(
+            "(factor_type = 'chamber') = (chamber_id IS NOT NULL AND recipe_id IS NULL)"
+            " AND (factor_type = 'recipe') = (recipe_id IS NOT NULL AND chamber_id IS NULL)",
+            name="one_factor",
+        ),
+        CheckConstraint("0 <= low_through AND low_through <= n_through"
+                        " AND n_through <= n_population", name="counts_consistent"),
+        CheckConstraint("suspect_rank >= 1", name="rank_positive"),
+        CheckConstraint("window_end > window_start", name="window_ordered"),
+    )  # fmt: skip
+
+
 # --------------------------------------------------------------------------- external datasets
 
 
