@@ -1,0 +1,8 @@
+# Power BI Desktop's local files inside a PBIP project: per-user settings and the imported
+# data cache (can be hundreds of MB). The model (TMDL) and report definitions are committed.
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+# Exported .pbix files embed the data; the PBIP project is the source of truth.
+*.pbix
+# Local build notes, kept off GitHub.
+BUILD_GUIDE.md

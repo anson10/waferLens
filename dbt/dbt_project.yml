@@ -24,10 +24,16 @@ models:
     marts:
       +schema: marts
       +materialized: table
+      # Power BI imports the marts only (role from migration 0011); "+select" adds to the
+      # project-wide grant instead of replacing it.
+      +grants:
+        +select: [powerbi_reader]
 
 seeds:
   waferlens:
     +schema: marts
+    +grants:
+      select: [grafana_reader, powerbi_reader]
 
 data_tests:
   waferlens:
