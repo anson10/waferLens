@@ -6,3 +6,4 @@
 *.pbix
 # Local build notes, kept off GitHub.
 BUILD_GUIDE.md
+PowerBIPerformanceData*.json

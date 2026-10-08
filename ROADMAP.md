@@ -281,13 +281,13 @@ Report pages:
 - [x] Excursion report (impact, detection delay, cost)
 - [x] Process control (alarms by tool type and chart family, alarm density per chamber, FabEye review load)
 - [x] Drillthrough to wafer → route history, bins, FabEye pattern
-- [x] Tooltip page (chamber, excursion-window aware); [ ] bookmarks
+- [x] Tooltip page (chamber, excursion-window aware); [x] bookmarks (two excursion stories + reset)
+- [x] Performance Analyzer pass, slowest visual noted in `powerbi/README.md`
 - [x] Row-level security roles per product line
 
 Delivery:
-- [ ] Screenshots + 1–2 min video walkthrough
-- [ ] `powerbi/README.md` explaining model design + DAX highlights
-- [ ] (Optional, in parallel) PL-300 certification
+- [x] Screenshots (`powerbi/images/`, in the README)
+- [x] `powerbi/README.md` explaining model design + DAX highlights
 
 **CV line:** *Built a Power BI semantic model on a dbt star schema (DAX, RLS, drillthrough), version-controlled as PBIP.*
 
