@@ -129,6 +129,21 @@
               "queryRef": "Sum(fct_root_cause_candidates.n_through)",
               "nativeQueryRef": "Sum of n_through",
               "displayName": "Wafers through"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Tip Alarms"
+                }
+              },
+              "queryRef": "_Measures.Tip Alarms",
+              "nativeQueryRef": "Tip Alarms",
+              "displayName": "SPC alarms in window"
             }
           ]
         }
@@ -270,7 +285,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Suspects ranked by lift · green = injected true cause'"
+                  "Value": "'Suspects ranked by lift · green = injected true cause · SPC alarms on the chamber during the excursion'"
                 }
               }
             }
@@ -298,6 +313,13 @@
               "expr": {
                 "Literal": {
                   "Value": "'75fa09c592a67d7a2128'"
+                }
+              }
+            },
+            "showChartSpecificTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }
