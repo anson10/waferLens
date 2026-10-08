@@ -2,7 +2,7 @@
 export
 
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc spc-report rootcause rootcause-report secom-model fabeye-report dashboards screenshots dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check powerbi-check stream-demo
+.PHONY: help install up down reset logs psql migrate simulate load secom seed dbt dbt-docs spc spc-report rootcause rootcause-report story secom-model fabeye-report dashboards screenshots dagster pipeline pipeline-docs bench-load explain lint format typecheck test test-unit check powerbi-check stream-demo
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -56,6 +56,9 @@ rootcause: ## Commonality analysis of every excursion window → rootcause_candi
 
 rootcause-report: ## Root-cause accuracy + impact + SPC coverage → docs/root_cause.md (after spc, rootcause, dbt)
 	uv run python -m waferlens.rootcause.report
+
+story: ## Excursions end to end: alarm, suspects, wafers, cost → docs/excursion_story.md (EXC="40 12 10"; after pipeline + fabeye-report)
+	uv run python -m waferlens.rootcause.story $(EXC)
 
 secom-model: ## Train, evaluate + register the SECOM fail model (MLflow) → DB + docs/secom_model.md (after secom)
 	uv run python -m waferlens.ml

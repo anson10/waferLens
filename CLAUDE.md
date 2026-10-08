@@ -61,6 +61,7 @@ make up / down  # containers (reset = also wipe volumes)
 make seed       # migrate + simulate + load (PROFILE=dev|demo|stress, default demo)
 make pipeline   # the same + dbt, as one Dagster run (make dagster = UI on :3001)
 make fabeye-report # score every sorted wafer with FabEye → wafer_patterns + docs/fabeye_eval.md
+make story      # excursions end to end (alarm, suspects, wafers, cost) → docs/excursion_story.md
 make secom-model # train + register the SECOM model, write scores + docs/secom_model.md
 make dashboards # regenerate grafana/dashboards/*.json (make screenshots = README images)
 make stream-demo # Redpanda + replay a day as events + inject a drift + report latency
