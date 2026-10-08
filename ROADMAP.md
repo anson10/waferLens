@@ -296,7 +296,7 @@ Delivery:
 ## Phase 8 — Launch (~3–4 days) → **M3: Complete**
 
 - [ ] README: pitch → architecture diagram → results tables (ARL, root-cause accuracy, F1, PR-AUC, latency) → screenshots → quickstart
-- [ ] "Excursion story" demo: CMP chamber drift → alarm → commonality → wafer-map pattern → yield impact
+- [x] "Excursion story" demo (`make story` → `docs/excursion_story.md`): a drift (alarm → commonality → spared wafers → cost), a spatial pattern SPC can't see (FabEye → pattern alarm → pattern-led commonality), and commonality's miss
 - [ ] 2–3 min demo video (link at top of README)
 - [ ] Technical write-up (blog / LinkedIn article): what worked, what didn't, numbers
 - [ ] Short German summary section in README (*Kurzbeschreibung*)
