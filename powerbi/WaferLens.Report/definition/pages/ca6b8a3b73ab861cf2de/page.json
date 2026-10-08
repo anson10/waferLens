@@ -1,0 +1,25 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "ca6b8a3b73ab861cf2de",
+  "displayName": "Root cause",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920,
+  "visualInteractions": [
+    {
+      "source": "a35c6d501d0fdebc5f6e",
+      "target": "f05e65589bd01a402737",
+      "type": "NoFilter"
+    },
+    {
+      "source": "a35c6d501d0fdebc5f6e",
+      "target": "19cb445c090687a7df62",
+      "type": "NoFilter"
+    },
+    {
+      "source": "a35c6d501d0fdebc5f6e",
+      "target": "0d1462ce6c43cf3caf95",
+      "type": "NoFilter"
+    }
+  ]
+}

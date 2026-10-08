@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "WaferLens"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "dc01d816-f38a-4191-bd54-4c67a14b595e"
+  }
+}

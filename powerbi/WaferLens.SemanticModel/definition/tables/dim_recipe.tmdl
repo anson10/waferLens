@@ -1,0 +1,82 @@
+table dim_recipe
+	lineageTag: c709dc2c-0651-45f3-bd93-edc5bf6245db
+
+	column recipe_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e496437e-e14f-4a73-8b0f-41ad1f609d6b
+		summarizeBy: none
+		sourceColumn: recipe_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column route_step_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2e6770ee-ef03-48c6-af1a-d51354879b0b
+		summarizeBy: none
+		sourceColumn: route_step_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column recipe_name
+		dataType: string
+		lineageTag: b8e22330-533b-45ad-8249-6356ea3bf40c
+		summarizeBy: none
+		sourceColumn: recipe_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column recipe_version
+		dataType: int64
+		formatString: 0
+		lineageTag: 346a7be0-8137-4368-a57b-82056494204c
+		summarizeBy: none
+		sourceColumn: recipe_version
+
+		annotation SummarizationSetBy = Automatic
+
+	column effective_from_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: eb3f2491-c68d-4859-9df2-8d8ce3c05354
+		summarizeBy: none
+		sourceColumn: effective_from_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column effective_to_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 86ca5d12-b400-4e06-879a-dd7b03292d5a
+		summarizeBy: none
+		sourceColumn: effective_to_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_current
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: cb46c767-fd61-47ac-b552-6859a0b539e3
+		summarizeBy: none
+		sourceColumn: is_current
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_recipe = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_recipe"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

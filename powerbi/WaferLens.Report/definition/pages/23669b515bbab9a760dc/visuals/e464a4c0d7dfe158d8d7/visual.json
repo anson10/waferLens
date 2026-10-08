@@ -1,0 +1,256 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "e464a4c0d7dfe158d8d7",
+  "position": {
+    "x": 30,
+    "y": 345,
+    "z": 5,
+    "height": 705,
+    "width": 1110,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_excursion"
+                    }
+                  },
+                  "Property": "excursion_label"
+                }
+              },
+              "queryRef": "dim_excursion.excursion_label",
+              "nativeQueryRef": "excursion_label",
+              "displayName": "Excursion"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_excursion"
+                    }
+                  },
+                  "Property": "chamber_label"
+                }
+              },
+              "queryRef": "dim_excursion.chamber_label",
+              "nativeQueryRef": "chamber_label",
+              "displayName": "Chamber"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_excursion"
+                    }
+                  },
+                  "Property": "started_at"
+                }
+              },
+              "queryRef": "dim_excursion.started_at",
+              "nativeQueryRef": "started_at",
+              "displayName": "Started"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_excursion"
+                    }
+                  },
+                  "Property": "duration_hours"
+                }
+              },
+              "queryRef": "dim_excursion.duration_hours",
+              "nativeQueryRef": "duration_hours",
+              "displayName": "Hours"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Dies Lost to Excursions"
+                }
+              },
+              "queryRef": "_Measures.Dies Lost to Excursions",
+              "nativeQueryRef": "Dies Lost to Excursions",
+              "displayName": "Dies lost"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Excursion Yield Δ (pp)"
+                }
+              },
+              "queryRef": "_Measures.Excursion Yield Δ (pp)",
+              "nativeQueryRef": "Excursion Yield Δ (pp",
+              "displayName": "Yield Δ (pp)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Mean Detection Delay (h)"
+                }
+              },
+              "queryRef": "_Measures.Mean Detection Delay (h)",
+              "nativeQueryRef": "Mean Detection Delay (h",
+              "displayName": "EWMA delay (h)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "True Cause Rank"
+                }
+              },
+              "queryRef": "_Measures.True Cause Rank",
+              "nativeQueryRef": "True Cause Rank",
+              "displayName": "Root-cause rank"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Measures"
+                  }
+                },
+                "Property": "Dies Lost to Excursions"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnFormatting": [
+        {
+          "properties": {
+            "dataBars": {
+              "positiveColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'#5B8DB8'"
+                      }
+                    }
+                  }
+                }
+              },
+              "negativeColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'#D64550'"
+                      }
+                    }
+                  }
+                }
+              },
+              "axisColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'#666666'"
+                      }
+                    }
+                  }
+                }
+              },
+              "reverseDirection": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "hideText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Dies Lost to Excursions"
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Excursions by dies lost · blank EWMA delay = not caught by sensors (spatial) or started in the baseline'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

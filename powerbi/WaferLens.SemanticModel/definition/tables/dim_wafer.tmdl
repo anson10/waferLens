@@ -1,0 +1,75 @@
+table dim_wafer
+	lineageTag: 3584c2da-f2da-47fd-8933-928862253c39
+
+	column wafer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8cbd9ec4-ec99-40e2-8742-d7518274138a
+		summarizeBy: none
+		sourceColumn: wafer_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column wafer_code
+		dataType: string
+		lineageTag: 71e3ae57-5aea-4595-b2e3-c07062ad3c4f
+		summarizeBy: none
+		sourceColumn: wafer_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column lot_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 941df0de-f2c0-4446-8325-aa48e10e5931
+		summarizeBy: sum
+		sourceColumn: lot_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c0a2e076-60b2-44a3-a815-c854b750c710
+		summarizeBy: sum
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column slot
+		dataType: int64
+		formatString: 0
+		lineageTag: b1f8febc-da80-4652-afd7-2758ef1031e7
+		summarizeBy: sum
+		sourceColumn: slot
+
+		annotation SummarizationSetBy = Automatic
+
+	column wafer_status
+		dataType: string
+		lineageTag: b424abf8-8969-4b21-9bde-1a3d18ab3a8b
+		summarizeBy: none
+		sourceColumn: wafer_status
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_wafer = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_wafer"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

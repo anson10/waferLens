@@ -1,0 +1,38 @@
+table wafer_pattern_classes
+	lineageTag: 9ae53199-70cc-44ae-a2f3-b59816572afa
+
+	column pattern
+		dataType: string
+		lineageTag: a29655b0-3b08-45d4-8146-3bbe9a66d4d5
+		summarizeBy: none
+		sourceColumn: pattern
+
+		annotation SummarizationSetBy = Automatic
+
+	column simulator_pattern
+		dataType: string
+		lineageTag: a3b4bbd3-100b-45d1-9936-7b3e63a0103b
+		summarizeBy: none
+		sourceColumn: simulator_pattern
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: e6fe7aee-f62b-448d-9dbd-464befaa6529
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition wafer_pattern_classes = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "wafer_pattern_classes"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

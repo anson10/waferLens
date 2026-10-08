@@ -1,0 +1,113 @@
+relationship 8e35b058-a6e6-9079-643b-ab098a0654a9
+	fromColumn: fct_wafer_yield.tested_date_key
+	toColumn: dim_date.date_key
+
+relationship 39a297bc-91e3-1bc5-4283-853c8b57a022
+	fromColumn: fct_wafer_yield.product_id
+	toColumn: dim_product.product_id
+
+relationship 1e8e11ce-2f7e-122a-f848-0d126dfcf822
+	fromColumn: fct_wafer_yield.lot_id
+	toColumn: dim_lot.lot_id
+
+relationship 4e43aa65-bcfd-6ea7-3c40-627d25cbf85b
+	fromColumn: fct_wafer_yield.wafer_id
+	toColumn: dim_wafer.wafer_id
+
+relationship 11b40772-39b6-ab11-d87e-b1711af99145
+	fromColumn: fct_die_bins.tested_date_key
+	toColumn: dim_date.date_key
+
+relationship 464264a2-3dce-7f63-d98b-4de9505cb72c
+	fromColumn: fct_die_bins.bin_code
+	toColumn: dim_sort_bin.bin_code
+
+relationship f9ad1cad-3c86-c3ba-7d09-b767a8f7f881
+	fromColumn: fct_die_bins.wafer_id
+	toColumn: dim_wafer.wafer_id
+
+relationship c30b2003-ccfc-df22-5eaa-179313896cc6
+	fromColumn: fct_wafer_steps.date_key
+	toColumn: dim_date.date_key
+
+relationship 503d6e30-4263-0b21-b43d-2a75f1ef82a3
+	fromColumn: fct_wafer_steps.wafer_id
+	toColumn: dim_wafer.wafer_id
+
+relationship 959de379-71c1-999e-c6d5-51bfac02c96f
+	fromColumn: fct_wafer_steps.chamber_id
+	toColumn: dim_chamber.chamber_id
+
+relationship b0b31b5b-a755-84f7-8ffd-ec2dfb41f5ad
+	fromColumn: fct_wafer_steps.recipe_id
+	toColumn: dim_recipe.recipe_id
+
+relationship 63f9f4fb-5448-b44d-04bf-bde4ab3cccb7
+	fromColumn: fct_wafer_steps.route_step_id
+	toColumn: dim_route_step.route_step_id
+
+relationship 179557b1-c3e6-a775-657f-0eb4a01bed9a
+	fromColumn: fct_spc_alarms.date_key
+	toColumn: dim_date.date_key
+
+relationship 937c64e3-d830-1857-55cd-cb5332dcf918
+	fromColumn: fct_spc_alarms.chamber_id
+	toColumn: dim_chamber.chamber_id
+
+relationship 0107bb7e-0db5-cc72-6a76-3153540b56e8
+	fromColumn: fct_spc_alarms.parameter_id
+	toColumn: dim_parameter.parameter_id
+
+relationship 1f19a7d5-c781-74b9-2a64-ea6c04217461
+	fromColumn: fct_spc_alarms.product_id
+	toColumn: dim_product.product_id
+
+relationship 6541a1de-6398-14f1-c8b4-b01c4a021e2b
+	fromColumn: fct_spc_alarms.chart
+	toColumn: spc_charts.chart
+
+relationship a85e5dff-8d0d-9e5b-d49f-ae114e177de2
+	fromColumn: fct_wafer_pattern.tested_date_key
+	toColumn: dim_date.date_key
+
+relationship d62d03f9-f443-570a-b645-7e3079c219c0
+	fromColumn: fct_wafer_pattern.product_id
+	toColumn: dim_product.product_id
+
+relationship 9c268af4-da6f-15f1-1e38-d8eeb8822780
+	fromColumn: fct_wafer_pattern.wafer_id
+	toColumn: dim_wafer.wafer_id
+
+relationship 73880ae4-c60a-7635-4e29-33b5b29574d5
+	fromColumn: fct_wafer_pattern.predicted_pattern
+	toColumn: wafer_pattern_classes.pattern
+
+relationship 116c1b86-6970-6d35-a734-85fb76a0b67a
+	isActive: false
+	fromColumn: fct_wafer_pattern.true_pattern
+	toColumn: wafer_pattern_classes.pattern
+
+relationship 0e255e77-31ec-71ec-0091-f808d9811767
+	fromColumn: fct_excursion_impact.excursion_id
+	toColumn: dim_excursion.excursion_id
+
+relationship aa464cc3-ada2-9928-f74e-996b45e785e0
+	fromColumn: fct_excursion_detection.excursion_id
+	toColumn: dim_excursion.excursion_id
+
+relationship 4f670683-808f-5125-adf4-036611ba2b71
+	fromColumn: fct_root_cause_eval.excursion_id
+	toColumn: dim_excursion.excursion_id
+
+relationship 86717429-5144-272c-5120-12ecfdce0512
+	fromColumn: fct_root_cause_candidates.excursion_id
+	toColumn: dim_excursion.excursion_id
+
+relationship bae1e498-48cd-8307-7e7b-e0992f54cd81
+	fromColumn: fct_root_cause_candidates.chamber_id
+	toColumn: dim_chamber.chamber_id
+
+relationship ad68cbeb-291b-30b6-67e4-59fed47261a5
+	fromColumn: fct_die_bins.product_id
+	toColumn: dim_product.product_id
+

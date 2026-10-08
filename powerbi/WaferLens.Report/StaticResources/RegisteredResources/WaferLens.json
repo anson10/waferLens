@@ -1,0 +1,77 @@
+{
+  "name": "WaferLens",
+  "dataColors": [
+    "#1F5A8A",
+    "#E07B39",
+    "#3E9C6B",
+    "#8C5BA8",
+    "#C9A227",
+    "#5B8DB8",
+    "#D64550",
+    "#7A7A7A"
+  ],
+  "foreground": "#252423",
+  "foregroundNeutralSecondary": "#605E5C",
+  "background": "#FFFFFF",
+  "backgroundLight": "#F5F6F8",
+  "tableAccent": "#1F5A8A",
+  "good": "#3E9C6B",
+  "neutral": "#C9A227",
+  "bad": "#D64550",
+  "maximum": "#3E9C6B",
+  "center": "#F2E3A0",
+  "minimum": "#D64550",
+  "textClasses": {
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 13,
+      "color": "#252423"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 11,
+      "color": "#3B3A39"
+    },
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 28,
+      "color": "#1F5A8A"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#E1E4E8"
+              }
+            },
+            "radius": 6
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": false
+          }
+        ]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F5F6F8"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    }
+  }
+}

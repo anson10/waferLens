@@ -1,0 +1,177 @@
+table dim_excursion
+	lineageTag: 0daba8fe-b47d-4329-9007-0f3e73bb0409
+
+	column excursion_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 40e1d66b-f132-4ad5-88d5-fef21ba42779
+		summarizeBy: none
+		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column excursion_label
+		dataType: string
+		lineageTag: a348056e-e0af-4c60-ab50-44d16fc402c0
+		summarizeBy: none
+		sourceColumn: excursion_label
+		sortByColumn: excursion_id
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column excursion_type
+		dataType: string
+		lineageTag: d44b02f3-524c-4496-a099-675a4afb6988
+		summarizeBy: none
+		sourceColumn: excursion_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: 6a03aa8e-a710-4e28-9080-30f26e10a1bd
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	column chamber_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 0d7c2993-4be2-4874-b836-d7b1c5782d47
+		summarizeBy: sum
+		sourceColumn: chamber_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column chamber_label
+		dataType: string
+		lineageTag: 5969dfad-3341-4790-9337-99730b914941
+		summarizeBy: none
+		sourceColumn: chamber_label
+
+		annotation SummarizationSetBy = Automatic
+
+	column tool_id
+		dataType: string
+		lineageTag: fbc271c8-ad8b-49db-9ad5-7df24ead17a2
+		summarizeBy: none
+		sourceColumn: tool_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column recipe_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 21cd6d5c-2a7e-4e66-911c-e8ed3168b195
+		summarizeBy: sum
+		sourceColumn: recipe_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column recipe_label
+		dataType: string
+		lineageTag: eb52a6c6-8c02-40b2-a457-bb8fb75f1733
+		summarizeBy: none
+		sourceColumn: recipe_label
+
+		annotation SummarizationSetBy = Automatic
+
+	column parameter_name
+		dataType: string
+		lineageTag: d6320b2a-af9b-4ddd-8d01-837fd0e2bc60
+		summarizeBy: none
+		sourceColumn: parameter_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column spatial_pattern
+		dataType: string
+		lineageTag: 1fabe2a5-52db-411a-b3ee-72591a18e1be
+		summarizeBy: none
+		sourceColumn: spatial_pattern
+
+		annotation SummarizationSetBy = Automatic
+
+	column magnitude_sigma
+		dataType: double
+		lineageTag: 9b914d8c-2468-4f59-9d73-3b2a4ce7627b
+		summarizeBy: sum
+		sourceColumn: magnitude_sigma
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column abs_magnitude_sigma
+		dataType: double
+		lineageTag: 5c0e80a3-bc09-4e3c-9bba-1634dca459fd
+		summarizeBy: sum
+		sourceColumn: abs_magnitude_sigma
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column started_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 134f8d34-b29d-42e3-8d88-d099fbc1b79a
+		summarizeBy: none
+		sourceColumn: started_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column ended_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: f560f0b9-c1d0-497f-ad1a-b4d25c01999b
+		summarizeBy: none
+		sourceColumn: ended_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column start_date_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 338107a7-458d-4778-885a-34067ee78eb7
+		summarizeBy: sum
+		sourceColumn: start_date_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column duration_hours
+		dataType: double
+		lineageTag: 2a29520f-c900-48e9-8982-70cc01d64203
+		summarizeBy: sum
+		sourceColumn: duration_hours
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition dim_excursion = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_excursion"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

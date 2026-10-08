@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "WaferLens"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "777a777e-ac2d-40f4-b2f1-bc4129e9ce78"
+  }
+}

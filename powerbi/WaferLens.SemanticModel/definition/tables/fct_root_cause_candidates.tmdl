@@ -1,0 +1,168 @@
+table fct_root_cause_candidates
+	lineageTag: a5270127-90a2-435b-a84d-58c35e8bc70c
+
+	column candidate_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a26a076a-624f-4ed1-b9cc-96b66e781eab
+		summarizeBy: sum
+		sourceColumn: candidate_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column excursion_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d891c6f7-6331-49ea-adc4-3d1258559a92
+		summarizeBy: none
+		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column signal
+		dataType: string
+		lineageTag: ff2ffb4b-6786-4ad0-bcf5-76532a72cc5e
+		summarizeBy: none
+		sourceColumn: signal
+
+		annotation SummarizationSetBy = Automatic
+
+	column pattern
+		dataType: string
+		lineageTag: faf601cb-83d0-4592-a5d0-135b23f32a0e
+		summarizeBy: none
+		sourceColumn: pattern
+
+		annotation SummarizationSetBy = Automatic
+
+	column factor_type
+		dataType: string
+		lineageTag: 39c36932-87a8-4e1f-b356-36faa4d2baa8
+		summarizeBy: none
+		sourceColumn: factor_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column chamber_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 42b6ca6d-2bc1-4334-9e53-3353b6bb4e97
+		summarizeBy: none
+		sourceColumn: chamber_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column recipe_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3bd4e38c-eaa9-4dd1-87ec-0b5b18cbd867
+		summarizeBy: sum
+		sourceColumn: recipe_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column suspect
+		dataType: string
+		lineageTag: 98004695-80ae-4100-803c-6bd7358bd84b
+		summarizeBy: none
+		sourceColumn: suspect
+
+		annotation SummarizationSetBy = Automatic
+
+	column suspect_rank
+		dataType: int64
+		formatString: 0
+		lineageTag: 3a492daf-2708-4230-87b7-9ace21a99bf0
+		summarizeBy: none
+		sourceColumn: suspect_rank
+
+		annotation SummarizationSetBy = User
+
+	column lift
+		dataType: double
+		lineageTag: d50983cf-06aa-4825-808b-281d2c1ea5b1
+		summarizeBy: none
+		sourceColumn: lift
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column chi2
+		dataType: double
+		lineageTag: 1717db25-273e-4d16-941d-6eebf7829263
+		summarizeBy: none
+		sourceColumn: chi2
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column low_through
+		dataType: int64
+		formatString: 0
+		lineageTag: c985789d-7594-4507-9da6-aecf369f1404
+		summarizeBy: sum
+		sourceColumn: low_through
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_through
+		dataType: int64
+		formatString: 0
+		lineageTag: b93f39ed-bfb1-435f-9cae-f7827310368b
+		summarizeBy: sum
+		sourceColumn: n_through
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_low
+		dataType: int64
+		formatString: 0
+		lineageTag: 21e8c128-b425-4ca7-b61c-8149e7fe5f43
+		summarizeBy: sum
+		sourceColumn: n_low
+
+		annotation SummarizationSetBy = Automatic
+
+	column n_population
+		dataType: int64
+		formatString: 0
+		lineageTag: e47be58e-a2e2-42a6-8790-e73855ee08b5
+		summarizeBy: sum
+		sourceColumn: n_population
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_true_cause
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: c5afa899-177f-432b-a55a-45c5d62ae961
+		summarizeBy: none
+		sourceColumn: is_true_cause
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_root_cause_candidates = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_root_cause_candidates"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

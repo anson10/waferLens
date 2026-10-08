@@ -134,6 +134,16 @@ models:
         data_tests:
           - relationships:
               arguments: {to: ref('fct_wafer_yield'), field: wafer_id}
+      - name: lot_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_lot'), field: lot_id}
+      - name: product_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_product'), field: product_id}
       - name: bin_code
         data_tests:
           - relationships:

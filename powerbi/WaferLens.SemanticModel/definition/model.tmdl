@@ -1,0 +1,44 @@
+model Model
+	culture: en-IN
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-IN
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["fct_die_bins","fct_excursion_detection","fct_excursion_impact","fct_root_cause_candidates","fct_root_cause_eval","fct_spc_alarms","fct_wafer_pattern","fct_wafer_steps","fct_wafer_yield","dim_chamber","dim_date","dim_excursion","dim_lot","dim_parameter","dim_product","dim_recipe","dim_route_step","dim_sort_bin","dim_wafer","spc_charts","wafer_pattern_classes","_Measures"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table fct_die_bins
+ref table fct_excursion_detection
+ref table fct_excursion_impact
+ref table fct_root_cause_candidates
+ref table fct_root_cause_eval
+ref table fct_spc_alarms
+ref table fct_wafer_pattern
+ref table fct_wafer_steps
+ref table fct_wafer_yield
+ref table dim_chamber
+ref table dim_date
+ref table dim_excursion
+ref table dim_lot
+ref table dim_parameter
+ref table dim_product
+ref table dim_recipe
+ref table dim_route_step
+ref table dim_sort_bin
+ref table dim_wafer
+ref table spc_charts
+ref table wafer_pattern_classes
+ref table _Measures
+
+ref role 'Product MCU28'
+ref role 'Product PMIC65'
+ref role 'Product SENS130'
+
+ref cultureInfo en-IN
+

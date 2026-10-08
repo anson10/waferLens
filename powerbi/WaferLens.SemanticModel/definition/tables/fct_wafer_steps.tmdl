@@ -1,0 +1,149 @@
+table fct_wafer_steps
+	lineageTag: caae3186-88e7-4d68-801b-5d3ef01ab7c4
+
+	column wafer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: dcda1bd1-0fef-4135-91f4-77a784d96f42
+		summarizeBy: none
+		sourceColumn: wafer_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column route_step_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 68de1d98-afa6-4dbc-93e4-ffd3ee2e8740
+		summarizeBy: none
+		sourceColumn: route_step_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column pass_no
+		dataType: int64
+		formatString: 0
+		lineageTag: 15c29c77-9cca-4f46-a7f1-5d9ebf6a8755
+		summarizeBy: none
+		sourceColumn: pass_no
+
+		annotation SummarizationSetBy = User
+
+	column lot_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a1829ccb-7a78-44d2-9a9c-7cd96111dbb5
+		summarizeBy: sum
+		sourceColumn: lot_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column chamber_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1d3e5edb-e360-4e6f-9f3b-9909d1cf803d
+		summarizeBy: none
+		sourceColumn: chamber_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column recipe_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ee5e65ee-02af-4bb9-8692-73246f8c87a5
+		summarizeBy: none
+		sourceColumn: recipe_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d9d40f04-3a07-4884-8586-ad9ed19e68ac
+		summarizeBy: none
+		sourceColumn: date_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column track_in_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 5313ca57-390f-45d4-94c5-aece78c2f77b
+		summarizeBy: none
+		sourceColumn: track_in_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column track_out_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ce876dc9-7dc5-47e7-85e9-6c197c9faf48
+		summarizeBy: none
+		sourceColumn: track_out_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column queue_hours
+		dataType: double
+		lineageTag: b7239890-9c1d-4e6f-9747-39020a142ef9
+		summarizeBy: sum
+		sourceColumn: queue_hours
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column process_minutes
+		dataType: double
+		lineageTag: e67d404f-5bfe-4634-b638-bea3c113c1d7
+		summarizeBy: sum
+		sourceColumn: process_minutes
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_final_pass
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 75dc5da5-4a6b-4e16-b95a-de1a7d35c08f
+		summarizeBy: none
+		sourceColumn: is_final_pass
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_rework
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 5e8c7d70-5d19-430d-8734-d0ed3adfc137
+		summarizeBy: none
+		sourceColumn: is_rework
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_wafer_steps = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_wafer_steps"]}[Data]
+				in
+				  #"Navigation 1"
+

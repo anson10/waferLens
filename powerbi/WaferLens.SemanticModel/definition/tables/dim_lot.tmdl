@@ -1,0 +1,126 @@
+table dim_lot
+	lineageTag: 44e28f39-b7b6-4f4b-b75f-ab06cfe642ad
+
+	column lot_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8430794c-6295-428c-9aa8-5ed3400b6eac
+		summarizeBy: none
+		sourceColumn: lot_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column lot_code
+		dataType: string
+		lineageTag: f6766f9d-0dd1-44a1-a522-76459ec76bac
+		summarizeBy: none
+		sourceColumn: lot_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column parent_lot_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 53c86252-f1eb-40aa-8468-b5b801a3511a
+		summarizeBy: none
+		sourceColumn: parent_lot_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column root_lot_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 578ff29d-bf94-4d5f-af2e-b0616bfbb53b
+		summarizeBy: none
+		sourceColumn: root_lot_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column split_depth
+		dataType: int64
+		formatString: 0
+		lineageTag: 9314ac9a-0e74-415c-91cd-6238c230ef92
+		summarizeBy: none
+		sourceColumn: split_depth
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ac4e4b1b-cef7-4c6f-b27e-5eecf7e35be7
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column priority
+		dataType: int64
+		formatString: 0
+		lineageTag: c1d61dc6-1176-48af-966f-c6ccb3596309
+		summarizeBy: none
+		sourceColumn: priority
+
+		annotation SummarizationSetBy = Automatic
+
+	column started_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 00fad8df-30d7-4a19-a2c5-3dde2ece39fd
+		summarizeBy: none
+		sourceColumn: started_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column start_date_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c7f22023-b1e2-4246-9f3d-83c5b209f511
+		summarizeBy: none
+		sourceColumn: start_date_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column lot_status
+		dataType: string
+		lineageTag: ed23cc51-6e29-4265-aff0-d457311ccf59
+		summarizeBy: none
+		sourceColumn: lot_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column wafer_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 645a423d-9ae4-4e86-8245-dfbdd2520a54
+		summarizeBy: none
+		sourceColumn: wafer_count
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_lot = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_lot"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,10 @@
+/// Product engineer for MCU28: sees only MCU28 wafers, bins, patterns and alarms; excursions and root cause stay fab-wide
+role 'Product MCU28'
+	modelPermission: read
+
+	tablePermission dim_product = [product_code] = "MCU28"
+
+	tablePermission dim_wafer = [product_id] = LOOKUPVALUE ( dim_product[product_id], dim_product[product_code], "MCU28" )
+
+	annotation PBI_Id = a5a38ea60feb4a448665cb5f4dd2b2f4
+

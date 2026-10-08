@@ -1,0 +1,30 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "1ff0ce0cd7f9039f02b8",
+  "displayName": "Yield loss",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920,
+  "visualInteractions": [
+    {
+      "source": "34e75d14b4687b0c8cf3",
+      "target": "66cd57c7ac85ea67fba1",
+      "type": "DataFilter"
+    },
+    {
+      "source": "34e75d14b4687b0c8cf3",
+      "target": "eb446fd75ae6f7659858",
+      "type": "DataFilter"
+    },
+    {
+      "source": "eb446fd75ae6f7659858",
+      "target": "66cd57c7ac85ea67fba1",
+      "type": "DataFilter"
+    },
+    {
+      "source": "eb446fd75ae6f7659858",
+      "target": "34e75d14b4687b0c8cf3",
+      "type": "DataFilter"
+    }
+  ]
+}

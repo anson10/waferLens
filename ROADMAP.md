@@ -262,26 +262,27 @@ Wafer-map classification already lives in [FabEye](https://github.com/anson10/Fa
 ## Phase 7 — Power BI reporting (Windows side, ~1–1.5 weeks) — ADR-011
 
 Setup across WSL ↔ Windows:
-- [x] Postgres container port reachable from Windows (`localhost:5432`, `Test-NetConnection` OK); [ ] connect with Power BI Desktop's PostgreSQL connector
+- [x] Postgres container port reachable from Windows (`localhost:5432`, `Test-NetConnection` OK); [x] connect with Power BI Desktop's PostgreSQL connector
 - [x] Read-only DB role `powerbi_reader` limited to the marts schema (migration 0011, dbt grants, tested; `make powerbi-check`)
-- [ ] Enable PBIP / TMDL save format; project lives in `powerbi/` in the repo
+- [x] Enable PBIP / TMDL save format; project lives in `powerbi/` in the repo
 - [x] `.gitignore` for Power BI cache files (`.pbi/cache.abf`, `localSettings.json`, `*.pbix`)
 - [x] `dim_excursion` mart added, so the excursion-grain facts share one dimension
 - [x] ADR-011 "Power BI in Import mode on the dbt marts, saved as PBIP"
 
 Model:
-- [ ] Import dbt star schema (facts + dims), relationships single-direction, `dim_date` marked as date table
-- [ ] DAX measures: die-weighted yield, yield Δ WoW/MoM, dies lost, alarm rate, mean detection delay
-- [ ] Display folders + measure descriptions (reads like a real semantic model)
+- [x] Import dbt star schema (facts + dims), relationships single-direction, `dim_date` marked as date table
+- [x] DAX measures: die-weighted yield, yield Δ WoW/MoM, dies lost, alarm rate, mean detection delay
+- [x] Display folders + measure descriptions (reads like a real semantic model)
 
 Report pages:
-- [ ] Executive yield summary (KPIs, trend, by product/node)
-- [ ] Yield Pareto (loss by bin / pattern / product)
-- [ ] Commonality / root cause (chamber ranking, drillthrough)
-- [ ] Excursion report (impact, detection delay, cost)
-- [ ] Drillthrough lot → wafer → route history
-- [ ] Bookmarks / tooltips pages
-- [ ] Row-level security role (e.g. per product line)
+- [x] Executive yield summary (KPIs, trend, by product/node)
+- [x] Yield Pareto (loss by bin / pattern / product)
+- [x] Commonality / root cause (chamber ranking, drillthrough)
+- [x] Excursion report (impact, detection delay, cost)
+- [x] Process control (alarms by tool type and chart family, alarm density per chamber, FabEye review load)
+- [x] Drillthrough to wafer → route history, bins, FabEye pattern
+- [x] Tooltip page (chamber, excursion-window aware); [ ] bookmarks
+- [x] Row-level security roles per product line
 
 Delivery:
 - [ ] Screenshots + 1–2 min video walkthrough

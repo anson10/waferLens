@@ -1,0 +1,50 @@
+table dim_parameter
+	lineageTag: bd11c8d8-9b8b-4601-abf9-f977c8f6d624
+
+	column parameter_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 061dff4c-40e8-4eaa-842d-cb7c4475c8bf
+		summarizeBy: none
+		sourceColumn: parameter_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column parameter_name
+		dataType: string
+		lineageTag: 13494c83-1dac-4f57-b627-edb6b5e98ded
+		summarizeBy: none
+		sourceColumn: parameter_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit
+		dataType: string
+		lineageTag: 868ee5fa-3372-4fde-98a0-ed8db8a5de2b
+		summarizeBy: none
+		sourceColumn: unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column parameter_kind
+		dataType: string
+		lineageTag: 74734a65-61b2-4950-8d4e-ae06cd63cebe
+		summarizeBy: none
+		sourceColumn: parameter_kind
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_parameter = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_parameter"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

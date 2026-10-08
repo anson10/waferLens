@@ -1,0 +1,100 @@
+table dim_product
+	lineageTag: 034bdca1-950b-4b85-9e8b-6ce847b99cb8
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c9c78600-880d-4784-b4c6-4b228b54ab35
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_code
+		dataType: string
+		lineageTag: f1a131dc-39b1-48e3-9cb4-97673ed04a00
+		summarizeBy: none
+		sourceColumn: product_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column node_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: fd1d3868-3cf4-4f59-9474-010d11284483
+		summarizeBy: sum
+		sourceColumn: node_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column node_name
+		dataType: string
+		lineageTag: f63f8602-e66d-410a-84a1-81b5d7acf21f
+		summarizeBy: none
+		sourceColumn: node_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column feature_size_nm
+		dataType: int64
+		formatString: 0
+		lineageTag: 5008d30e-fd5f-444f-b898-5a61a2ba28db
+		summarizeBy: sum
+		sourceColumn: feature_size_nm
+
+		annotation SummarizationSetBy = Automatic
+
+	column die_area_cm2
+		dataType: double
+		lineageTag: 270c94e3-9145-4562-a7d1-616c41ba6981
+		summarizeBy: sum
+		sourceColumn: die_area_cm2
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column map_rows
+		dataType: int64
+		formatString: 0
+		lineageTag: c2165442-5833-4eab-aba9-2d4753268366
+		summarizeBy: sum
+		sourceColumn: map_rows
+
+		annotation SummarizationSetBy = Automatic
+
+	column map_cols
+		dataType: int64
+		formatString: 0
+		lineageTag: cafbaf31-aea4-4f79-982f-5bc9d300f8fa
+		summarizeBy: sum
+		sourceColumn: map_cols
+
+		annotation SummarizationSetBy = Automatic
+
+	column gross_dies
+		dataType: int64
+		formatString: 0
+		lineageTag: 971a0f4d-f919-4655-b136-c76cadc8cc80
+		summarizeBy: sum
+		sourceColumn: gross_dies
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_product = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_product"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

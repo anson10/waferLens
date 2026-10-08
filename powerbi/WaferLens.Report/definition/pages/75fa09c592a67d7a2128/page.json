@@ -1,0 +1,14 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "75fa09c592a67d7a2128",
+  "displayName": "Chamber tooltip",
+  "displayOption": "FitToPage",
+  "height": 360,
+  "width": 480,
+  "visibility": "HiddenInViewMode",
+  "pageBinding": {
+    "name": "cc506b39795b522c1bd5",
+    "type": "Tooltip",
+    "parameters": []
+  }
+}

@@ -1,0 +1,93 @@
+table fct_die_bins
+	lineageTag: cdbf45f9-4098-4415-973d-6f1003342f46
+
+	column wafer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7fd4bffe-8b8b-4005-bafd-aa8949cb51d7
+		summarizeBy: none
+		sourceColumn: wafer_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column bin_code
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 730ed26e-c70e-4d1b-b8d8-6ac341852c51
+		summarizeBy: none
+		sourceColumn: bin_code
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column tested_date_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1febc450-900e-41d3-bb6f-b534d397b66d
+		summarizeBy: none
+		sourceColumn: tested_date_key
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column die_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 8b6b04c6-6da8-468c-83bc-12d665b7475b
+		summarizeBy: sum
+		sourceColumn: die_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column share_of_wafer
+		dataType: double
+		lineageTag: 28444e8d-c193-44d6-b7d2-6949052039a3
+		summarizeBy: sum
+		sourceColumn: share_of_wafer
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column lot_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 045e55ea-cb89-431a-9efe-2be99c7bb032
+		summarizeBy: sum
+		sourceColumn: lot_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 479583d3-9aa3-4abd-b215-c8b1c501e812
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_die_bins = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_die_bins"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,135 @@
+table fct_root_cause_eval
+	lineageTag: 93dbfa7d-a1d7-448b-b9a2-0f0b68600e89
+
+	column excursion_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b70cb25d-17fe-4dfb-a818-a25a396f5e84
+		summarizeBy: none
+		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column excursion_type
+		dataType: string
+		lineageTag: e705ec4c-4688-4b8c-8516-ce113ddd365d
+		summarizeBy: none
+		sourceColumn: excursion_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column abs_magnitude_sigma
+		dataType: double
+		lineageTag: eb7e1e3f-d7b1-4c8e-9c68-db8512100fea
+		summarizeBy: sum
+		sourceColumn: abs_magnitude_sigma
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column spatial_pattern
+		dataType: string
+		lineageTag: 018a4119-ca2b-41e0-80d0-6611f82de138
+		summarizeBy: none
+		sourceColumn: spatial_pattern
+
+		annotation SummarizationSetBy = Automatic
+
+	column true_rank
+		dataType: int64
+		formatString: 0
+		lineageTag: f495a8c6-2b28-41e1-afd6-9047e2cdb106
+		summarizeBy: sum
+		sourceColumn: true_rank
+
+		annotation SummarizationSetBy = Automatic
+
+	column candidates
+		dataType: int64
+		formatString: 0
+		lineageTag: 3a69e7c9-6b6d-4908-81c1-8dee1d9e9941
+		summarizeBy: sum
+		sourceColumn: candidates
+
+		annotation SummarizationSetBy = Automatic
+
+	column top1
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 3f58270c-c7d0-4a43-a4f6-c63ec1e01bd5
+		summarizeBy: none
+		sourceColumn: top1
+
+		annotation SummarizationSetBy = Automatic
+
+	column top3
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2951a55a-e23f-4387-8aaa-f7d5c60cd330
+		summarizeBy: none
+		sourceColumn: top3
+
+		annotation SummarizationSetBy = Automatic
+
+	column pattern_true_rank
+		dataType: int64
+		formatString: 0
+		lineageTag: 4b1e1738-8bca-448b-acfe-e9453feaa007
+		summarizeBy: sum
+		sourceColumn: pattern_true_rank
+
+		annotation SummarizationSetBy = Automatic
+
+	column affected_wafers
+		dataType: int64
+		formatString: 0
+		lineageTag: aa502cf5-5ae0-4f4f-9423-f201db7c66dc
+		summarizeBy: sum
+		sourceColumn: affected_wafers
+
+		annotation SummarizationSetBy = Automatic
+
+	column yield_delta_pct
+		dataType: double
+		lineageTag: 7fce8dac-c225-4ca5-b3b4-b32b45fab6f9
+		summarizeBy: sum
+		sourceColumn: yield_delta_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column dies_lost
+		dataType: double
+		lineageTag: 7ae4515b-35c8-499d-a1e2-9bcb9491bfc3
+		summarizeBy: sum
+		sourceColumn: dies_lost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cost_yield
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 56002adb-45e1-4b9a-b753-5746a54f4516
+		summarizeBy: none
+		sourceColumn: cost_yield
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_root_cause_eval = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_root_cause_eval"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

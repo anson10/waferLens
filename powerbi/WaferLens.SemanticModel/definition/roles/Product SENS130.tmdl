@@ -1,0 +1,10 @@
+/// Product engineer for SENS130: sees only SENS130 wafers, bins, patterns and alarms; excursions and root cause stay fab-wide
+role 'Product SENS130'
+	modelPermission: read
+
+	tablePermission dim_product = [product_code] = "SENS130"
+
+	tablePermission dim_wafer = [product_id] = LOOKUPVALUE ( dim_product[product_id], dim_product[product_code], "SENS130" )
+
+	annotation PBI_Id = ee0ee1e219f0437db87efffa49fb3853
+
