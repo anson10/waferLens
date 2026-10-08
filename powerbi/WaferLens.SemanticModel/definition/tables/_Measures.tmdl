@@ -42,6 +42,64 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
+	///  Dies that failed wafer sort (all failing bins)
+	measure 'Failed Dies' =
+			
+			CALCULATE (
+			    SUM ( fct_die_bins[die_count] ),
+			    dim_sort_bin[is_pass] = FALSE ()
+			)
+		formatString: #,0
+		displayFolder: Loss
+		lineageTag: 337d7ca5-f162-4ebd-83cf-a1afc14c29f5
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// This bin's share of all failed dies.
+	measure 'Loss Share %' =
+			
+			DIVIDE (
+			    [Failed Dies],
+			    CALCULATE ( [Failed Dies], REMOVEFILTERS ( dim_sort_bin ) )
+			)
+		formatString: 0.0%
+		displayFolder: Loss
+		lineageTag: dcd7e8ce-6d85-408f-82ca-bb79c9042394
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Number of SPC alarms raised, at chamber and tool scope
+	measure 'SPC Alarms' = COUNTROWS ( fct_spc_alarms )
+		formatString: #,0
+		displayFolder: Process Control
+		lineageTag: d2e4e2f3-0f77-4b35-82e1-c280f2cc733f
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// SPC alarms raised on chamber-level charts only
+	measure 'Chamber Alarms' = CALCULATE ( [SPC Alarms], fct_spc_alarms[scope] = "chamber" )
+		formatString: #,0
+		displayFolder: Process Control
+		lineageTag: bde919cb-6209-4c9e-ad5b-7fdf0887dce7
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Average hours until the EWMA chart caught an excursion (chamber scope, detected, after the baseline)
+	measure 'Mean Detection Delay (h)' =
+			
+			CALCULATE (
+			    AVERAGE ( fct_excursion_detection[delay_hours] ),
+			    fct_excursion_detection[chart] = "ewma",
+			    fct_excursion_detection[scope] = "chamber",
+			    fct_excursion_detection[detected] = TRUE (),
+			    fct_excursion_detection[started_in_baseline] = FALSE ()
+			)
+		formatString: 0.0
+		displayFolder: Process Control
+		lineageTag: 87775988-4a0f-4513-96a2-a56ba456a620
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column Column1
 		dataType: string
 		isHidden
