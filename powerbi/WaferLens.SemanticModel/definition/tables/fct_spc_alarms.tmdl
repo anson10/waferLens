@@ -3,18 +3,24 @@ table fct_spc_alarms
 
 	column alarm_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: a8aa5f4b-2c60-4e85-942d-60f01945ea72
 		summarizeBy: sum
 		sourceColumn: alarm_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column chart
 		dataType: string
+		isHidden
 		lineageTag: e5f50437-1d8d-4546-a2c1-40f34663456b
 		summarizeBy: none
 		sourceColumn: chart
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -24,6 +30,8 @@ table fct_spc_alarms
 		summarizeBy: none
 		sourceColumn: chart_name
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column chart_family
@@ -31,6 +39,8 @@ table fct_spc_alarms
 		lineageTag: 6194b7cb-ef86-4d4f-a6f5-5b4fb7e09db6
 		summarizeBy: none
 		sourceColumn: chart_family
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -40,6 +50,8 @@ table fct_spc_alarms
 		summarizeBy: none
 		sourceColumn: source
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column scope
@@ -48,14 +60,19 @@ table fct_spc_alarms
 		summarizeBy: none
 		sourceColumn: scope
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column limit_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 9054eb1f-4fdf-4e73-b748-de70eb8a009e
 		summarizeBy: sum
 		sourceColumn: limit_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -66,49 +83,66 @@ table fct_spc_alarms
 		summarizeBy: sum
 		sourceColumn: limit_version
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column tool_id
 		dataType: string
+		isHidden
 		lineageTag: 863cea31-265d-4da5-95ad-756eafd63827
 		summarizeBy: none
 		sourceColumn: tool_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
 	column chamber_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 2c04c50d-8eef-4817-9e2b-d43b86e74b70
 		summarizeBy: none
 		sourceColumn: chamber_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column parameter_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: b24a342b-8b81-4c42-9b60-6290971d6873
 		summarizeBy: none
 		sourceColumn: parameter_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column route_step_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 041ec4f5-4064-402c-9597-e8dbb1e1c381
 		summarizeBy: sum
 		sourceColumn: route_step_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column wafer_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 0a91d196-0799-4860-ba04-9a6ba3f68e15
 		summarizeBy: sum
 		sourceColumn: wafer_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -119,23 +153,31 @@ table fct_spc_alarms
 		summarizeBy: sum
 		sourceColumn: pass_no
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column lot_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: c0217a19-3044-4a7a-a795-ec289756b797
 		summarizeBy: sum
 		sourceColumn: lot_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column product_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: e67fd5b0-20cf-4314-bb4f-e411d1828fa2
 		summarizeBy: none
 		sourceColumn: product_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -146,14 +188,19 @@ table fct_spc_alarms
 		summarizeBy: none
 		sourceColumn: measured_at
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column date_key
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: ba934c57-1905-4250-a655-30da5e35b3b7
 		summarizeBy: none
 		sourceColumn: date_key
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -162,6 +209,8 @@ table fct_spc_alarms
 		lineageTag: df292557-8496-40c7-b7e3-eb07484c20f3
 		summarizeBy: sum
 		sourceColumn: statistic
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -173,6 +222,8 @@ table fct_spc_alarms
 		summarizeBy: none
 		sourceColumn: direction
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column baseline_end_at
@@ -181,6 +232,8 @@ table fct_spc_alarms
 		lineageTag: e39372a2-3dfe-41a7-a01a-b690b5c439a5
 		summarizeBy: none
 		sourceColumn: baseline_end_at
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -194,6 +247,8 @@ table fct_spc_alarms
 				  #"Navigation 1"
 
 	changedProperty = Name
+
+	changedProperty = IsHidden
 
 	annotation PBI_ResultType = Table
 

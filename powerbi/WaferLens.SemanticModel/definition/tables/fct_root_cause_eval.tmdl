@@ -3,10 +3,13 @@ table fct_root_cause_eval
 
 	column excursion_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: b70cb25d-17fe-4dfb-a818-a25a396f5e84
 		summarizeBy: none
 		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

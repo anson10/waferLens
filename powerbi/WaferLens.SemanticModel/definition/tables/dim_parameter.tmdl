@@ -3,10 +3,13 @@ table dim_parameter
 
 	column parameter_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 061dff4c-40e8-4eaa-842d-cb7c4475c8bf
 		summarizeBy: none
 		sourceColumn: parameter_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

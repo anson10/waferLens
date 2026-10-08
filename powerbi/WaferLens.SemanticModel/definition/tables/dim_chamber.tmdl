@@ -3,10 +3,13 @@ table dim_chamber
 
 	column chamber_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: ede46637-1fdd-4f4c-9a95-72094d5a63f0
 		summarizeBy: none
 		sourceColumn: chamber_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

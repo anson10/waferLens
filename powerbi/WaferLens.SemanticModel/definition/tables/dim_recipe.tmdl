@@ -3,19 +3,25 @@ table dim_recipe
 
 	column recipe_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: e496437e-e14f-4a73-8b0f-41ad1f609d6b
 		summarizeBy: none
 		sourceColumn: recipe_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column route_step_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 2e6770ee-ef03-48c6-af1a-d51354879b0b
 		summarizeBy: none
 		sourceColumn: route_step_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

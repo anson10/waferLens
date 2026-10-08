@@ -3,10 +3,13 @@ table dim_product
 
 	column product_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: c9c78600-880d-4784-b4c6-4b228b54ab35
 		summarizeBy: none
 		sourceColumn: product_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -20,10 +23,13 @@ table dim_product
 
 	column node_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: fd1d3868-3cf4-4f59-9474-010d11284483
 		summarizeBy: sum
 		sourceColumn: node_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

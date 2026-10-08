@@ -3,19 +3,25 @@ table fct_root_cause_candidates
 
 	column candidate_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: a26a076a-624f-4ed1-b9cc-96b66e781eab
 		summarizeBy: sum
 		sourceColumn: candidate_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column excursion_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: d891c6f7-6331-49ea-adc4-3d1258559a92
 		summarizeBy: none
 		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -45,19 +51,25 @@ table fct_root_cause_candidates
 
 	column chamber_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 42b6ca6d-2bc1-4334-9e53-3353b6bb4e97
 		summarizeBy: none
 		sourceColumn: chamber_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column recipe_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 3bd4e38c-eaa9-4dd1-87ec-0b5b18cbd867
 		summarizeBy: sum
 		sourceColumn: recipe_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

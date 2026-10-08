@@ -3,10 +3,13 @@ table dim_lot
 
 	column lot_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 8430794c-6295-428c-9aa8-5ed3400b6eac
 		summarizeBy: none
 		sourceColumn: lot_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -20,19 +23,25 @@ table dim_lot
 
 	column parent_lot_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 53c86252-f1eb-40aa-8468-b5b801a3511a
 		summarizeBy: none
 		sourceColumn: parent_lot_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column root_lot_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 578ff29d-bf94-4d5f-af2e-b0616bfbb53b
 		summarizeBy: none
 		sourceColumn: root_lot_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -47,10 +56,13 @@ table dim_lot
 
 	column product_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: ac4e4b1b-cef7-4c6f-b27e-5eecf7e35be7
 		summarizeBy: none
 		sourceColumn: product_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -74,10 +86,13 @@ table dim_lot
 
 	column start_date_key
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: c7f22023-b1e2-4246-9f3d-83c5b209f511
 		summarizeBy: none
 		sourceColumn: start_date_key
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

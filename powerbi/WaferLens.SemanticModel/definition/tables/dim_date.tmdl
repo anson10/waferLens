@@ -1,17 +1,22 @@
 table dim_date
 	lineageTag: 52565d95-db2d-47e3-90fe-eda7d7ff47f4
+	dataCategory: Time
 
 	column date_key
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 80c67a2c-6347-4dd1-893a-8379703fd56f
 		summarizeBy: none
 		sourceColumn: date_key
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column calendar_date
 		dataType: dateTime
+		isKey
 		formatString: Long Date
 		lineageTag: 53ec8c6c-84d5-46b5-bc93-c0fb8a2ef8b9
 		summarizeBy: none
@@ -53,6 +58,9 @@ table dim_date
 		lineageTag: eaa767ff-dbcb-4315-a1e2-a9353a20649d
 		summarizeBy: none
 		sourceColumn: month_name
+		sortByColumn: month
+
+		changedProperty = SortByColumn
 
 		annotation SummarizationSetBy = Automatic
 

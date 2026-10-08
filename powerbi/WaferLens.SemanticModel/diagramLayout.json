@@ -4,8 +4,8 @@
     {
       "ordinal": 0,
       "scrollPosition": {
-        "x": 0,
-        "y": 0
+        "x": 3065.1429966517858,
+        "y": 656.426631506019
       },
       "nodes": [
         {
@@ -18,7 +18,7 @@
             "height": 200,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 1
         },
         {
           "location": {
@@ -30,7 +30,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 20
         },
         {
           "location": {
@@ -42,7 +42,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 2
         },
         {
           "location": {
@@ -54,7 +54,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 3
         },
         {
           "location": {
@@ -66,7 +66,7 @@
             "height": 176,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 4
         },
         {
           "location": {
@@ -78,7 +78,7 @@
             "height": 296,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 5
         },
         {
           "location": {
@@ -90,7 +90,7 @@
             "height": 248,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 6
         },
         {
           "location": {
@@ -102,7 +102,7 @@
             "height": 272,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 7
         },
         {
           "location": {
@@ -114,7 +114,7 @@
             "height": 152,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 8
         },
         {
           "location": {
@@ -126,7 +126,7 @@
             "height": 224,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 9
         },
         {
           "location": {
@@ -138,7 +138,7 @@
             "height": 200,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 10
         },
         {
           "location": {
@@ -150,7 +150,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 11
         },
         {
           "location": {
@@ -162,7 +162,7 @@
             "height": 296,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 12
         },
         {
           "location": {
@@ -174,7 +174,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 13
         },
         {
           "location": {
@@ -186,7 +186,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 14
         },
         {
           "location": {
@@ -198,7 +198,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 15
         },
         {
           "location": {
@@ -210,7 +210,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 16
         },
         {
           "location": {
@@ -222,7 +222,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 17
         },
         {
           "location": {
@@ -234,7 +234,7 @@
             "height": 300,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 21
         },
         {
           "location": {
@@ -246,7 +246,7 @@
             "height": 176,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 18
         },
         {
           "location": {
@@ -258,11 +258,11 @@
             "height": 152,
             "width": 234
           },
-          "zIndex": 0
+          "zIndex": 19
         }
       ],
       "name": "All tables",
-      "zoomValue": 17.985878990921382,
+      "zoomValue": 140,
       "pinKeyFieldsToTop": false,
       "showExtraHeaderInfo": false,
       "hideKeyFieldsWhenCollapsed": false,

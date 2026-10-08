@@ -3,19 +3,25 @@ table fct_wafer_steps
 
 	column wafer_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: dcda1bd1-0fef-4135-91f4-77a784d96f42
 		summarizeBy: none
 		sourceColumn: wafer_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column route_step_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 68de1d98-afa6-4dbc-93e4-ffd3ee2e8740
 		summarizeBy: none
 		sourceColumn: route_step_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -30,37 +36,49 @@ table fct_wafer_steps
 
 	column lot_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: a1829ccb-7a78-44d2-9a9c-7cd96111dbb5
 		summarizeBy: sum
 		sourceColumn: lot_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column chamber_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 1d3e5edb-e360-4e6f-9f3b-9909d1cf803d
 		summarizeBy: none
 		sourceColumn: chamber_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column recipe_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: ee5e65ee-02af-4bb9-8692-73246f8c87a5
 		summarizeBy: none
 		sourceColumn: recipe_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column date_key
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: d9d40f04-3a07-4884-8586-ad9ed19e68ac
 		summarizeBy: none
 		sourceColumn: date_key
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

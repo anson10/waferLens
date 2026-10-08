@@ -3,28 +3,37 @@ table fct_wafer_yield
 
 	column wafer_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 6083f6e6-f51b-4a0b-86d3-08cbe27be4e3
 		summarizeBy: none
 		sourceColumn: wafer_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column lot_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 651aff37-d5d0-474e-a673-7af8c0a57e78
 		summarizeBy: none
 		sourceColumn: lot_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column product_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: af1cb61d-c88e-4ccd-addd-ff6cdb7bc3c3
 		summarizeBy: none
 		sourceColumn: product_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -35,14 +44,19 @@ table fct_wafer_yield
 		summarizeBy: none
 		sourceColumn: tested_at
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column tested_date_key
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 37acf935-20f1-4e99-a394-0deae01ad7f3
 		summarizeBy: none
 		sourceColumn: tested_date_key
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -53,6 +67,8 @@ table fct_wafer_yield
 		summarizeBy: none
 		sourceColumn: started_at
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column finished_at
@@ -62,6 +78,8 @@ table fct_wafer_yield
 		summarizeBy: none
 		sourceColumn: finished_at
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column cycle_time_days
@@ -69,6 +87,8 @@ table fct_wafer_yield
 		lineageTag: 717c75de-571a-48fa-8c43-542706dc036d
 		summarizeBy: sum
 		sourceColumn: cycle_time_days
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -81,6 +101,8 @@ table fct_wafer_yield
 		summarizeBy: sum
 		sourceColumn: tested_dies
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column good_dies
@@ -89,6 +111,8 @@ table fct_wafer_yield
 		lineageTag: 9cdb55d2-9a71-4c38-b709-c3ceb161159b
 		summarizeBy: sum
 		sourceColumn: good_dies
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -99,6 +123,8 @@ table fct_wafer_yield
 		summarizeBy: sum
 		sourceColumn: failed_dies
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column yield_pct
@@ -106,6 +132,8 @@ table fct_wafer_yield
 		lineageTag: 9aaa2454-d46b-48e9-893b-fcb1861d742c
 		summarizeBy: sum
 		sourceColumn: yield_pct
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -121,6 +149,8 @@ table fct_wafer_yield
 				  #"Navigation 1"
 
 	changedProperty = Name
+
+	changedProperty = IsHidden
 
 	annotation PBI_ResultType = Table
 

@@ -3,10 +3,13 @@ table dim_wafer
 
 	column wafer_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 8cbd9ec4-ec99-40e2-8742-d7518274138a
 		summarizeBy: none
 		sourceColumn: wafer_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -20,19 +23,25 @@ table dim_wafer
 
 	column lot_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 941df0de-f2c0-4446-8325-aa48e10e5931
 		summarizeBy: sum
 		sourceColumn: lot_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column product_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: c0a2e076-60b2-44a3-a815-c854b750c710
 		summarizeBy: sum
 		sourceColumn: product_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

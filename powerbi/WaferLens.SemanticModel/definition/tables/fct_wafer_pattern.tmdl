@@ -3,28 +3,37 @@ table fct_wafer_pattern
 
 	column wafer_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 95136175-97aa-4ae3-b0f9-3d877158e092
 		summarizeBy: none
 		sourceColumn: wafer_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column lot_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: d92abc97-52fe-4927-b3e1-089665236a8f
 		summarizeBy: sum
 		sourceColumn: lot_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column product_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 2051f0f9-0755-4054-a91d-66a88c890ff1
 		summarizeBy: none
 		sourceColumn: product_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -39,18 +48,24 @@ table fct_wafer_pattern
 
 	column tested_date_key
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 24a369c9-82d6-4bad-a9bb-ef4b41c95210
 		summarizeBy: none
 		sourceColumn: tested_date_key
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column predicted_pattern
 		dataType: string
+		isHidden
 		lineageTag: cf57db8f-f74e-478a-8fcd-f9c656c7b9be
 		summarizeBy: none
 		sourceColumn: predicted_pattern
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -101,18 +116,24 @@ table fct_wafer_pattern
 
 	column true_pattern
 		dataType: string
+		isHidden
 		lineageTag: 4c238e41-b37c-4627-bc69-12d481499cc2
 		summarizeBy: none
 		sourceColumn: true_pattern
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
 	column excursion_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 9f6d410a-88a5-4d8f-9f02-3ef26b40da47
 		summarizeBy: sum
 		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

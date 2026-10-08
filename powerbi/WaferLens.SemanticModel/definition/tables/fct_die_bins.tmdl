@@ -3,28 +3,37 @@ table fct_die_bins
 
 	column wafer_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 7fd4bffe-8b8b-4005-bafd-aa8949cb51d7
 		summarizeBy: none
 		sourceColumn: wafer_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column bin_code
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 730ed26e-c70e-4d1b-b8d8-6ac341852c51
 		summarizeBy: none
 		sourceColumn: bin_code
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column tested_date_key
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 1febc450-900e-41d3-bb6f-b534d397b66d
 		summarizeBy: none
 		sourceColumn: tested_date_key
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

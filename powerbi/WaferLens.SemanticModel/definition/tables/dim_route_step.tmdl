@@ -3,28 +3,37 @@ table dim_route_step
 
 	column route_step_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 648511bc-ffd0-4bee-a6f8-13d6cffd3574
 		summarizeBy: none
 		sourceColumn: route_step_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column route_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 6d34899f-8c66-453e-87a0-9f3baf488388
 		summarizeBy: none
 		sourceColumn: route_id
 
+		changedProperty = IsHidden
+
 		annotation SummarizationSetBy = Automatic
 
 	column product_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: b0515833-9e18-4c84-96d2-418ff3f3efd1
 		summarizeBy: none
 		sourceColumn: product_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

@@ -3,10 +3,13 @@ table fct_excursion_detection
 
 	column excursion_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 198daa5f-bba4-4eca-8f3d-84173b86305b
 		summarizeBy: none
 		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

@@ -3,10 +3,13 @@ table dim_excursion
 
 	column excursion_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 40e1d66b-f132-4ad5-88d5-fef21ba42779
 		summarizeBy: none
 		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -36,10 +39,13 @@ table dim_excursion
 
 	column chamber_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 0d7c2993-4be2-4874-b836-d7b1c5782d47
 		summarizeBy: sum
 		sourceColumn: chamber_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -61,10 +67,13 @@ table dim_excursion
 
 	column recipe_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 21cd6d5c-2a7e-4e66-911c-e8ed3168b195
 		summarizeBy: sum
 		sourceColumn: recipe_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
@@ -132,10 +141,13 @@ table dim_excursion
 
 	column start_date_key
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 338107a7-458d-4778-885a-34067ee78eb7
 		summarizeBy: sum
 		sourceColumn: start_date_key
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 

@@ -3,10 +3,13 @@ table fct_excursion_impact
 
 	column excursion_id
 		dataType: int64
+		isHidden
 		formatString: 0
 		lineageTag: 99e76e4e-b14d-452b-b6b8-b661bd9c6817
 		summarizeBy: none
 		sourceColumn: excursion_id
+
+		changedProperty = IsHidden
 
 		annotation SummarizationSetBy = Automatic
 
