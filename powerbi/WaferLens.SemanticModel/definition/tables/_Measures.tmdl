@@ -1,0 +1,66 @@
+table _Measures
+	lineageTag: 6524a9f4-1631-4a16-85b6-81a73c435c94
+
+	/// Number of wafers that reached wafer sort
+	measure 'Wafers Sorted' = COUNTROWS ( fct_wafer_yield )
+		formatString: #,0
+		displayFolder: Yield
+		lineageTag: 71fbd49b-3f85-43f1-80d8-c585abe3330e
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Dies tested at wafer sort
+	/// 
+	measure 'Tested Dies' = SUM ( fct_wafer_yield[tested_dies] )
+		formatString: #,0
+		displayFolder: Yield
+		lineageTag: 5e972c77-caf1-40ce-84ef-6d47bb8fd380
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	///  Dies that passed wafer sort
+	measure 'Good Dies' = SUM ( fct_wafer_yield[good_dies] )
+		formatString: #,0
+		displayFolder: Yield
+		lineageTag: f485f9c9-f15a-49c9-a717-1bde48346736
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	///  Good dies ÷ tested dies: die-weighted yield, the number a fab reports
+	measure 'Die Yield %' = DIVIDE ( [Good Dies], [Tested Dies] )
+		formatString: 0.00%
+		displayFolder: Yield
+		lineageTag: 6c1816a1-3eed-47b6-a6d2-7d1e8a991dfb
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Average of each wafer's yield; weights every wafer equally, whatever its die count
+	/// 
+	measure 'Avg Wafer Yield %' = AVERAGE ( fct_wafer_yield[yield_pct] ) / 100
+		formatString: 0.00%
+		displayFolder: Yield
+		lineageTag: 37b0a8d5-de39-4ea1-af34-8349a68df432
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	column Column1
+		dataType: string
+		isHidden
+		lineageTag: b54a5304-da85-41ea-a39f-d874a2d67af8
+		summarizeBy: none
+		sourceColumn: Column1
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t])
+				in
+				  Source
+
+	annotation PBI_ResultType = Table
+

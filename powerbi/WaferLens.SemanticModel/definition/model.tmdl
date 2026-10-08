@@ -9,7 +9,7 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
-annotation PBI_QueryOrder = ["fct_die_bins","fct_excursion_detection","fct_excursion_impact","fct_root_cause_candidates","fct_root_cause_eval","fct_spc_alarms","fct_wafer_pattern","fct_wafer_steps","fct_wafer_yield","dim_chamber","dim_date","dim_excursion","dim_lot","dim_parameter","dim_product","dim_recipe","dim_route_step","dim_sort_bin","dim_wafer","spc_charts","wafer_pattern_classes"]
+annotation PBI_QueryOrder = ["fct_die_bins","fct_excursion_detection","fct_excursion_impact","fct_root_cause_candidates","fct_root_cause_eval","fct_spc_alarms","fct_wafer_pattern","fct_wafer_steps","fct_wafer_yield","dim_chamber","dim_date","dim_excursion","dim_lot","dim_parameter","dim_product","dim_recipe","dim_route_step","dim_sort_bin","dim_wafer","spc_charts","wafer_pattern_classes","_Measures"]
 
 annotation PBI_ProTooling = ["DevMode"]
 
@@ -34,6 +34,7 @@ ref table dim_sort_bin
 ref table dim_wafer
 ref table spc_charts
 ref table wafer_pattern_classes
+ref table _Measures
 
 ref cultureInfo en-IN
 
