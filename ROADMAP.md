@@ -297,12 +297,12 @@ Delivery:
 
 - [x] README: pitch → architecture diagram → results tables (ARL, root-cause accuracy, F1, PR-AUC, latency) → screenshots → quickstart
 - [x] "Excursion story" demo (`make story` → `docs/excursion_story.md`): a drift (alarm → commonality → spared wafers → cost), a spatial pattern SPC can't see (FabEye → pattern alarm → pattern-led commonality), and commonality's miss
-- [ ] 2–3 min demo video (link at top of README)
-- [ ] Technical write-up (blog / LinkedIn article): what worked, what didn't, numbers
+- ~~2–3 min demo video~~: out of scope for v2.0.0; the screenshots and `make story` carry the demo
+- [ ] Technical write-up (blog post on the personal website): what worked, what didn't, numbers. After the release
 - [x] Short German summary section in README (*Kurzbeschreibung*)
 - [x] All ADRs complete; `docs/` index
-- [ ] Final CV bullets + LinkedIn project entry
-- [ ] Repo hygiene: no crib files, no scratch scripts, clean commit history, pinned versions, tagged `v2.0.0` release
+- [x] Final CV bullets + project page on the personal website (no LinkedIn)
+- [x] Repo hygiene: no crib files, no scratch scripts, clean commit history, pinned versions, tagged `v2.0.0` release
 
 ---
 

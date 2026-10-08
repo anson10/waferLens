@@ -10,8 +10,7 @@ against that ground truth, commonality analysis, Grafana for live monitoring and
 yield reporting. Wafer-map pattern classification comes from its sister project,
 [FabEye](https://github.com/anson10/FabEye).
 
-**Status:** v2. Phases 1–7 of [ROADMAP.md](ROADMAP.md) are done; phase 8 (launch) is in
-progress. The original v1, a
+**Status:** v2.0.0, complete: all eight phases of [ROADMAP.md](ROADMAP.md). The original v1, a
 500-wafer Streamlit demo, is preserved on the
 [`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
