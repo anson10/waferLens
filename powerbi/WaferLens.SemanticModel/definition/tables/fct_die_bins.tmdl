@@ -1,4 +1,4 @@
-table 'marts fct_die_bins'
+table fct_die_bins
 	lineageTag: cdbf45f9-4098-4415-973d-6f1003342f46
 
 	column wafer_id
@@ -23,7 +23,7 @@ table 'marts fct_die_bins'
 		dataType: int64
 		formatString: 0
 		lineageTag: 1febc450-900e-41d3-bb6f-b534d397b66d
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: tested_date_key
 
 		annotation SummarizationSetBy = Automatic
@@ -47,7 +47,7 @@ table 'marts fct_die_bins'
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
-	partition 'marts fct_die_bins' = m
+	partition fct_die_bins = m
 		mode: import
 		source =
 				let
@@ -55,6 +55,8 @@ table 'marts fct_die_bins'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_die_bins"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

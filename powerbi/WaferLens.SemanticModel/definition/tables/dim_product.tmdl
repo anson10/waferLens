@@ -1,4 +1,4 @@
-table 'marts dim_product'
+table dim_product
 	lineageTag: 034bdca1-950b-4b85-9e8b-6ce847b99cb8
 
 	column product_id
@@ -22,7 +22,7 @@ table 'marts dim_product'
 		dataType: int64
 		formatString: 0
 		lineageTag: fd1d3868-3cf4-4f59-9474-010d11284483
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: node_id
 
 		annotation SummarizationSetBy = Automatic
@@ -39,7 +39,7 @@ table 'marts dim_product'
 		dataType: int64
 		formatString: 0
 		lineageTag: 5008d30e-fd5f-444f-b898-5a61a2ba28db
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: feature_size_nm
 
 		annotation SummarizationSetBy = Automatic
@@ -47,7 +47,7 @@ table 'marts dim_product'
 	column die_area_cm2
 		dataType: double
 		lineageTag: 270c94e3-9145-4562-a7d1-616c41ba6981
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: die_area_cm2
 
 		annotation SummarizationSetBy = Automatic
@@ -58,7 +58,7 @@ table 'marts dim_product'
 		dataType: int64
 		formatString: 0
 		lineageTag: c2165442-5833-4eab-aba9-2d4753268366
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: map_rows
 
 		annotation SummarizationSetBy = Automatic
@@ -67,7 +67,7 @@ table 'marts dim_product'
 		dataType: int64
 		formatString: 0
 		lineageTag: cafbaf31-aea4-4f79-982f-5bc9d300f8fa
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: map_cols
 
 		annotation SummarizationSetBy = Automatic
@@ -76,12 +76,12 @@ table 'marts dim_product'
 		dataType: int64
 		formatString: 0
 		lineageTag: 971a0f4d-f919-4655-b136-c76cadc8cc80
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: gross_dies
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts dim_product' = m
+	partition dim_product = m
 		mode: import
 		source =
 				let
@@ -89,6 +89,8 @@ table 'marts dim_product'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_product"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

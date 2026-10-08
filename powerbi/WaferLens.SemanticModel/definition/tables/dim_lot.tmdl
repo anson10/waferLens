@@ -1,4 +1,4 @@
-table 'marts dim_lot'
+table dim_lot
 	lineageTag: 44e28f39-b7b6-4f4b-b75f-ab06cfe642ad
 
 	column lot_id
@@ -22,7 +22,7 @@ table 'marts dim_lot'
 		dataType: int64
 		formatString: 0
 		lineageTag: 53c86252-f1eb-40aa-8468-b5b801a3511a
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: parent_lot_id
 
 		annotation SummarizationSetBy = Automatic
@@ -31,7 +31,7 @@ table 'marts dim_lot'
 		dataType: int64
 		formatString: 0
 		lineageTag: 578ff29d-bf94-4d5f-af2e-b0616bfbb53b
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: root_lot_id
 
 		annotation SummarizationSetBy = Automatic
@@ -40,7 +40,7 @@ table 'marts dim_lot'
 		dataType: int64
 		formatString: 0
 		lineageTag: 9314ac9a-0e74-415c-91cd-6238c230ef92
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: split_depth
 
 		annotation SummarizationSetBy = Automatic
@@ -49,7 +49,7 @@ table 'marts dim_lot'
 		dataType: int64
 		formatString: 0
 		lineageTag: ac4e4b1b-cef7-4c6f-b27e-5eecf7e35be7
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: product_id
 
 		annotation SummarizationSetBy = Automatic
@@ -58,7 +58,7 @@ table 'marts dim_lot'
 		dataType: int64
 		formatString: 0
 		lineageTag: c1d61dc6-1176-48af-966f-c6ccb3596309
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: priority
 
 		annotation SummarizationSetBy = Automatic
@@ -76,7 +76,7 @@ table 'marts dim_lot'
 		dataType: int64
 		formatString: 0
 		lineageTag: c7f22023-b1e2-4246-9f3d-83c5b209f511
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: start_date_key
 
 		annotation SummarizationSetBy = Automatic
@@ -93,12 +93,12 @@ table 'marts dim_lot'
 		dataType: int64
 		formatString: 0
 		lineageTag: 645a423d-9ae4-4e86-8245-dfbdd2520a54
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: wafer_count
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts dim_lot' = m
+	partition dim_lot = m
 		mode: import
 		source =
 				let
@@ -106,6 +106,8 @@ table 'marts dim_lot'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_lot"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

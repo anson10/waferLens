@@ -1,4 +1,4 @@
-table 'marts fct_excursion_detection'
+table fct_excursion_detection
 	lineageTag: 97062adb-df70-447a-b40c-c2ec76a6cc93
 
 	column excursion_id
@@ -154,7 +154,7 @@ table 'marts fct_excursion_detection'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts fct_excursion_detection' = m
+	partition fct_excursion_detection = m
 		mode: import
 		source =
 				let
@@ -162,6 +162,8 @@ table 'marts fct_excursion_detection'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_excursion_detection"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

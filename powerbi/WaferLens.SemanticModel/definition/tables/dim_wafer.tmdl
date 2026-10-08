@@ -1,4 +1,4 @@
-table 'marts dim_wafer'
+table dim_wafer
 	lineageTag: 3584c2da-f2da-47fd-8933-928862253c39
 
 	column wafer_id
@@ -53,7 +53,7 @@ table 'marts dim_wafer'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts dim_wafer' = m
+	partition dim_wafer = m
 		mode: import
 		source =
 				let
@@ -61,6 +61,8 @@ table 'marts dim_wafer'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_wafer"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

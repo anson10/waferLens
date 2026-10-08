@@ -9,31 +9,31 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
-annotation PBI_QueryOrder = ["marts fct_die_bins","marts fct_excursion_detection","marts fct_excursion_impact","marts fct_root_cause_candidates","marts fct_root_cause_eval","marts fct_spc_alarms","marts fct_wafer_pattern","marts fct_wafer_steps","marts fct_wafer_yield","marts dim_chamber","marts dim_date","marts dim_excursion","marts dim_lot","marts dim_parameter","marts dim_product","marts dim_recipe","marts dim_route_step","marts dim_sort_bin","marts dim_wafer","marts spc_charts","marts wafer_pattern_classes"]
+annotation PBI_QueryOrder = ["fct_die_bins","fct_excursion_detection","fct_excursion_impact","fct_root_cause_candidates","fct_root_cause_eval","fct_spc_alarms","fct_wafer_pattern","fct_wafer_steps","fct_wafer_yield","dim_chamber","dim_date","dim_excursion","dim_lot","dim_parameter","dim_product","dim_recipe","dim_route_step","dim_sort_bin","dim_wafer","spc_charts","wafer_pattern_classes"]
 
 annotation PBI_ProTooling = ["DevMode"]
 
-ref table 'marts fct_die_bins'
-ref table 'marts fct_excursion_detection'
-ref table 'marts fct_excursion_impact'
-ref table 'marts fct_root_cause_candidates'
-ref table 'marts fct_root_cause_eval'
-ref table 'marts fct_spc_alarms'
-ref table 'marts fct_wafer_pattern'
-ref table 'marts fct_wafer_steps'
-ref table 'marts fct_wafer_yield'
-ref table 'marts dim_chamber'
-ref table 'marts dim_date'
-ref table 'marts dim_excursion'
-ref table 'marts dim_lot'
-ref table 'marts dim_parameter'
-ref table 'marts dim_product'
-ref table 'marts dim_recipe'
-ref table 'marts dim_route_step'
-ref table 'marts dim_sort_bin'
-ref table 'marts dim_wafer'
-ref table 'marts spc_charts'
-ref table 'marts wafer_pattern_classes'
+ref table fct_die_bins
+ref table fct_excursion_detection
+ref table fct_excursion_impact
+ref table fct_root_cause_candidates
+ref table fct_root_cause_eval
+ref table fct_spc_alarms
+ref table fct_wafer_pattern
+ref table fct_wafer_steps
+ref table fct_wafer_yield
+ref table dim_chamber
+ref table dim_date
+ref table dim_excursion
+ref table dim_lot
+ref table dim_parameter
+ref table dim_product
+ref table dim_recipe
+ref table dim_route_step
+ref table dim_sort_bin
+ref table dim_wafer
+ref table spc_charts
+ref table wafer_pattern_classes
 
 ref cultureInfo en-IN
 

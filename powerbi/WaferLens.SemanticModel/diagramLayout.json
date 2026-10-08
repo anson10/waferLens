@@ -10,128 +10,10 @@
       "nodes": [
         {
           "location": {
-            "x": 3446.1083062580697,
-            "y": 732.4373395113812
-          },
-          "nodeIndex": "marts fct_die_bins",
-          "nodeLineageTag": "cdbf45f9-4098-4415-973d-6f1003342f46",
-          "size": {
-            "height": 200,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 3994.949690441706,
-            "y": 715.22885417634143
-          },
-          "nodeIndex": "marts fct_excursion_detection",
-          "nodeLineageTag": "97062adb-df70-447a-b40c-c2ec76a6cc93",
-          "size": {
-            "height": 300,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 3686.1220943165054,
-            "y": 383.143894578974
-          },
-          "nodeIndex": "marts fct_excursion_impact",
-          "nodeLineageTag": "9e7c3430-5421-4f26-b18d-00691acce5ff",
-          "size": {
-            "height": 296,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 3783.9842790094872,
-            "y": 29.405931692838294
-          },
-          "nodeIndex": "marts fct_root_cause_candidates",
-          "nodeLineageTag": "a5270127-90a2-435b-a84d-58c35e8bc70c",
-          "size": {
-            "height": 300,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 4071.0135195713783,
-            "y": 361.58935803008364
-          },
-          "nodeIndex": "marts fct_root_cause_eval",
-          "nodeLineageTag": "93dbfa7d-a1d7-448b-b9a2-0f0b68600e89",
-          "size": {
-            "height": 300,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 2879.9605910395558,
-            "y": 303.68129434785033
-          },
-          "nodeIndex": "marts fct_spc_alarms",
-          "nodeLineageTag": "9dbda523-3fe5-4c94-8533-7ab8173a74dd",
-          "size": {
-            "height": 300,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 3399.3732951658276,
-            "y": 379.19036772180334
-          },
-          "nodeIndex": "marts fct_wafer_pattern",
-          "nodeLineageTag": "4511ef6c-d05e-45aa-b736-82e96cdd437c",
-          "size": {
-            "height": 300,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 3165.89369326484,
-            "y": -50
-          },
-          "nodeIndex": "marts fct_wafer_steps",
-          "nodeLineageTag": "caae3186-88e7-4d68-801b-5d3ef01ab7c4",
-          "size": {
-            "height": 300,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 3112.3405990801803,
-            "y": 656.426631506019
-          },
-          "nodeIndex": "marts fct_wafer_yield",
-          "nodeLineageTag": "32c88db3-27ab-4e5f-a623-c8a92a9693b7",
-          "size": {
-            "height": 300,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
             "x": 50,
             "y": -1.61463649546954
           },
-          "nodeIndex": "marts dim_chamber",
-          "nodeLineageTag": "c547fc10-f38d-4e8a-b4da-4d45eef0dfe3",
+          "nodeIndex": "dim_chamber",
           "size": {
             "height": 200,
             "width": 234
@@ -143,8 +25,7 @@
             "x": 1743.9605910395558,
             "y": 382.61442708817071
           },
-          "nodeIndex": "marts dim_date",
-          "nodeLineageTag": "52565d95-db2d-47e3-90fe-eda7d7ff47f4",
+          "nodeIndex": "dim_date",
           "size": {
             "height": 300,
             "width": 234
@@ -156,8 +37,7 @@
             "x": 1509.9605910395555,
             "y": 515.99822399774519
           },
-          "nodeIndex": "marts dim_excursion",
-          "nodeLineageTag": "0daba8fe-b47d-4329-9007-0f3e73bb0409",
+          "nodeIndex": "dim_excursion",
           "size": {
             "height": 300,
             "width": 234
@@ -169,8 +49,7 @@
             "x": 1306.2239095235363,
             "y": 144.673141941239
           },
-          "nodeIndex": "marts dim_lot",
-          "nodeLineageTag": "44e28f39-b7b6-4f4b-b75f-ab06cfe642ad",
+          "nodeIndex": "dim_lot",
           "size": {
             "height": 300,
             "width": 234
@@ -182,8 +61,7 @@
             "x": 1169.53358629664,
             "y": 790.843490671811
           },
-          "nodeIndex": "marts dim_parameter",
-          "nodeLineageTag": "bd11c8d8-9b8b-4601-abf9-f977c8f6d624",
+          "nodeIndex": "dim_parameter",
           "size": {
             "height": 176,
             "width": 234
@@ -195,8 +73,7 @@
             "x": 918.98974782829566,
             "y": 238.86445690695325
           },
-          "nodeIndex": "marts dim_product",
-          "nodeLineageTag": "034bdca1-950b-4b85-9e8b-6ce847b99cb8",
+          "nodeIndex": "dim_product",
           "size": {
             "height": 296,
             "width": 234
@@ -208,8 +85,7 @@
             "x": 336.38650056367027,
             "y": 147.27777065529176
           },
-          "nodeIndex": "marts dim_recipe",
-          "nodeLineageTag": "c709dc2c-0651-45f3-bd93-edc5bf6245db",
+          "nodeIndex": "dim_recipe",
           "size": {
             "height": 248,
             "width": 234
@@ -221,8 +97,7 @@
             "x": 623.16449999470251,
             "y": 191.43797391868691
           },
-          "nodeIndex": "marts dim_route_step",
-          "nodeLineageTag": "279e6969-32ae-4cab-92b8-bf6ad9095211",
+          "nodeIndex": "dim_route_step",
           "size": {
             "height": 272,
             "width": 234
@@ -234,8 +109,7 @@
             "x": 2027.9605910395558,
             "y": 456.61442708817071
           },
-          "nodeIndex": "marts dim_sort_bin",
-          "nodeLineageTag": "814d5b39-0cf8-45c0-9b3c-219ddd11e869",
+          "nodeIndex": "dim_sort_bin",
           "size": {
             "height": 152,
             "width": 234
@@ -247,10 +121,117 @@
             "x": 1214.7042626552554,
             "y": 507.50696158406265
           },
-          "nodeIndex": "marts dim_wafer",
-          "nodeLineageTag": "3584c2da-f2da-47fd-8933-928862253c39",
+          "nodeIndex": "dim_wafer",
           "size": {
             "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 3446.1083062580697,
+            "y": 732.4373395113812
+          },
+          "nodeIndex": "fct_die_bins",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 3994.949690441706,
+            "y": 715.22885417634143
+          },
+          "nodeIndex": "fct_excursion_detection",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 3686.1220943165054,
+            "y": 383.143894578974
+          },
+          "nodeIndex": "fct_excursion_impact",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 3783.9842790094872,
+            "y": 29.405931692838294
+          },
+          "nodeIndex": "fct_root_cause_candidates",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 4071.0135195713783,
+            "y": 361.58935803008364
+          },
+          "nodeIndex": "fct_root_cause_eval",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2879.9605910395558,
+            "y": 303.68129434785033
+          },
+          "nodeIndex": "fct_spc_alarms",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 3399.3732951658276,
+            "y": 379.19036772180334
+          },
+          "nodeIndex": "fct_wafer_pattern",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 3165.89369326484,
+            "y": -50
+          },
+          "nodeIndex": "fct_wafer_steps",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 3112.3405990801803,
+            "y": 656.426631506019
+          },
+          "nodeIndex": "fct_wafer_yield",
+          "size": {
+            "height": 300,
             "width": 234
           },
           "zIndex": 0
@@ -260,8 +241,7 @@
             "x": 2311.9605910395558,
             "y": 444.61442708817071
           },
-          "nodeIndex": "marts spc_charts",
-          "nodeLineageTag": "4a63ee3a-fa75-4af9-bc71-e59e84b05de7",
+          "nodeIndex": "spc_charts",
           "size": {
             "height": 176,
             "width": 234
@@ -273,8 +253,7 @@
             "x": 2595.9605910395558,
             "y": 456.61442708817071
           },
-          "nodeIndex": "marts wafer_pattern_classes",
-          "nodeLineageTag": "9ae53199-70cc-44ae-a2f3-b59816572afa",
+          "nodeIndex": "wafer_pattern_classes",
           "size": {
             "height": 152,
             "width": 234

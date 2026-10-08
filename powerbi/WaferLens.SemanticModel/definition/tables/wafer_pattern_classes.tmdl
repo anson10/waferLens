@@ -1,4 +1,4 @@
-table 'marts wafer_pattern_classes'
+table wafer_pattern_classes
 	lineageTag: 9ae53199-70cc-44ae-a2f3-b59816572afa
 
 	column pattern
@@ -25,7 +25,7 @@ table 'marts wafer_pattern_classes'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts wafer_pattern_classes' = m
+	partition wafer_pattern_classes = m
 		mode: import
 		source =
 				let
@@ -33,6 +33,8 @@ table 'marts wafer_pattern_classes'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "wafer_pattern_classes"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

@@ -1,4 +1,4 @@
-table 'marts fct_root_cause_candidates'
+table fct_root_cause_candidates
 	lineageTag: a5270127-90a2-435b-a84d-58c35e8bc70c
 
 	column candidate_id
@@ -56,7 +56,7 @@ table 'marts fct_root_cause_candidates'
 		dataType: int64
 		formatString: 0
 		lineageTag: 3bd4e38c-eaa9-4dd1-87ec-0b5b18cbd867
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: recipe_id
 
 		annotation SummarizationSetBy = Automatic
@@ -143,7 +143,7 @@ table 'marts fct_root_cause_candidates'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts fct_root_cause_candidates' = m
+	partition fct_root_cause_candidates = m
 		mode: import
 		source =
 				let
@@ -151,6 +151,8 @@ table 'marts fct_root_cause_candidates'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_root_cause_candidates"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

@@ -1,4 +1,4 @@
-table 'marts fct_root_cause_eval'
+table fct_root_cause_eval
 	lineageTag: 93dbfa7d-a1d7-448b-b9a2-0f0b68600e89
 
 	column excursion_id
@@ -119,7 +119,7 @@ table 'marts fct_root_cause_eval'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts fct_root_cause_eval' = m
+	partition fct_root_cause_eval = m
 		mode: import
 		source =
 				let
@@ -127,6 +127,8 @@ table 'marts fct_root_cause_eval'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_root_cause_eval"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

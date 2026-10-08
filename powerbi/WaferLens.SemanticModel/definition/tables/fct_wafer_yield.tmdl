@@ -1,4 +1,4 @@
-table 'marts fct_wafer_yield'
+table fct_wafer_yield
 	lineageTag: 32c88db3-27ab-4e5f-a623-c8a92a9693b7
 
 	column wafer_id
@@ -14,7 +14,7 @@ table 'marts fct_wafer_yield'
 		dataType: int64
 		formatString: 0
 		lineageTag: 651aff37-d5d0-474e-a673-7af8c0a57e78
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: lot_id
 
 		annotation SummarizationSetBy = Automatic
@@ -23,7 +23,7 @@ table 'marts fct_wafer_yield'
 		dataType: int64
 		formatString: 0
 		lineageTag: af1cb61d-c88e-4ccd-addd-ff6cdb7bc3c3
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: product_id
 
 		annotation SummarizationSetBy = Automatic
@@ -41,7 +41,7 @@ table 'marts fct_wafer_yield'
 		dataType: int64
 		formatString: 0
 		lineageTag: 37acf935-20f1-4e99-a394-0deae01ad7f3
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: tested_date_key
 
 		annotation SummarizationSetBy = Automatic
@@ -111,7 +111,7 @@ table 'marts fct_wafer_yield'
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
-	partition 'marts fct_wafer_yield' = m
+	partition fct_wafer_yield = m
 		mode: import
 		source =
 				let
@@ -119,6 +119,8 @@ table 'marts fct_wafer_yield'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_wafer_yield"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

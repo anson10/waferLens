@@ -1,4 +1,4 @@
-table 'marts dim_recipe'
+table dim_recipe
 	lineageTag: c709dc2c-0651-45f3-bd93-edc5bf6245db
 
 	column recipe_id
@@ -14,7 +14,7 @@ table 'marts dim_recipe'
 		dataType: int64
 		formatString: 0
 		lineageTag: 2e6770ee-ef03-48c6-af1a-d51354879b0b
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: route_step_id
 
 		annotation SummarizationSetBy = Automatic
@@ -31,7 +31,7 @@ table 'marts dim_recipe'
 		dataType: int64
 		formatString: 0
 		lineageTag: 346a7be0-8137-4368-a57b-82056494204c
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: recipe_version
 
 		annotation SummarizationSetBy = Automatic
@@ -63,7 +63,7 @@ table 'marts dim_recipe'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts dim_recipe' = m
+	partition dim_recipe = m
 		mode: import
 		source =
 				let
@@ -71,6 +71,8 @@ table 'marts dim_recipe'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_recipe"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

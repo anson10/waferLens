@@ -1,4 +1,4 @@
-table 'marts dim_date'
+table dim_date
 	lineageTag: 52565d95-db2d-47e3-90fe-eda7d7ff47f4
 
 	column date_key
@@ -103,7 +103,7 @@ table 'marts dim_date'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts dim_date' = m
+	partition dim_date = m
 		mode: import
 		source =
 				let
@@ -111,6 +111,8 @@ table 'marts dim_date'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_date"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

@@ -1,4 +1,4 @@
-table 'marts dim_route_step'
+table dim_route_step
 	lineageTag: 279e6969-32ae-4cab-92b8-bf6ad9095211
 
 	column route_step_id
@@ -14,7 +14,7 @@ table 'marts dim_route_step'
 		dataType: int64
 		formatString: 0
 		lineageTag: 6d34899f-8c66-453e-87a0-9f3baf488388
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: route_id
 
 		annotation SummarizationSetBy = Automatic
@@ -23,7 +23,7 @@ table 'marts dim_route_step'
 		dataType: int64
 		formatString: 0
 		lineageTag: b0515833-9e18-4c84-96d2-418ff3f3efd1
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: product_id
 
 		annotation SummarizationSetBy = Automatic
@@ -32,7 +32,7 @@ table 'marts dim_route_step'
 		dataType: int64
 		formatString: 0
 		lineageTag: 698ad702-682b-44e5-8f26-11ef9843eb73
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: sequence_no
 
 		annotation SummarizationSetBy = Automatic
@@ -70,7 +70,7 @@ table 'marts dim_route_step'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts dim_route_step' = m
+	partition dim_route_step = m
 		mode: import
 		source =
 				let
@@ -78,6 +78,8 @@ table 'marts dim_route_step'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_route_step"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

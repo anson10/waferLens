@@ -1,4 +1,4 @@
-table 'marts dim_sort_bin'
+table dim_sort_bin
 	lineageTag: 814d5b39-0cf8-45c0-9b3c-219ddd11e869
 
 	column bin_code
@@ -27,7 +27,7 @@ table 'marts dim_sort_bin'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts dim_sort_bin' = m
+	partition dim_sort_bin = m
 		mode: import
 		source =
 				let
@@ -35,6 +35,8 @@ table 'marts dim_sort_bin'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_sort_bin"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

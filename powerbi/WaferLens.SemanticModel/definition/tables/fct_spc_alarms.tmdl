@@ -1,4 +1,4 @@
-table 'marts fct_spc_alarms'
+table fct_spc_alarms
 	lineageTag: 9dbda523-3fe5-4c94-8533-7ab8173a74dd
 
 	column alarm_id
@@ -98,7 +98,7 @@ table 'marts fct_spc_alarms'
 		dataType: int64
 		formatString: 0
 		lineageTag: 041ec4f5-4064-402c-9597-e8dbb1e1c381
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: route_step_id
 
 		annotation SummarizationSetBy = Automatic
@@ -107,7 +107,7 @@ table 'marts fct_spc_alarms'
 		dataType: int64
 		formatString: 0
 		lineageTag: 0a91d196-0799-4860-ba04-9a6ba3f68e15
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: wafer_id
 
 		annotation SummarizationSetBy = Automatic
@@ -125,7 +125,7 @@ table 'marts fct_spc_alarms'
 		dataType: int64
 		formatString: 0
 		lineageTag: c0217a19-3044-4a7a-a795-ec289756b797
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: lot_id
 
 		annotation SummarizationSetBy = Automatic
@@ -184,7 +184,7 @@ table 'marts fct_spc_alarms'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts fct_spc_alarms' = m
+	partition fct_spc_alarms = m
 		mode: import
 		source =
 				let
@@ -192,6 +192,8 @@ table 'marts fct_spc_alarms'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_spc_alarms"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

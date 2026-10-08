@@ -1,4 +1,4 @@
-table 'marts dim_chamber'
+table dim_chamber
 	lineageTag: c547fc10-f38d-4e8a-b4da-4d45eef0dfe3
 
 	column chamber_id
@@ -42,7 +42,7 @@ table 'marts dim_chamber'
 
 		annotation SummarizationSetBy = Automatic
 
-	partition 'marts dim_chamber' = m
+	partition dim_chamber = m
 		mode: import
 		source =
 				let
@@ -50,6 +50,8 @@ table 'marts dim_chamber'
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_chamber"]}[Data]
 				in
 				  #"Navigation 1"
+
+	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 
