@@ -148,8 +148,6 @@ table fct_wafer_yield
 				in
 				  #"Navigation 1"
 
-	changedProperty = Name
-
 	changedProperty = IsHidden
 
 	annotation PBI_ResultType = Table

@@ -170,7 +170,5 @@ table dim_excursion
 				in
 				  #"Navigation 1"
 
-	changedProperty = Name
-
 	annotation PBI_ResultType = Table
 

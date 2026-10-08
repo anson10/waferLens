@@ -164,7 +164,5 @@ table fct_root_cause_candidates
 				in
 				  #"Navigation 1"
 
-	changedProperty = Name
-
 	annotation PBI_ResultType = Table
 

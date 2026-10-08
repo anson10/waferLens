@@ -56,6 +56,30 @@ table fct_die_bins
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
+	column lot_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 045e55ea-cb89-431a-9efe-2be99c7bb032
+		summarizeBy: sum
+		sourceColumn: lot_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 479583d3-9aa3-4abd-b215-c8b1c501e812
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
 	partition fct_die_bins = m
 		mode: import
 		source =
@@ -64,8 +88,6 @@ table fct_die_bins
 				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_die_bins"]}[Data]
 				in
 				  #"Navigation 1"
-
-	changedProperty = Name
 
 	annotation PBI_ResultType = Table
 

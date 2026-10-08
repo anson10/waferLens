@@ -107,3 +107,7 @@ relationship bae1e498-48cd-8307-7e7b-e0992f54cd81
 	fromColumn: fct_root_cause_candidates.chamber_id
 	toColumn: dim_chamber.chamber_id
 
+relationship ad68cbeb-291b-30b6-67e4-59fed47261a5
+	fromColumn: fct_die_bins.product_id
+	toColumn: dim_product.product_id
+

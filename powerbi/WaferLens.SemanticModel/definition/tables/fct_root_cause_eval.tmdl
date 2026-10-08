@@ -131,7 +131,5 @@ table fct_root_cause_eval
 				in
 				  #"Navigation 1"
 
-	changedProperty = Name
-
 	annotation PBI_ResultType = Table
 

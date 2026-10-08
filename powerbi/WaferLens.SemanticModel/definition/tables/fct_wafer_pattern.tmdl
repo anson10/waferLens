@@ -174,7 +174,5 @@ table fct_wafer_pattern
 				in
 				  #"Navigation 1"
 
-	changedProperty = Name
-
 	annotation PBI_ResultType = Table
 

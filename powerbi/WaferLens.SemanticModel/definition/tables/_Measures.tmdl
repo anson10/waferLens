@@ -257,6 +257,26 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
+	/// Running share of failed dies, largest bin first (Pareto)
+	measure 'Cumulative Loss %' =
+			
+			VAR ThisBin = [Failed Dies]
+			VAR Bins =
+			    ADDCOLUMNS (
+			        ALLSELECTED ( dim_sort_bin[bin_name] ),
+			        "@lost", [Failed Dies]
+			    )
+			RETURN
+			    DIVIDE (
+			        SUMX ( FILTER ( Bins, [@lost] >= ThisBin ), [@lost] ),
+			        SUMX ( Bins, [@lost] )
+			    )
+		formatString: 0.0%
+		displayFolder: Loss
+		lineageTag: 6b3bc245-3e09-4b4a-add8-37ff0ebca679
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column Column1
 		dataType: string
 		isHidden

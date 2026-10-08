@@ -166,7 +166,5 @@ table fct_excursion_detection
 				in
 				  #"Navigation 1"
 
-	changedProperty = Name
-
 	annotation PBI_ResultType = Table
 

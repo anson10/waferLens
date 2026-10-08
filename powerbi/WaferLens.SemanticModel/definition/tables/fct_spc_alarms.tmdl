@@ -246,8 +246,6 @@ table fct_spc_alarms
 				in
 				  #"Navigation 1"
 
-	changedProperty = Name
-
 	changedProperty = IsHidden
 
 	annotation PBI_ResultType = Table

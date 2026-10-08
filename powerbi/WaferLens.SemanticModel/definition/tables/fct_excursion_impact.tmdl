@@ -97,7 +97,5 @@ table fct_excursion_impact
 				in
 				  #"Navigation 1"
 
-	changedProperty = Name
-
 	annotation PBI_ResultType = Table
 
