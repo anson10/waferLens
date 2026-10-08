@@ -100,6 +100,98 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
+	///  Number of injected excursions
+	measure Excursions = COUNTROWS ( dim_excursion )
+		formatString: #,0
+		displayFolder: Excursions
+		lineageTag: ae236288-357f-4912-be9f-137b269099bd
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Excursions that cost yield where commonality ranked the true cause first
+	measure 'Root Cause Top-1 %' =
+			
+			DIVIDE (
+			    CALCULATE (
+			        COUNTROWS ( fct_root_cause_eval ),
+			        fct_root_cause_eval[top1] = TRUE (),
+			        fct_root_cause_eval[cost_yield] = TRUE ()
+			    ),
+			    CALCULATE (
+			        COUNTROWS ( fct_root_cause_eval ),
+			        fct_root_cause_eval[cost_yield] = TRUE ()
+			    )
+			)
+		formatString: 0.0%
+		displayFolder: Excursions
+		lineageTag: eb4520f1-54b7-4094-aca6-d769e81c892f
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Spatial excursions where pattern-led commonality ranked the true chamber first
+	measure 'Pattern-led Top-1 %' =
+			
+			DIVIDE (
+			    CALCULATE (
+			        COUNTROWS ( fct_root_cause_eval ),
+			        fct_root_cause_eval[pattern_true_rank] = 1
+			    ),
+			    CALCULATE (
+			        COUNTROWS ( fct_root_cause_eval ),
+			        NOT ISBLANK ( fct_root_cause_eval[pattern_true_rank] )
+			    )
+			)
+		formatString: 0.0%
+		displayFolder: Excursions
+		lineageTag: c460d124-5181-4521-9af4-e4e07122d8fc
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Wafers FabEye sent to human review (low confidence)
+	measure 'Review Rate %' =
+			
+			DIVIDE (
+			    CALCULATE ( COUNTROWS ( fct_wafer_pattern ), fct_wafer_pattern[needs_review] = TRUE () ),
+			    COUNTROWS ( fct_wafer_pattern )
+			)
+		formatString: 0.0%
+		displayFolder: Wafer Patterns
+		lineageTag: 20399b6d-490a-4499-9666-0c7a64df8119
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Wafers where FabEye's predicted pattern equals the true pattern
+	measure 'Pattern Accuracy %' =
+			
+			DIVIDE (
+			    CALCULATE ( COUNTROWS ( fct_wafer_pattern ), fct_wafer_pattern[is_correct] = TRUE () ),
+			    COUNTROWS ( fct_wafer_pattern )
+			)
+		formatString: 0.0%
+		displayFolder: Wafer Patterns
+		lineageTag: 2cc8e214-eec9-490e-8721-c0c4611323bf
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Wafers counted by FabEye's predicted pattern
+	measure 'Wafers (predicted)' = COUNTROWS ( fct_wafer_pattern )
+		formatString: #,0
+		displayFolder: Wafer Patterns
+		lineageTag: 7febdd68-c5d6-41bf-aa41-95d5fec66c75
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Wafers counted by their true pattern (uses the inactive relationship)
+	measure 'Wafers (true)' =
+			
+			CALCULATE (
+			    COUNTROWS ( fct_wafer_pattern ),
+			    USERELATIONSHIP ( fct_wafer_pattern[true_pattern], wafer_pattern_classes[pattern] )
+			)
+		formatString: 0
+		displayFolder: Wafer Patterns
+		lineageTag: 0095322a-4b90-48a9-89f6-b726defd80ff
+
 	column Column1
 		dataType: string
 		isHidden
