@@ -10,7 +10,6 @@ table _Measures
 		annotation PBI_FormatHint = {"isCustom":true}
 
 	/// Dies tested at wafer sort
-	/// 
 	measure 'Tested Dies' = SUM ( fct_wafer_yield[tested_dies] )
 		formatString: #,0
 		displayFolder: Yield
