@@ -28,8 +28,8 @@
               },
               "queryRef": "dim_chamber.chamber_label",
               "nativeQueryRef": "chamber_label",
-              "displayName": "Chamber",
-              "active": true
+              "active": true,
+              "displayName": "Chamber"
             }
           ]
         },
@@ -128,6 +128,13 @@
               "expr": {
                 "Literal": {
                   "Value": "'75fa09c592a67d7a2128'"
+                }
+              }
+            },
+            "showChartSpecificTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }
