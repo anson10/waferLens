@@ -1,0 +1,39 @@
+model Model
+	culture: en-IN
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-IN
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["marts fct_die_bins","marts fct_excursion_detection","marts fct_excursion_impact","marts fct_root_cause_candidates","marts fct_root_cause_eval","marts fct_spc_alarms","marts fct_wafer_pattern","marts fct_wafer_steps","marts fct_wafer_yield","marts dim_chamber","marts dim_date","marts dim_excursion","marts dim_lot","marts dim_parameter","marts dim_product","marts dim_recipe","marts dim_route_step","marts dim_sort_bin","marts dim_wafer","marts spc_charts","marts wafer_pattern_classes"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table 'marts fct_die_bins'
+ref table 'marts fct_excursion_detection'
+ref table 'marts fct_excursion_impact'
+ref table 'marts fct_root_cause_candidates'
+ref table 'marts fct_root_cause_eval'
+ref table 'marts fct_spc_alarms'
+ref table 'marts fct_wafer_pattern'
+ref table 'marts fct_wafer_steps'
+ref table 'marts fct_wafer_yield'
+ref table 'marts dim_chamber'
+ref table 'marts dim_date'
+ref table 'marts dim_excursion'
+ref table 'marts dim_lot'
+ref table 'marts dim_parameter'
+ref table 'marts dim_product'
+ref table 'marts dim_recipe'
+ref table 'marts dim_route_step'
+ref table 'marts dim_sort_bin'
+ref table 'marts dim_wafer'
+ref table 'marts spc_charts'
+ref table 'marts wafer_pattern_classes'
+
+ref cultureInfo en-IN
+

@@ -1,0 +1,213 @@
+relationship AutoDetected_5c85b2e2-0599-4b28-91a9-a2a9985d84fe
+	fromColumn: 'marts fct_die_bins'.wafer_id
+	toColumn: 'marts fct_wafer_pattern'.wafer_id
+
+relationship AutoDetected_ad181c67-ac7e-4688-aaeb-2ccfa55c3615
+	fromColumn: 'marts fct_spc_alarms'.wafer_id
+	toColumn: 'marts fct_wafer_pattern'.wafer_id
+
+relationship AutoDetected_36784039-5a55-4cab-a7a8-a73de7d9df78
+	fromColumn: 'marts fct_wafer_steps'.wafer_id
+	toColumn: 'marts fct_wafer_pattern'.wafer_id
+
+relationship AutoDetected_a0ea5608-b4b2-4773-b8ce-fe5967473af9
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'marts fct_wafer_yield'.wafer_id
+	toColumn: 'marts fct_wafer_pattern'.wafer_id
+
+relationship AutoDetected_7f00b4bc-84f5-4ee3-abda-b7fd3014aa85
+	fromColumn: 'marts fct_excursion_detection'.excursion_id
+	toColumn: 'marts fct_excursion_impact'.excursion_id
+
+relationship AutoDetected_42f10cdf-2045-49a5-a04e-44367dbe5a5e
+	fromColumn: 'marts fct_root_cause_candidates'.excursion_id
+	toColumn: 'marts fct_excursion_impact'.excursion_id
+
+relationship AutoDetected_ed1af4b9-874c-4fa7-a91f-c65379266cf8
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'marts fct_root_cause_eval'.excursion_id
+	toColumn: 'marts fct_excursion_impact'.excursion_id
+
+relationship AutoDetected_05530f96-4e3b-4923-b9c2-b6f1ec25fdc9
+	fromColumn: 'marts fct_wafer_pattern'.excursion_id
+	toColumn: 'marts fct_excursion_impact'.excursion_id
+
+relationship AutoDetected_3160fcfc-770b-473b-a98e-341fe911c204
+	isActive: false
+	fromColumn: 'marts fct_excursion_detection'.abs_magnitude_sigma
+	toColumn: 'marts fct_root_cause_eval'.abs_magnitude_sigma
+
+relationship AutoDetected_a243732d-a01c-471d-bfd6-2ddf9bfb3979
+	fromColumn: 'marts fct_die_bins'.wafer_id
+	toColumn: 'marts dim_wafer'.wafer_id
+
+relationship AutoDetected_18c7de6a-9ee4-4fd4-b3f2-3b584d7ad537
+	fromColumn: 'marts fct_spc_alarms'.wafer_id
+	toColumn: 'marts dim_wafer'.wafer_id
+
+relationship AutoDetected_f6e164ce-49c3-4f8e-bed9-de145a54a31e
+	isActive: false
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'marts fct_wafer_pattern'.wafer_id
+	toColumn: 'marts dim_wafer'.wafer_id
+
+relationship AutoDetected_bde0a288-2d70-4d2f-b3a6-43f6707bd077
+	fromColumn: 'marts fct_wafer_steps'.wafer_id
+	toColumn: 'marts dim_wafer'.wafer_id
+
+relationship AutoDetected_bddbd10f-f2ef-426d-bbba-08ffd9b798b9
+	isActive: false
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'marts fct_wafer_yield'.wafer_id
+	toColumn: 'marts dim_wafer'.wafer_id
+
+relationship AutoDetected_a752c54c-8b5e-4b99-97d3-661795933451
+	fromColumn: 'marts fct_die_bins'.bin_code
+	toColumn: 'marts dim_sort_bin'.bin_code
+
+relationship AutoDetected_946591d3-2f64-45cb-93ba-176918717c05
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'marts dim_excursion'.excursion_id
+	toColumn: 'marts fct_excursion_impact'.excursion_id
+
+relationship AutoDetected_9bc0e82e-8a0a-4df6-a06e-52f857a5eeab
+	isActive: false
+	fromColumn: 'marts fct_excursion_detection'.magnitude_sigma
+	toColumn: 'marts dim_excursion'.magnitude_sigma
+
+relationship AutoDetected_58233788-d5e2-4ad1-b861-054a5c1513bc
+	isActive: false
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'marts dim_excursion'.abs_magnitude_sigma
+	toColumn: 'marts fct_root_cause_eval'.abs_magnitude_sigma
+
+relationship AutoDetected_f7dcc22b-4f1a-464c-a87d-903f8b7eb319
+	fromColumn: 'marts fct_excursion_detection'.chart
+	toColumn: 'marts spc_charts'.chart
+
+relationship AutoDetected_84aea833-f288-4407-8148-50781f9f6213
+	fromColumn: 'marts fct_spc_alarms'.chart
+	toColumn: 'marts spc_charts'.chart
+
+relationship AutoDetected_08c58f35-6823-41c3-8719-7598e75b0526
+	fromColumn: 'marts fct_root_cause_candidates'.pattern
+	toColumn: 'marts wafer_pattern_classes'.pattern
+
+relationship AutoDetected_eb219a28-9bf3-4fdb-9ec9-59e56cf96eaa
+	fromColumn: 'marts fct_root_cause_candidates'.chamber_id
+	toColumn: 'marts dim_chamber'.chamber_id
+
+relationship AutoDetected_9f48e2d3-7eee-44c0-9207-0a273de853fa
+	fromColumn: 'marts fct_spc_alarms'.chamber_id
+	toColumn: 'marts dim_chamber'.chamber_id
+
+relationship AutoDetected_3317755a-07af-41d2-91a3-f98c8becec73
+	fromColumn: 'marts fct_wafer_steps'.chamber_id
+	toColumn: 'marts dim_chamber'.chamber_id
+
+relationship AutoDetected_390d090c-e543-4ab4-b833-b9c735d89212
+	isActive: false
+	fromColumn: 'marts dim_excursion'.chamber_id
+	toColumn: 'marts dim_chamber'.chamber_id
+
+relationship AutoDetected_9714b4d8-d799-4517-9372-56c2cd1ae576
+	fromColumn: 'marts fct_root_cause_candidates'.recipe_id
+	toColumn: 'marts dim_recipe'.recipe_id
+
+relationship AutoDetected_539a4def-a091-4f6f-97b8-b23924475f77
+	fromColumn: 'marts fct_wafer_steps'.recipe_id
+	toColumn: 'marts dim_recipe'.recipe_id
+
+relationship AutoDetected_ee92e061-48d1-44fe-a97f-53347a499d20
+	isActive: false
+	fromColumn: 'marts dim_excursion'.recipe_id
+	toColumn: 'marts dim_recipe'.recipe_id
+
+relationship AutoDetected_748c133e-e382-4591-b95f-c1649c4d8096
+	fromColumn: 'marts fct_spc_alarms'.parameter_id
+	toColumn: 'marts dim_parameter'.parameter_id
+
+relationship AutoDetected_bf1ef0d4-7b65-4a3b-82af-257b69d28525
+	fromColumn: 'marts fct_spc_alarms'.route_step_id
+	toColumn: 'marts dim_route_step'.route_step_id
+
+relationship AutoDetected_f86c65d8-1cab-4602-a78b-240a2bb64793
+	fromColumn: 'marts fct_wafer_steps'.route_step_id
+	toColumn: 'marts dim_route_step'.route_step_id
+
+relationship AutoDetected_3889c66a-f87f-4ac4-a5ea-54fa7fcddca6
+	isActive: false
+	fromColumn: 'marts dim_recipe'.route_step_id
+	toColumn: 'marts dim_route_step'.route_step_id
+
+relationship AutoDetected_dffaeb12-7d70-44d5-b630-baa3b0238024
+	fromColumn: 'marts fct_spc_alarms'.lot_id
+	toColumn: 'marts dim_lot'.lot_id
+
+relationship AutoDetected_ba8757e1-8056-46fe-ad61-45134e6cea8c
+	isActive: false
+	fromColumn: 'marts fct_wafer_pattern'.lot_id
+	toColumn: 'marts dim_lot'.lot_id
+
+relationship AutoDetected_bfcda502-9c38-4a5b-83a4-b86ac8627abd
+	fromColumn: 'marts fct_wafer_steps'.lot_id
+	toColumn: 'marts dim_lot'.lot_id
+
+relationship AutoDetected_240dbeb8-b567-43d5-88c7-12f3471320aa
+	isActive: false
+	fromColumn: 'marts fct_wafer_yield'.lot_id
+	toColumn: 'marts dim_lot'.lot_id
+
+relationship AutoDetected_6e077db5-8485-4cb5-9dcb-0bac6a33c000
+	isActive: false
+	fromColumn: 'marts dim_wafer'.lot_id
+	toColumn: 'marts dim_lot'.lot_id
+
+relationship AutoDetected_32b151b1-5b8b-4a62-8d02-f69a0c47a367
+	fromColumn: 'marts fct_spc_alarms'.product_id
+	toColumn: 'marts dim_product'.product_id
+
+relationship AutoDetected_4a002766-de85-4258-87bb-8188a38b0669
+	isActive: false
+	fromColumn: 'marts fct_wafer_pattern'.product_id
+	toColumn: 'marts dim_product'.product_id
+
+relationship AutoDetected_5da96900-f9e1-499f-bf74-e07b6d2cf2b0
+	isActive: false
+	fromColumn: 'marts fct_wafer_yield'.product_id
+	toColumn: 'marts dim_product'.product_id
+
+relationship AutoDetected_f0e1b3f3-e38d-4ca2-87a2-a61450cd4a42
+	isActive: false
+	fromColumn: 'marts dim_lot'.product_id
+	toColumn: 'marts dim_product'.product_id
+
+relationship AutoDetected_380f9413-77f8-4329-8b55-1ba782713865
+	isActive: false
+	fromColumn: 'marts dim_route_step'.product_id
+	toColumn: 'marts dim_product'.product_id
+
+relationship AutoDetected_b1703659-c125-4516-9d54-1f6a92228a39
+	isActive: false
+	fromColumn: 'marts dim_wafer'.product_id
+	toColumn: 'marts dim_product'.product_id
+
+relationship AutoDetected_ecb66409-18f2-4729-97e8-83c8ab055760
+	fromColumn: 'marts fct_spc_alarms'.date_key
+	toColumn: 'marts dim_date'.date_key
+
+relationship AutoDetected_af8c9889-ecb6-4db9-9803-19926c0e01fc
+	fromColumn: 'marts fct_wafer_steps'.date_key
+	toColumn: 'marts dim_date'.date_key
+
+relationship AutoDetected_1abd795c-ff64-40bd-a882-0ff90d545aba
+	isActive: false
+	fromColumn: 'marts dim_excursion'.parameter_name
+	toColumn: 'marts dim_parameter'.parameter_name
+

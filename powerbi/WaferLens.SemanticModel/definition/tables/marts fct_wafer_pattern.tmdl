@@ -1,0 +1,157 @@
+table 'marts fct_wafer_pattern'
+	lineageTag: 4511ef6c-d05e-45aa-b736-82e96cdd437c
+
+	column wafer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 95136175-97aa-4ae3-b0f9-3d877158e092
+		summarizeBy: none
+		sourceColumn: wafer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column lot_id
+		dataType: int64
+		formatString: 0
+		lineageTag: d92abc97-52fe-4927-b3e1-089665236a8f
+		summarizeBy: sum
+		sourceColumn: lot_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 2051f0f9-0755-4054-a91d-66a88c890ff1
+		summarizeBy: sum
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column tested_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 791c555c-52e6-434a-82db-2a562fb61a68
+		summarizeBy: none
+		sourceColumn: tested_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column tested_date_key
+		dataType: int64
+		formatString: 0
+		lineageTag: 24a369c9-82d6-4bad-a9bb-ef4b41c95210
+		summarizeBy: sum
+		sourceColumn: tested_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column predicted_pattern
+		dataType: string
+		lineageTag: cf57db8f-f74e-478a-8fcd-f9c656c7b9be
+		summarizeBy: none
+		sourceColumn: predicted_pattern
+
+		annotation SummarizationSetBy = Automatic
+
+	column confidence
+		dataType: double
+		lineageTag: d339863f-910a-4e07-838b-607a89ea1525
+		summarizeBy: sum
+		sourceColumn: confidence
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column auto_accept
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b2286875-95d1-4746-b14a-8699d01b82b6
+		summarizeBy: none
+		sourceColumn: auto_accept
+
+		annotation SummarizationSetBy = Automatic
+
+	column needs_review
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 1b41cbba-efe7-455c-af88-23396efbf1ec
+		summarizeBy: none
+		sourceColumn: needs_review
+
+		annotation SummarizationSetBy = Automatic
+
+	column prediction_set_size
+		dataType: int64
+		formatString: 0
+		lineageTag: f02fd79e-6a51-473b-8345-451c7ac5b64e
+		summarizeBy: sum
+		sourceColumn: prediction_set_size
+
+		annotation SummarizationSetBy = Automatic
+
+	column classifier
+		dataType: string
+		lineageTag: 2d71efaf-1f2a-4d4d-a6df-f6ad2b79f425
+		summarizeBy: none
+		sourceColumn: classifier
+
+		annotation SummarizationSetBy = Automatic
+
+	column true_pattern
+		dataType: string
+		lineageTag: 4c238e41-b37c-4627-bc69-12d481499cc2
+		summarizeBy: none
+		sourceColumn: true_pattern
+
+		annotation SummarizationSetBy = Automatic
+
+	column excursion_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 9f6d410a-88a5-4d8f-9f02-3ef26b40da47
+		summarizeBy: none
+		sourceColumn: excursion_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column true_pattern_magnitude_sigma
+		dataType: double
+		lineageTag: 2dcb3095-032a-41a8-be3d-c7d1eef5534b
+		summarizeBy: sum
+		sourceColumn: true_pattern_magnitude_sigma
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_correct
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 7daa7ee8-4961-423c-9345-6129110a5267
+		summarizeBy: none
+		sourceColumn: is_correct
+
+		annotation SummarizationSetBy = Automatic
+
+	column truth_in_prediction_set
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 3b62200e-ccee-4b3b-8dde-e6e4ecff94e9
+		summarizeBy: none
+		sourceColumn: truth_in_prediction_set
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'marts fct_wafer_pattern' = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_wafer_pattern"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

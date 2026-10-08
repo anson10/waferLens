@@ -1,0 +1,40 @@
+table 'marts dim_sort_bin'
+	lineageTag: 814d5b39-0cf8-45c0-9b3c-219ddd11e869
+
+	column bin_code
+		dataType: int64
+		formatString: 0
+		lineageTag: 75dd7f66-d2d4-4f91-8e86-8d2d3711945d
+		summarizeBy: none
+		sourceColumn: bin_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column bin_name
+		dataType: string
+		lineageTag: 76651387-1dc5-4ce3-9a42-e10ab24dd282
+		summarizeBy: none
+		sourceColumn: bin_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_pass
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 651d44c9-c11a-4b04-9d5a-760be9f05395
+		summarizeBy: none
+		sourceColumn: is_pass
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'marts dim_sort_bin' = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_sort_bin"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

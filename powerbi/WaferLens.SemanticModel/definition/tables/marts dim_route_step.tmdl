@@ -1,0 +1,83 @@
+table 'marts dim_route_step'
+	lineageTag: 279e6969-32ae-4cab-92b8-bf6ad9095211
+
+	column route_step_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 648511bc-ffd0-4bee-a6f8-13d6cffd3574
+		summarizeBy: none
+		sourceColumn: route_step_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column route_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 6d34899f-8c66-453e-87a0-9f3baf488388
+		summarizeBy: sum
+		sourceColumn: route_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: b0515833-9e18-4c84-96d2-418ff3f3efd1
+		summarizeBy: sum
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sequence_no
+		dataType: int64
+		formatString: 0
+		lineageTag: 698ad702-682b-44e5-8f26-11ef9843eb73
+		summarizeBy: sum
+		sourceColumn: sequence_no
+
+		annotation SummarizationSetBy = Automatic
+
+	column step_name
+		dataType: string
+		lineageTag: cfaecf10-d0cd-4ae8-b304-7748516a8856
+		summarizeBy: none
+		sourceColumn: step_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column layer
+		dataType: string
+		lineageTag: 83fba7c8-3f8a-417f-bc2a-63caa62535c9
+		summarizeBy: none
+		sourceColumn: layer
+
+		annotation SummarizationSetBy = Automatic
+
+	column tool_type
+		dataType: string
+		lineageTag: 5c33a4eb-ae2d-4e95-b757-a9716440c122
+		summarizeBy: none
+		sourceColumn: tool_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column has_metrology
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 67fce4cc-6cd6-4424-b31e-1ce9f6b827dd
+		summarizeBy: none
+		sourceColumn: has_metrology
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'marts dim_route_step' = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_route_step"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

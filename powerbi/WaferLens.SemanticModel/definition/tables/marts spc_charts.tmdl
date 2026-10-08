@@ -1,0 +1,46 @@
+table 'marts spc_charts'
+	lineageTag: 4a63ee3a-fa75-4af9-bc71-e59e84b05de7
+
+	column chart
+		dataType: string
+		lineageTag: 2f5b3ea4-2c4d-4814-8bc1-91b9bf52a95b
+		summarizeBy: none
+		sourceColumn: chart
+
+		annotation SummarizationSetBy = Automatic
+
+	column chart_name
+		dataType: string
+		lineageTag: 8aa6ac1c-0999-4f87-b0e6-a0aca66cf55d
+		summarizeBy: none
+		sourceColumn: chart_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column chart_family
+		dataType: string
+		lineageTag: c18e412e-e0ee-434c-a48a-d8e10312eb9d
+		summarizeBy: none
+		sourceColumn: chart_family
+
+		annotation SummarizationSetBy = Automatic
+
+	column detects
+		dataType: string
+		lineageTag: b174aa6f-c85a-449a-b7b4-e6b0100328ec
+		summarizeBy: none
+		sourceColumn: detects
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'marts spc_charts' = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "spc_charts"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

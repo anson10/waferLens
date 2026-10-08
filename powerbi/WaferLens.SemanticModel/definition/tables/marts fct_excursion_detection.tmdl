@@ -1,0 +1,167 @@
+table 'marts fct_excursion_detection'
+	lineageTag: 97062adb-df70-447a-b40c-c2ec76a6cc93
+
+	column excursion_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 198daa5f-bba4-4eca-8f3d-84173b86305b
+		summarizeBy: none
+		sourceColumn: excursion_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column excursion_type
+		dataType: string
+		lineageTag: 0603b3bf-2fa3-420c-8bee-050676e91122
+		summarizeBy: none
+		sourceColumn: excursion_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column magnitude_sigma
+		dataType: double
+		lineageTag: 0a1fc998-9173-4ca9-a229-2093bced30c3
+		summarizeBy: sum
+		sourceColumn: magnitude_sigma
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column abs_magnitude_sigma
+		dataType: double
+		lineageTag: c7f6bd11-cb51-4238-b3e8-cb946d6eb66b
+		summarizeBy: sum
+		sourceColumn: abs_magnitude_sigma
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column chart
+		dataType: string
+		lineageTag: c5ef950d-c3b5-4f0a-8705-0806c261d8ec
+		summarizeBy: none
+		sourceColumn: chart
+
+		annotation SummarizationSetBy = Automatic
+
+	column scope
+		dataType: string
+		lineageTag: 98c73a98-cf50-4603-be1b-8d4a53103e23
+		summarizeBy: none
+		sourceColumn: scope
+
+		annotation SummarizationSetBy = Automatic
+
+	column monitored
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 1ca2d1d4-bda4-4e31-b627-b5e3f595c63d
+		summarizeBy: none
+		sourceColumn: monitored
+
+		annotation SummarizationSetBy = Automatic
+
+	column started_in_baseline
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: dfa91cfa-843a-45fe-9e19-959ec6ab748b
+		summarizeBy: none
+		sourceColumn: started_in_baseline
+
+		annotation SummarizationSetBy = Automatic
+
+	column detected
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 981f1c54-2898-4616-8431-b1d31ecb545f
+		summarizeBy: none
+		sourceColumn: detected
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_alarm_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 95a73711-60ab-40a9-917a-d1c5c9f331cb
+		summarizeBy: none
+		sourceColumn: first_alarm_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column delay_hours
+		dataType: double
+		lineageTag: 257a5057-d33d-432c-91d7-a0f2db2d3f04
+		summarizeBy: sum
+		sourceColumn: delay_hours
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column delay_points
+		dataType: int64
+		formatString: 0
+		lineageTag: 336c06be-8898-40be-b8f5-28a53243c800
+		summarizeBy: sum
+		sourceColumn: delay_points
+
+		annotation SummarizationSetBy = Automatic
+
+	column placebo_alarm
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: f7353afb-114e-474b-b947-388b49d89c7d
+		summarizeBy: none
+		sourceColumn: placebo_alarm
+
+		annotation SummarizationSetBy = Automatic
+
+	column placebo_delay_points
+		dataType: int64
+		formatString: 0
+		lineageTag: 73e81da3-146d-4273-950b-736658670d2f
+		summarizeBy: sum
+		sourceColumn: placebo_delay_points
+
+		annotation SummarizationSetBy = Automatic
+
+	column placebo_window_points
+		dataType: int64
+		formatString: 0
+		lineageTag: b95cf5c3-738c-4848-a870-45c95ce21818
+		summarizeBy: sum
+		sourceColumn: placebo_window_points
+
+		annotation SummarizationSetBy = Automatic
+
+	column started_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: eceefe68-a72a-4411-a181-7b1eaa9a18f5
+		summarizeBy: none
+		sourceColumn: started_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column ended_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: f49f6448-49a4-4dc6-85d8-59e1c50e2fea
+		summarizeBy: none
+		sourceColumn: ended_at
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'marts fct_excursion_detection' = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_excursion_detection"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

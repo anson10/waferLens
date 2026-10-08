@@ -1,0 +1,98 @@
+table 'marts fct_excursion_impact'
+	lineageTag: 9e7c3430-5421-4f26-b18d-00691acce5ff
+
+	column excursion_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 99e76e4e-b14d-452b-b6b8-b661bd9c6817
+		summarizeBy: none
+		sourceColumn: excursion_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column excursion_type
+		dataType: string
+		lineageTag: ad8e2f74-32dc-4ec0-9e0d-f48dbba220a1
+		summarizeBy: none
+		sourceColumn: excursion_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column started_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: a5f00add-19b6-42e9-a724-dd680915e8f0
+		summarizeBy: none
+		sourceColumn: started_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column ended_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: b8aecec9-dead-47b9-8696-c265e37ec07d
+		summarizeBy: none
+		sourceColumn: ended_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column affected_wafers
+		dataType: int64
+		formatString: 0
+		lineageTag: 0f9f27ab-741f-4905-8577-63fc4bfd4bad
+		summarizeBy: sum
+		sourceColumn: affected_wafers
+
+		annotation SummarizationSetBy = Automatic
+
+	column affected_yield_pct
+		dataType: double
+		lineageTag: d12a51b0-4f8f-4faa-9575-e1ded575cd11
+		summarizeBy: sum
+		sourceColumn: affected_yield_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column control_yield_pct
+		dataType: double
+		lineageTag: 2eac676e-0275-48b4-bf1a-c7bbc2be93b0
+		summarizeBy: sum
+		sourceColumn: control_yield_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column yield_delta_pct
+		dataType: double
+		lineageTag: 4f41189a-35e8-469b-8742-432e5c2286b3
+		summarizeBy: sum
+		sourceColumn: yield_delta_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column dies_lost
+		dataType: double
+		lineageTag: 1c9bdbe6-bbbf-4d62-bda8-f03cab40e579
+		summarizeBy: sum
+		sourceColumn: dies_lost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'marts fct_excursion_impact' = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_excursion_impact"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

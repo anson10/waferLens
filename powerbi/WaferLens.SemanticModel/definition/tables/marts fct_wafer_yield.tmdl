@@ -1,0 +1,124 @@
+table 'marts fct_wafer_yield'
+	lineageTag: 32c88db3-27ab-4e5f-a623-c8a92a9693b7
+
+	column wafer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 6083f6e6-f51b-4a0b-86d3-08cbe27be4e3
+		summarizeBy: none
+		sourceColumn: wafer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column lot_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 651aff37-d5d0-474e-a673-7af8c0a57e78
+		summarizeBy: sum
+		sourceColumn: lot_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: af1cb61d-c88e-4ccd-addd-ff6cdb7bc3c3
+		summarizeBy: sum
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column tested_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: a849e080-c3e8-4a2b-aa5b-01651562641f
+		summarizeBy: none
+		sourceColumn: tested_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column tested_date_key
+		dataType: int64
+		formatString: 0
+		lineageTag: 37acf935-20f1-4e99-a394-0deae01ad7f3
+		summarizeBy: sum
+		sourceColumn: tested_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column started_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 129add71-1e03-4147-b5b1-6fcad1e1dc34
+		summarizeBy: none
+		sourceColumn: started_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column finished_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c49d57bc-5851-4e86-8828-7d54f39d4197
+		summarizeBy: none
+		sourceColumn: finished_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column cycle_time_days
+		dataType: double
+		lineageTag: 717c75de-571a-48fa-8c43-542706dc036d
+		summarizeBy: sum
+		sourceColumn: cycle_time_days
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column tested_dies
+		dataType: int64
+		formatString: 0
+		lineageTag: 605c4e4b-e51d-44a3-a5fd-41e07174ae3a
+		summarizeBy: sum
+		sourceColumn: tested_dies
+
+		annotation SummarizationSetBy = Automatic
+
+	column good_dies
+		dataType: int64
+		formatString: 0
+		lineageTag: 9cdb55d2-9a71-4c38-b709-c3ceb161159b
+		summarizeBy: sum
+		sourceColumn: good_dies
+
+		annotation SummarizationSetBy = Automatic
+
+	column failed_dies
+		dataType: int64
+		formatString: 0
+		lineageTag: 636ddeef-d460-4fb6-bc57-8ce49eb488e2
+		summarizeBy: sum
+		sourceColumn: failed_dies
+
+		annotation SummarizationSetBy = Automatic
+
+	column yield_pct
+		dataType: double
+		lineageTag: 9aaa2454-d46b-48e9-893b-fcb1861d742c
+		summarizeBy: sum
+		sourceColumn: yield_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'marts fct_wafer_yield' = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "fct_wafer_yield"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

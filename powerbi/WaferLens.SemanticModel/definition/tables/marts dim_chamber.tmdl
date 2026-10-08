@@ -1,0 +1,55 @@
+table 'marts dim_chamber'
+	lineageTag: c547fc10-f38d-4e8a-b4da-4d45eef0dfe3
+
+	column chamber_id
+		dataType: int64
+		formatString: 0
+		lineageTag: ede46637-1fdd-4f4c-9a95-72094d5a63f0
+		summarizeBy: none
+		sourceColumn: chamber_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column chamber_label
+		dataType: string
+		lineageTag: 54a65290-385b-46ac-94b7-63a543a7d42f
+		summarizeBy: none
+		sourceColumn: chamber_label
+
+		annotation SummarizationSetBy = Automatic
+
+	column chamber_code
+		dataType: string
+		lineageTag: c24dc5b0-9aea-4945-92ab-443636d57b34
+		summarizeBy: none
+		sourceColumn: chamber_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column tool_id
+		dataType: string
+		lineageTag: c18298c3-80af-455d-91af-ee214ca17e51
+		summarizeBy: none
+		sourceColumn: tool_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column tool_type
+		dataType: string
+		lineageTag: 91d8e04b-eb84-4e2b-b139-988b10b85f89
+		summarizeBy: none
+		sourceColumn: tool_type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'marts dim_chamber' = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database("localhost:5432", "waferlens"),
+				  #"Navigation 1" = Source{[Schema = "marts", Item = "dim_chamber"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+
