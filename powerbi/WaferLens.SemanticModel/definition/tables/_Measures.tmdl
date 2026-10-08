@@ -103,7 +103,7 @@ table _Measures
 	///  Number of injected excursions
 	measure Excursions = COUNTROWS ( dim_excursion )
 		formatString: #,0
-		displayFolder: Excursions
+		displayFolder: Root Cause
 		lineageTag: ae236288-357f-4912-be9f-137b269099bd
 
 		annotation PBI_FormatHint = {"isCustom":true}
@@ -123,7 +123,7 @@ table _Measures
 			    )
 			)
 		formatString: 0.0%
-		displayFolder: Excursions
+		displayFolder: Root Cause
 		lineageTag: eb4520f1-54b7-4094-aca6-d769e81c892f
 
 		annotation PBI_FormatHint = {"isCustom":true}
@@ -142,7 +142,7 @@ table _Measures
 			    )
 			)
 		formatString: 0.0%
-		displayFolder: Excursions
+		displayFolder: Root Cause
 		lineageTag: c460d124-5181-4521-9af4-e4e07122d8fc
 
 		annotation PBI_FormatHint = {"isCustom":true}
@@ -188,9 +188,66 @@ table _Measures
 			    COUNTROWS ( fct_wafer_pattern ),
 			    USERELATIONSHIP ( fct_wafer_pattern[true_pattern], wafer_pattern_classes[pattern] )
 			)
-		formatString: 0
+		formatString: #,0
 		displayFolder: Wafer Patterns
 		lineageTag: 0095322a-4b90-48a9-89f6-b726defd80ff
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Die yield in the previous ISO week
+	measure 'Die Yield % PW' =
+			
+			VAR ThisWeek = MIN ( dim_date[week_start] )
+			RETURN
+			    CALCULATE (
+			        [Die Yield %],
+			        REMOVEFILTERS ( dim_date ),
+			        dim_date[week_start] = ThisWeek - 7
+			    )
+		formatString: 0.00%
+		displayFolder: Yield
+		lineageTag: cd6d3900-2adf-4122-a08c-bad40e2c0c18
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Change in die yield vs the previous week, in percentage points
+	measure 'Yield Δ WoW (pp)' =
+			
+			IF (
+			    NOT ISBLANK ( [Die Yield % PW] ),
+			    ( [Die Yield %] - [Die Yield % PW] ) * 100
+			)
+		formatString: +0.00;-0.00;0.00
+		displayFolder: Yield
+		lineageTag: 90e04f57-ab33-4152-8ce1-b54d7d473925
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Die yield in the previous month
+	measure 'Die Yield % PM' =
+			
+			CALCULATE (
+			    [Die Yield %],
+			    DATEADD ( dim_date[calendar_date], -1, MONTH )
+			)
+		formatString: 0.00%
+		displayFolder: Yield
+		lineageTag: 3ac36328-10b9-483a-a8a8-c37b04ab9a1d
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Change in die yield vs the previous month, in percentage points
+	measure 'Yield Δ MoM (pp)' =
+			
+			IF (
+			    NOT ISBLANK ( [Die Yield % PM] ),
+			    ( [Die Yield %] - [Die Yield % PM] ) * 100
+			)
+		formatString: +0.00;-0.00;0.00
+		displayFolder: Yield
+		lineageTag: 85a16d98-f7ca-4855-9fdf-edaf934e854f
+
+		annotation PBI_FormatHint = {"isCustom":true}
 
 	column Column1
 		dataType: string
