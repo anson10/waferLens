@@ -10,7 +10,7 @@ against that ground truth, commonality analysis, Grafana for live monitoring and
 yield reporting. Wafer-map pattern classification comes from its sister project,
 [FabEye](https://github.com/anson10/FabEye).
 
-**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 (SPC, detection benchmark, root cause) is done; phase 4 (Grafana) is done; phase 5 (FabEye integration, SECOM fail prediction, MLflow) is done; phase 6 (real-time SPC on Redpanda) is done; phase 7 (Power BI) is in progress. See [ROADMAP.md](ROADMAP.md).
+**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 (SPC, detection benchmark, root cause) is done; phase 4 (Grafana) is done; phase 5 (FabEye integration, SECOM fail prediction, MLflow) is done; phase 6 (real-time SPC on Redpanda) is done; phase 7 (Power BI) is done apart from bookmarks and a walkthrough video. See [ROADMAP.md](ROADMAP.md).
 The original v1 is preserved on the
 [`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
@@ -125,6 +125,34 @@ the batch engine's alarms. Decision: [ADR-012](docs/adr/0012-real-time-spc-on-re
 **Alerts** (`grafana/provisioning/alerting/`): an EWMA alarm burst on one chamber, and a
 chamber's yield falling 3 points below its products' median over a week. Both post to a
 webhook sink; `docker compose logs alert-sink` shows the notifications.
+
+## Power BI
+
+A semantic model on the dbt marts, saved as PBIP so every measure, relationship and page is a
+text file in git ([`powerbi/`](powerbi/), ADR-011): 21 tables in Import mode as the read-only
+`powerbi_reader`, 28 single-direction relationships, 39 DAX measures in display folders, and
+row-level security with one role per product.
+
+**Root cause:** pick an excursion and every chamber and recipe is ranked by lift, with the
+injected true cause in green. Excursion 10 is the honest miss: the true chamber ranks 10th.
+Right-click a low-yield wafer to drill through to it.
+
+![Power BI root-cause page](powerbi/images/root-cause.png)
+
+**Wafer drillthrough:** the worst wafer in the fab (21.53%, FabEye: Near-full) went through
+CLEAN-01/A at its first step, the chamber excursion 6 was injected on.
+
+![Power BI wafer drillthrough](powerbi/images/wafer.png)
+
+**Excursions:** dies lost per excursion against same-window control wafers, and the median
+points to the first alarm next to a placebo window: EWMA 8 against 145, while WE1 (33 against
+29.5) is no better than chance.
+
+![Power BI excursions page](powerbi/images/excursions.png)
+
+More: [executive summary](powerbi/images/executive-summary.png),
+[yield-loss Pareto](powerbi/images/yield-loss.png),
+[row-level security as PMIC65](powerbi/images/rls.png).
 
 ## Architecture
 
