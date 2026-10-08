@@ -134,8 +134,10 @@ text file in git ([`powerbi/`](powerbi/), ADR-011): 21 tables in Import mode as 
 row-level security with one role per product.
 
 **Root cause:** pick an excursion and every chamber and recipe is ranked by lift, with the
-injected true cause in green. Excursion 10 is the honest miss: the true chamber ranks 10th.
-Right-click a low-yield wafer to drill through to it.
+injected true cause in green, next to each chamber's SPC alarms during the excursion.
+Excursion 10 is the honest miss: commonality ranks the true chamber 10th, while SPC raised 3,740
+alarms on it in the window (428 on the top-ranked suspect). The two methods catch different
+failures. Right-click a low-yield wafer to drill through to it.
 
 ![Power BI root-cause page](powerbi/images/root-cause.png)
 
