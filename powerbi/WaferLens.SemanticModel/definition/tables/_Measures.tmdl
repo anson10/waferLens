@@ -277,6 +277,37 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
+	/// Rank commonality gave the injected true cause, for the selected excursion
+	measure 'True Cause Rank' = SELECTEDVALUE ( fct_root_cause_eval[true_rank] )
+		formatString: 0
+		displayFolder: Root Cause
+		lineageTag: 5a61788d-4da4-4e7e-8ec8-0f19b5711f24
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Background colour for the true cause's row in a candidates table
+	measure 'Cause Color' = IF ( SELECTEDVALUE ( fct_root_cause_candidates[is_true_cause] ) = TRUE (), "#C8E6C9" )
+		displayFolder: Root Cause
+		lineageTag: 45fbfb9b-2467-4f84-9b32-ce56b23258fa
+
+	/// FabEye's pattern for one wafer (blank for unsorted wafers, so they drop out of tables)
+	measure 'Predicted Pattern' = SELECTEDVALUE ( fct_wafer_pattern[predicted_pattern] )
+		displayFolder: Wafer Patterns
+		lineageTag: bbcb0b11-e705-4922-b120-ff54f7131a50
+
+	/// FabEye's confidence in the pattern of one wafer
+	measure 'Pattern Confidence' = SELECTEDVALUE ( fct_wafer_pattern[confidence] )
+		formatString: 0.0%
+		displayFolder: Wafer Patterns
+		lineageTag: 563d42f2-b6c9-41a2-ae85-e013975cb750
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Title for the wafer drillthrough page
+	measure 'Wafer Title' = "Wafer " & SELECTEDVALUE ( dim_wafer[wafer_code], "(none)" )
+		displayFolder: Wafer Patterns
+		lineageTag: 5dea4ffa-edb1-4346-b0a6-bc2125e26c61
+
 	column Column1
 		dataType: string
 		isHidden

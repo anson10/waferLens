@@ -1,0 +1,218 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "c83396de4c6bd6aebfad",
+  "position": {
+    "x": 30,
+    "y": 345,
+    "z": 6,
+    "height": 705,
+    "width": 1240,
+    "tabOrder": 6
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_route_step"
+                    }
+                  },
+                  "Property": "sequence_no"
+                }
+              },
+              "queryRef": "dim_route_step.sequence_no",
+              "nativeQueryRef": "sequence_no",
+              "displayName": "Seq"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_route_step"
+                    }
+                  },
+                  "Property": "step_name"
+                }
+              },
+              "queryRef": "dim_route_step.step_name",
+              "nativeQueryRef": "step_name",
+              "displayName": "Step"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_chamber"
+                    }
+                  },
+                  "Property": "chamber_label"
+                }
+              },
+              "queryRef": "dim_chamber.chamber_label",
+              "nativeQueryRef": "chamber_label",
+              "displayName": "Chamber"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_recipe"
+                    }
+                  },
+                  "Property": "recipe_name"
+                }
+              },
+              "queryRef": "dim_recipe.recipe_name",
+              "nativeQueryRef": "recipe_name",
+              "displayName": "Recipe"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_recipe"
+                    }
+                  },
+                  "Property": "recipe_version"
+                }
+              },
+              "queryRef": "dim_recipe.recipe_version",
+              "nativeQueryRef": "recipe_version",
+              "displayName": "Version"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_wafer_steps"
+                    }
+                  },
+                  "Property": "pass_no"
+                }
+              },
+              "queryRef": "fct_wafer_steps.pass_no",
+              "nativeQueryRef": "pass_no",
+              "displayName": "Pass"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_wafer_steps"
+                    }
+                  },
+                  "Property": "is_rework"
+                }
+              },
+              "queryRef": "fct_wafer_steps.is_rework",
+              "nativeQueryRef": "is_rework",
+              "displayName": "Rework"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_wafer_steps"
+                    }
+                  },
+                  "Property": "track_in_at"
+                }
+              },
+              "queryRef": "fct_wafer_steps.track_in_at",
+              "nativeQueryRef": "track_in_at",
+              "displayName": "Track-in"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fct_wafer_steps"
+                        }
+                      },
+                      "Property": "process_minutes"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(fct_wafer_steps.process_minutes)",
+              "nativeQueryRef": "Sum of process_minutes",
+              "displayName": "Process min"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fct_wafer_steps"
+                  }
+                },
+                "Property": "track_in_at"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Route · step, chamber, recipe'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

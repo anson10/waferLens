@@ -18,6 +18,9 @@ table dim_excursion
 		lineageTag: a348056e-e0af-4c60-ab50-44d16fc402c0
 		summarizeBy: none
 		sourceColumn: excursion_label
+		sortByColumn: excursion_id
+
+		changedProperty = SortByColumn
 
 		annotation SummarizationSetBy = Automatic
 

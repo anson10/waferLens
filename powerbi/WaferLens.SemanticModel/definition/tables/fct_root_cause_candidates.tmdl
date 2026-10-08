@@ -85,28 +85,28 @@ table fct_root_cause_candidates
 		dataType: int64
 		formatString: 0
 		lineageTag: 3a492daf-2708-4230-87b7-9ace21a99bf0
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: suspect_rank
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 	column lift
 		dataType: double
 		lineageTag: d50983cf-06aa-4825-808b-281d2c1ea5b1
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: lift
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column chi2
 		dataType: double
 		lineageTag: 1717db25-273e-4d16-941d-6eebf7829263
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: chi2
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 

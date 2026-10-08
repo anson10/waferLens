@@ -29,10 +29,10 @@ table fct_wafer_steps
 		dataType: int64
 		formatString: 0
 		lineageTag: 15c29c77-9cca-4f46-a7f1-5d9ebf6a8755
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: pass_no
 
-		annotation SummarizationSetBy = Automatic
+		annotation SummarizationSetBy = User
 
 	column lot_id
 		dataType: int64
