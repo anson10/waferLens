@@ -17,7 +17,7 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	///  Dies that passed wafer sort
+	/// Dies that passed wafer sort
 	measure 'Good Dies' = SUM ( fct_wafer_yield[good_dies] )
 		formatString: #,0
 		displayFolder: Yield
@@ -25,7 +25,7 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	///  Good dies ÷ tested dies: die-weighted yield, the number a fab reports
+	/// Good dies ÷ tested dies: die-weighted yield, the number a fab reports
 	measure 'Die Yield %' = DIVIDE ( [Good Dies], [Tested Dies] )
 		formatString: 0.00%
 		displayFolder: Yield
@@ -42,7 +42,7 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	///  Dies that failed wafer sort (all failing bins)
+	/// Dies that failed wafer sort (all failing bins)
 	measure 'Failed Dies' =
 			
 			CALCULATE (
@@ -100,7 +100,7 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	///  Number of injected excursions
+	/// Number of injected excursions
 	measure Excursions = COUNTROWS ( dim_excursion )
 		formatString: #,0
 		displayFolder: Root Cause
@@ -246,6 +246,14 @@ table _Measures
 		formatString: +0.00;-0.00;0.00
 		displayFolder: Yield
 		lineageTag: 85a16d98-f7ca-4855-9fdf-edaf934e854f
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Dies lost to injected excursions, versus same-window control wafers
+	measure 'Dies Lost to Excursions' = SUM ( fct_excursion_impact[dies_lost] )
+		formatString: #,0
+		displayFolder: Loss
+		lineageTag: daf7278b-2325-4bb1-bf09-c744a94823b8
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
