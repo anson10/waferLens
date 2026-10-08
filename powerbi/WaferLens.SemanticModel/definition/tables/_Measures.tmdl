@@ -308,6 +308,90 @@ table _Measures
 		displayFolder: Wafer Patterns
 		lineageTag: 5dea4ffa-edb1-4346-b0a6-bc2125e26c61
 
+	/// Chamber of the hovered suspect (or chamber) row, for the chamber tooltip
+	measure 'Tip Chamber' =
+			CALCULATE (
+			    SELECTEDVALUE ( dim_chamber[chamber_label] ),
+			    TREATAS ( VALUES ( fct_root_cause_candidates[chamber_id] ), dim_chamber[chamber_id] )
+			)
+		displayFolder: Tooltip
+		lineageTag: aae31d77-2670-40eb-b966-ef3400b20de0
+
+	/// The time window the tooltip numbers cover
+	measure 'Tip Window' =
+			IF (
+			    HASONEVALUE ( dim_excursion[excursion_id] ),
+			    "During excursion " & SELECTEDVALUE ( dim_excursion[excursion_label] ),
+			    "All time"
+			)
+		displayFolder: Tooltip
+		lineageTag: 5fccf790-20f8-4994-88e6-f75ea4d8c930
+
+	/// Chamber-scope SPC alarms on the hovered chamber; within the excursion window when one excursion is selected
+	measure 'Tip Alarms' =
+			VAR OneExcursion = HASONEVALUE ( dim_excursion[excursion_id] )
+			VAR FromTime = MIN ( dim_excursion[started_at] )
+			VAR ToTime = MAX ( dim_excursion[ended_at] )
+			RETURN
+			    CALCULATE (
+			        [Chamber Alarms],
+			        TREATAS ( VALUES ( fct_root_cause_candidates[chamber_id] ), dim_chamber[chamber_id] ),
+			        FILTER (
+			            ALL ( fct_spc_alarms[measured_at] ),
+			            NOT OneExcursion
+			                || ( fct_spc_alarms[measured_at] >= FromTime
+			                    && fct_spc_alarms[measured_at] < ToTime )
+			        )
+			    )
+		formatString: #,0
+		displayFolder: Tooltip
+		lineageTag: 9a6b7ade-9adb-4b44-a803-cc24fc7bbdb9
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Wafers the hovered chamber processed; within the excursion window when one excursion is selected
+	measure 'Tip Wafers' =
+			VAR OneExcursion = HASONEVALUE ( dim_excursion[excursion_id] )
+			VAR FromTime = MIN ( dim_excursion[started_at] )
+			VAR ToTime = MAX ( dim_excursion[ended_at] )
+			RETURN
+			    CALCULATE (
+			        DISTINCTCOUNT ( fct_wafer_steps[wafer_id] ),
+			        TREATAS ( VALUES ( fct_root_cause_candidates[chamber_id] ), dim_chamber[chamber_id] ),
+			        FILTER (
+			            ALL ( fct_wafer_steps[track_in_at] ),
+			            NOT OneExcursion
+			                || ( fct_wafer_steps[track_in_at] >= FromTime
+			                    && fct_wafer_steps[track_in_at] < ToTime )
+			        )
+			    )
+		formatString: #,0
+		displayFolder: Tooltip
+		lineageTag: 49ae17e4-38c8-4e4f-8d72-a4258eb2e60f
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// SPC alarm density on the hovered chamber, comparable across chambers
+	measure 'Tip Alarms per 100 Wafers' = DIVIDE ( [Tip Alarms], [Tip Wafers] ) * 100
+		formatString: 0.0
+		displayFolder: Tooltip
+		lineageTag: ad78f576-81ba-4d9a-a3a6-5b34712d6fa1
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Ground truth: excursions the simulator injected on the hovered chamber, all time
+	measure 'Tip Injected Excursions' =
+			CALCULATE (
+			    COUNTROWS ( dim_excursion ),
+			    REMOVEFILTERS ( dim_excursion ),
+			    TREATAS ( VALUES ( fct_root_cause_candidates[chamber_id] ), dim_excursion[chamber_id] )
+			)
+		formatString: 0
+		displayFolder: Tooltip
+		lineageTag: 946d4a3e-4d8d-47c8-a3ca-5024443ba08d
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column Column1
 		dataType: string
 		isHidden
