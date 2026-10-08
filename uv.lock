@@ -4092,7 +4092,7 @@ wheels = [
 
 [[package]]
 name = "waferlens"
-version = "0.1.0"
+version = "2.0.0"
 source = { editable = "." }
 default-groups = ["dbt", "dev"]
 dependencies = [
