@@ -10,11 +10,46 @@ against that ground truth, commonality analysis, Grafana for live monitoring and
 yield reporting. Wafer-map pattern classification comes from its sister project,
 [FabEye](https://github.com/anson10/FabEye).
 
-**Status:** rebuilding as v2. Phase 1 (data model, simulator, loader, SECOM, performance) is done; phase 2 (dbt star schema + Dagster orchestration) is done; phase 3 (SPC, detection benchmark, root cause) is done; phase 4 (Grafana) is done; phase 5 (FabEye integration, SECOM fail prediction, MLflow) is done; phase 6 (real-time SPC on Redpanda) is done; phase 7 (Power BI) is done apart from bookmarks and a walkthrough video. See [ROADMAP.md](ROADMAP.md).
-The original v1 is preserved on the
+**Status:** v2. Phases 1–7 of [ROADMAP.md](ROADMAP.md) are done; phase 8 (launch) is in
+progress. The original v1, a
+500-wafer Streamlit demo, is preserved on the
 [`waferlens-v1-archive`](https://github.com/anson10/waferLens/tree/waferlens-v1-archive) branch.
 
-## Results so far
+## At a glance
+
+Every detector is scored against the simulator's logged ground truth, next to a chance
+baseline, and every number comes from a `make` target.
+
+| Question | Method | Result | Reproduce |
+|---|---|---|---|
+| How early could we have known? | Chamber EWMA / CUSUM charts on frozen Phase I limits | first alarm after a median **8–9 affected wafers**, against 33 for Shewhart (chance 140–200) | `make spc-report` |
+| Which chamber caused it? | Commonality analysis in SQL, from the time window alone | true cause ranked **first for 72%** of excursions that cost yield (chance 0.8%) | `make rootcause-report` |
+| What does it look like on the wafer? | [FabEye](https://github.com/anson10/FabEye) wafer-map patterns, then pattern-led commonality | **13 of 13** spatial excursions caught and traced to the right chamber; SPC sees none of them | `make rootcause-report` |
+| Can it run live? | Kafka events on Redpanda, online EWMA / CUSUM, exactly once through Postgres | a +2σ step caught **after 3 points**, ~270 ms event to alarm | `make stream-demo` |
+| Does it hold on real fab data? | UCI SECOM, time-ordered holdout, walk-forward model selection | PR-AUC 0.065 against chance 0.055: a random split **overstates the model 2.7x** | `make secom-model` |
+
+Three excursions told end to end, from first alarm to dies lost:
+[docs/excursion_story.md](docs/excursion_story.md) (`make story`).
+
+## Architecture
+
+```mermaid
+flowchart LR
+    SIM[Fab simulator<br/>+ ground truth] --> DB[(PostgreSQL 16<br/>+ TimescaleDB)]
+    SECOM[UCI SECOM] --> DB
+    DB --> DBT[dbt<br/>star-schema marts]
+    DB --> SPC[SPC + root cause]
+    SPC --> DB
+    FAB[FabEye API<br/>wafer-map patterns] --> DB
+    DB --> ML[SECOM model<br/>MLflow registry]
+    SIM -. replay .-> AG[Tool agents] --> RP[[Redpanda]] --> RT[Real-time SPC] --> DB
+    DBT --> PBI[Power BI]
+    DB --> GRAF[Grafana]
+    FAB --> PROM[Prometheus] --> GRAF
+    DAG[Dagster] -.orchestrates.-> SIM & DBT & SPC & FAB & ML
+```
+
+## Results
 
 **SPC detection speed** — average points until the first alarm (simulated, 2,000 runs per
 cell, within 3% of published tables; 0σ = points between false alarms):
@@ -35,7 +70,8 @@ On the demo fab's own ground truth, chamber-level EWMA and CUSUM first alarmed a
 23 of 32 excursions that measurably cost yield (72%)**, top 3 for 75%, against 0.8% for a random
 pick among ~129 suspects. SPC and commonality cover each other: 35 of 40 excursions are found by
 at least one; SPC can't see spatial defect patterns, commonality finds 11 of 13 of them.
-Report: [docs/root_cause.md](docs/root_cause.md).
+Report: [docs/root_cause.md](docs/root_cause.md); three excursions end to end in
+[docs/excursion_story.md](docs/excursion_story.md).
 
 **Fail prediction on real fab data (UCI SECOM)** — 590 anonymised sensors, 1,567 runs, 6.6%
 fails, with a fail rate that drifts from 22% to 3% within three months. Trained on the first
@@ -156,57 +192,63 @@ More: [executive summary](powerbi/images/executive-summary.png),
 [yield-loss Pareto](powerbi/images/yield-loss.png),
 [row-level security as PMIC65](powerbi/images/rls.png).
 
-## Architecture
-
-```mermaid
-flowchart LR
-    SIM[Fab simulator<br/>+ ground truth] --> DB[(PostgreSQL 16<br/>+ TimescaleDB)]
-    SECOM[UCI SECOM] --> DB
-    DB --> DBT[dbt<br/>star-schema marts]
-    DB --> SPC[SPC + root cause]
-    SPC --> DB
-    FAB[FabEye API<br/>wafer-map patterns] --> DB
-    DB --> ML[SECOM model<br/>MLflow registry]
-    SIM -. replay .-> AG[Tool agents] --> RP[[Redpanda]] --> RT[Real-time SPC] --> DB
-    DBT --> PBI[Power BI]
-    DB --> GRAF[Grafana]
-    FAB --> PROM[Prometheus] --> GRAF
-    DAG[Dagster] -.orchestrates.-> SIM & DBT & SPC & FAB & ML
-```
-
 ## Quickstart
 
 Needs Docker and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 cp .env.example .env
-make install   # .venv + deps + git hooks
-make up        # TimescaleDB :5432, Grafana :3000, MLflow :5000, FabEye :8000, Prometheus :9090
-make stream-demo # starts Redpanda (:19092) and replays a day as events
-make seed      # migrate, simulate 6 months of fab data, load it + real SECOM (~2.5 min)
-make check     # lint + typecheck + all tests
+make install    # .venv + deps + git hooks
+make up         # TimescaleDB :5432, Grafana :3000, MLflow :5000, FabEye :8000, Prometheus :9090
+make pipeline   # one Dagster run (~16 min): simulate 6 months of fab data, load it + real
+                # SECOM, dbt, SPC, FabEye patterns, root cause, SECOM model
+make story      # three excursions end to end → docs/excursion_story.md
+make stream-demo    # real-time SPC: starts Redpanda (:19092), replays a day, injects a drift
+make check      # lint + typecheck + all tests
 ```
 
-`make seed` is `make migrate simulate load`; add `PROFILE=dev` for a 1,000-wafer fab that
-loads in seconds. Then `make dbt` builds and tests the star-schema marts, or `make pipeline` runs everything as one Dagster job (`make dagster` for the UI). Run `make` with no arguments to list all targets.
+`make seed` runs only `migrate simulate load`; add `PROFILE=dev` for a 1,000-wafer fab that
+loads in seconds. `make dagster` opens the pipeline UI on :3001. Run `make` with no arguments
+to list all targets.
 
 After `make pipeline`, the dashboards are at <http://localhost:3000> (admin / admin, from
 `.env`) in the WaferLens folder, and MLflow at <http://localhost:5000>; `make secom-model`
 retrains the SECOM model on its own (~3 min), `make screenshots` re-renders the images above.
 
-Docs: [schema](docs/schema.md) · [simulator](docs/simulator.md) · [dbt models](docs/dbt.md) · [pipeline](docs/pipeline.md) · [SPC](docs/spc.md) · [SPC benchmark](docs/spc_benchmark.md) · [root cause](docs/root_cause.md) · [SECOM model](docs/secom_model.md) · [FabEye on simulated maps](docs/fabeye_eval.md) · [performance](docs/perf.md) ·
-[SECOM data card](docs/data/secom.md) · [decisions](docs/adr/)
+All docs, reports and decisions: [docs/](docs/README.md).
 
 ## Layout
 
 ```
 src/waferlens/   db, simulate, ingest, spc, rootcause, ml, patterns, dashboards, stream, orchestration
 tests/           unit/ (no containers) and integration/ (needs make up)
-dbt/             transformation layer (phase 2)
+dbt/             staging, intermediate and star-schema marts
 grafana/         provisioned datasources and dashboards
-powerbi/         PBIP project (phase 7)
-docs/adr/        architecture decision records
+powerbi/         Power BI project (PBIP): semantic model, report, screenshots
+docs/            reports, how-it-works docs, decisions (docs/adr/)
 ```
+
+## Kurzbeschreibung (Deutsch)
+
+WaferLens ist eine Plattform zur Erkennung von Yield-Exkursionen und zur Ursachenanalyse in der
+Halbleiterfertigung. Ein simulierter Fab mit Wafer-Genealogie auf Kammerebene protokolliert
+jede eingespeiste Störung als Ground Truth; daran wird jede Methode gemessen, immer gegen eine
+Zufalls-Baseline:
+
+- **SPC** (Western-Electric-Regeln, EWMA, CUSUM, Hotelling T²): Kammer-EWMA und -CUSUM schlagen
+  im Median nach 8–9 betroffenen Wafern Alarm, Shewhart erst nach 33 (Zufall: 140–200).
+- **Commonality-Analyse** in SQL: Die wahre Ursache steht bei 72 % der Exkursionen mit
+  Yield-Verlust auf Platz 1 (Zufall: 0,8 %).
+- **Wafer-Map-Muster** über den FabEye-Service: Alle 13 räumlichen Exkursionen, die SPC nicht
+  sieht, werden erkannt und der richtigen Kammer zugeordnet.
+- **Echtzeit-SPC** auf Redpanda (Kafka-API), exactly-once über Postgres: Eine Drift wird nach
+  3 Messpunkten erkannt, mit rund 270 ms Latenz.
+- **Fehlervorhersage auf echten Fertigungsdaten** (UCI SECOM) mit zeitlich geordnetem Split:
+  Ein zufälliger Split überschätzt das Modell um den Faktor 2,7.
+
+Stack: PostgreSQL/TimescaleDB, dbt (Sternschema), Dagster, Grafana (Dashboards als Code),
+Power BI (PBIP, DAX, Row-Level Security), MLflow, Docker, GitHub Actions. Jede Zahl in diesem
+README ist über ein `make`-Target reproduzierbar.
 
 ## License
 
