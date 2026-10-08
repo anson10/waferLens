@@ -392,6 +392,71 @@ table _Measures
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
+	/// Median points from excursion start to the first alarm (chamber charts, detected, after the baseline)
+	measure 'Detection Delay (points)' =
+			CALCULATE (
+			    MEDIAN ( fct_excursion_detection[delay_points] ),
+			    fct_excursion_detection[scope] = "chamber",
+			    fct_excursion_detection[detected] = TRUE (),
+			    fct_excursion_detection[started_in_baseline] = FALSE ()
+			)
+		formatString: 0.0
+		displayFolder: Process Control
+		lineageTag: 41e60fce-ea97-4438-86d0-6751bd73f3c3
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Chance baseline: median points to the first alarm in a same-length window with no excursion
+	measure 'Placebo Delay (points)' =
+			CALCULATE (
+			    MEDIAN ( fct_excursion_detection[placebo_delay_points] ),
+			    fct_excursion_detection[scope] = "chamber",
+			    fct_excursion_detection[monitored] = TRUE (),
+			    fct_excursion_detection[started_in_baseline] = FALSE ()
+			)
+		formatString: 0.0
+		displayFolder: Process Control
+		lineageTag: ccc4439d-d359-40ea-b653-5da333b8a8b5
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Monitored excursions (after the baseline) that the chamber EWMA chart caught
+	measure 'EWMA Detection Rate %' =
+			VAR Eligible =
+			    CALCULATETABLE (
+			        fct_excursion_detection,
+			        fct_excursion_detection[chart] = "ewma",
+			        fct_excursion_detection[scope] = "chamber",
+			        fct_excursion_detection[monitored] = TRUE (),
+			        fct_excursion_detection[started_in_baseline] = FALSE ()
+			    )
+			RETURN
+			    DIVIDE (
+			        COUNTROWS ( FILTER ( Eligible, fct_excursion_detection[detected] ) ),
+			        COUNTROWS ( Eligible )
+			    )
+		formatString: 0.0%
+		displayFolder: Process Control
+		lineageTag: eaff288e-50ee-4f33-9d7e-a04be8d87335
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Chamber-scope SPC alarms per 1,000 wafer steps: alarm density, fair across busy and quiet chambers
+	measure 'Chamber Alarms per 1k Steps' = DIVIDE ( [Chamber Alarms], COUNTROWS ( fct_wafer_steps ) ) * 1000
+		formatString: 0.0
+		displayFolder: Process Control
+		lineageTag: 3087a3ab-3ddf-4a5e-a61e-9f2e7d024f3a
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Yield of affected wafers minus same-window control wafers, in percentage points
+	measure 'Excursion Yield Δ (pp)' = AVERAGE ( fct_excursion_impact[yield_delta_pct] )
+		formatString: +0.00;-0.00;0.00
+		displayFolder: Loss
+		lineageTag: 69333520-f17a-46af-adbe-020c90507558
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column Column1
 		dataType: string
 		isHidden

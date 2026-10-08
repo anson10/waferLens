@@ -1,0 +1,10 @@
+/// Product engineer for PMIC65: sees only PMIC65 wafers, bins, patterns and alarms; excursions and root cause stay fab-wide
+role 'Product PMIC65'
+	modelPermission: read
+
+	tablePermission dim_product = [product_code] = "PMIC65"
+
+	tablePermission dim_wafer = [product_id] = LOOKUPVALUE ( dim_product[product_id], dim_product[product_code], "PMIC65" )
+
+	annotation PBI_Id = de91cbb446f14c9383916db3a15ddee5
+

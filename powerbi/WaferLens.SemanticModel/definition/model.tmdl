@@ -36,5 +36,9 @@ ref table spc_charts
 ref table wafer_pattern_classes
 ref table _Measures
 
+ref role 'Product MCU28'
+ref role 'Product PMIC65'
+ref role 'Product SENS130'
+
 ref cultureInfo en-IN
 
