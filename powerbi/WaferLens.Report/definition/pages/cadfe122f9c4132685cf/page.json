@@ -8,7 +8,7 @@
   "filterConfig": {
     "filters": [
       {
-        "name": "1ccb1c169834b92773b3",
+        "name": "24e15eb27850b7b984f7",
         "field": {
           "Column": {
             "Expression": {
@@ -20,6 +20,45 @@
           }
         },
         "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "d",
+              "Entity": "dim_wafer",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "In": {
+                  "Expressions": [
+                    {
+                      "Column": {
+                        "Expression": {
+                          "SourceRef": {
+                            "Source": "d"
+                          }
+                        },
+                        "Property": "wafer_code"
+                      }
+                    }
+                  ],
+                  "Values": [
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'L2600106-20'"
+                        }
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          ]
+        },
         "howCreated": "Drillthrough"
       }
     ]
@@ -27,7 +66,24 @@
   "pageBinding": {
     "name": "889f625f873268c97627",
     "type": "Drillthrough",
-    "parameters": [],
+    "parameters": [
+      {
+        "name": "b6c33f128b2607e70b56",
+        "boundFilter": "24e15eb27850b7b984f7",
+        "asAggregation": false,
+        "qnaSingleSelectRequired": false,
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_wafer"
+              }
+            },
+            "Property": "wafer_code"
+          }
+        }
+      }
+    ],
     "acceptsFilterContext": "None"
   },
   "visibility": "HiddenInViewMode"
