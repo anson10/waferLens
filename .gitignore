@@ -36,3 +36,6 @@ powerbi/**/.pbi/localSettings.json
 .DS_Store
 .idea/
 .vscode/
+
+# local assistant notes, not part of the project
+CLAUDE.md
